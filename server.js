@@ -1,6 +1,7 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const methodOverride = require('method-override');
+const session = require('express-session');
 const movementsRouter = require('./controllers/movements');
 const usersRouter = require('./controllers/users');
 const workoutsRouter = require('./controllers/workouts');
@@ -27,9 +28,23 @@ db.on('error', function (error) {
 app.use(express.static('public'));
 app.use(express.urlencoded({ extended: false }));
 app.use(methodOverride('_method'));
+app.use(session({
+    secret: process.env.SECRET,
+    resave: false,
+    saveUninitialized: false
+}));
+
+app.use(function (req, res, next) {
+    if (req.session.userId) {
+        res.locals.user = req.session.userId;
+    } else {
+        res.locals.user = null;
+    }
+    next();
+});
 
 app.get('/', function (req, res) {
-    res.send('Welcome');
+    res.render('welcome.ejs');
 });
 
 app.use(usersRouter);
