@@ -12,6 +12,7 @@ router.get('/movements/seed', function (req, res) {
     });
 });
 
+// index
 router.get('/movements', function (req, res) {
     Movement.find({}, function (error, allMovements) {
         res.render('movement-index.ejs', {
@@ -19,5 +20,41 @@ router.get('/movements', function (req, res) {
         });
     });
 });
+
+// new
+router.get('/movements/new', function (req, res) {
+    res.render('movement-new.ejs');
+});
+
+// delete
+router.delete('/movements/:id', function (req, res) {
+    Movement.findByIdAndDelete(req.params.id, function (error, data) {
+        res.redirect('/movements');
+    });
+});
+
+// update
+router.put('/movements/:id', function (req, res) {
+    Movement.findByIdAndUpdate(req.params.id, req.body, { new: true }, function (error, updatedMovement) {
+        res.redirect('/movements');
+    });
+});
+
+// create
+router.post('/movements', function (req, res) {
+    Movement.create(req.body, function (error, createdMovement) {
+        res.redirect('/movements');
+    });
+});
+
+// edit
+router.get('/movements/:id/edit', function (req, res) {
+    Movement.findById(req.params.id, function (error, foundMovement) {
+        res.render('movement-edit.ejs', {
+            movement: foundMovement
+        });
+    });
+});
+
 
 module.exports = router;
