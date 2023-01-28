@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<%- include('./partials/head'); %>
+
+<%- include('./partials/nav'); %> 
+
+<body>
+    <h1>Sign Up</h1>
+    <form class="submit" action="/signup" method="POST">
+        <label>
+            First Name:
+            <input type="text" name="firstName" required>
+        </label>
+        <label>
+            Email:
+            <input type="email" name="email" required>
+        </label>
+        <label>
+            Password:
+            <input type="password" name="password" id="password" required>
+        </label>
+        <input type="submit" value="Sign Up">
+    </form>
+
+    <%- include('./partials/footer'); %> 
+
+</body>
+</html>
