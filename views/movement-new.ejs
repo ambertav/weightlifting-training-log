@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<%- include('./partials/head'); %> 
+
+<body>
+    <h1>Add a New Movement </h1>
+    <form action="/movements" method="POST">
+        <label>
+            Name:
+            <input type="text" name="name">
+        </label>
+        <label>
+            Description:
+            <input type="text" name="description">
+        </label>
+        <label class="muscles">
+            Muscles Worked:
+                <input type="text" name="musclesWorked">
+        </label>
+        <p class="add">Add muscle</p>
+        <br>
+        <input type="submit" value="Submit Changes">
+    </form>
+
+    <%- include('./partials/footer'); %> 
+
+</body>
+</html>
