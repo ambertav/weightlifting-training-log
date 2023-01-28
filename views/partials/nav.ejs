@@ -1,0 +1,25 @@
+<nav>
+    <ul>
+        <% if (user) { %>
+            <li>
+                <a href="/workouts">Workouts</a>
+            </li>
+            <li>
+                <a href="/movements">Movements</a>
+            </li>
+            <li>
+                <a href="/workouts/new">Add a Workout</a>
+            </li>
+            <li>
+                <a href="/logout">Logout</a>
+            </li>
+        <% } else { %>
+            <li>
+                <a href="/signup">Sign Up</a>
+            </li>
+            <li>
+                <a href="/login">Login</a>
+            </li>
+        <% } %>
+    </ul>
+</nav>
