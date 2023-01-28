@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<%- include('./partials/head'); %> 
+
+<body>
+    <h1>Movements</h1>
+    <div class="container">
+            <ul>
+                <% movements.forEach(function (movement) { %>
+                    <li>
+                        <%= movement.name %> 
+                        <br>
+                        <a href="/movements/<%= movement._id %>/edit">Edit movement</a>
+                        <form action="/movements/<%= movement._id %>?_method=DELETE" method="POST">
+                            <input type="submit" value="Delete">
+                        </form>
+                    </li>
+                <% }); %> 
+            </ul>
+        </div>
+    </div>
+
+<%- include('./partials/footer'); %> 
+</body>
+</html>
