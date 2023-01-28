@@ -1,6 +1,9 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const methodOverride = require('method-override');
+const movementsRouter = require('./controllers/movements');
+const usersRouter = require('./controllers/users');
+const workoutsRouter = require('./controllers/workouts');
 
 const app = express();
 
@@ -28,6 +31,10 @@ app.use(methodOverride('_method'));
 app.get('/', function (req, res) {
     res.send('Welcome');
 });
+
+app.use(usersRouter);
+app.use(workoutsRouter);
+app.use(movementsRouter);
 
 app.listen(PORT, function () {
     console.log(`express is listening on port: ${PORT}`);
