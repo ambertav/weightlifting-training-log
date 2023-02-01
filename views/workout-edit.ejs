@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<%- include('./partials/head') %> 
+<%- include('./partials/nav') %> 
+
+<% const daysOfTheWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'] %> 
+
+<body>
+    <h1>Edit Workout</h1>
+    <form action="/workouts/<%= workout._id %>?_method=PUT" method="POST">
+        <Label>
+            Select Day:
+            <select name="day" required>
+                <% for (i = 0; i < daysOfTheWeek.length; i++) { %>
+                    <option value="<%= daysOfTheWeek[i] %>"
+                        <% if (workout.day === daysOfTheWeek[i]) { %>
+                            selected
+                        <% } %> 
+                        >
+                        <%= daysOfTheWeek[i] %>
+                    </option>
+                <% } %> 
+            </select>
+        </Label>
+        <% for (i = 0; i < workout.exercise.length; i++) { %>
+            <label>
+                Select Movement
+                <select name="exercise[name]" required>
+                    <% movements.forEach(function (movement) { %>
+                        <option value="<%= movement.name %>"
+                            <% if (workout.exercise[i].name === movement.name) { %>
+                                selected
+                            <% } %>
+                            >
+                            <%= movement.name %>
+                        </option>
+                    <% }); %>
+                </select>
+            </label>
+            <label>
+                Weight
+                <input type="number" name="exercise[weight]" min="0" value="<%= workout.exercise[i].weight %>" required>
+            </label>
+            <label>
+                Sets
+                <input type="number" name="exercise[sets]" min="1" value="<%= workout.exercise[i].sets %>" required>
+            </label>
+            <label>
+                Repetitions per Set
+                <input type="number" name="exercise[reps]" min="1" value="<%= workout.exercise[i].reps %>" required>
+            </label>
+        <% } %>
+        <input type="submit" value="Update Workout">
+    </form>
+
+    <%- include('./partials/footer') %> 
+    
+</body>
+</html>
