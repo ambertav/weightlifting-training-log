@@ -2,8 +2,9 @@ const express = require('express');
 const router = express.Router();
 const Workout = require('../models/workout');
 const Movement = require('../models/movement');
+const { route } = require('./movements');
 
-
+// index
 router.get('/workouts', function (req, res) {
     Workout.find({}, function (error, allWorkouts) {
         res.render('workout-index.ejs', {
@@ -12,6 +13,7 @@ router.get('/workouts', function (req, res) {
     });
 });
 
+// new
 router.get('/workouts/new', function (req, res) {
     Movement.find({}, function (error, allMovements) {
         res.render('workout-new.ejs', {
@@ -20,6 +22,14 @@ router.get('/workouts/new', function (req, res) {
     });
 });
 
+// delete
+router.delete('/workouts/:id', function (req, res) {
+    Workout.findByIdAndDelete(req.params.id, function (error, deletedWorkout) {
+        res.redirect('/workouts');
+    });
+});
+
+// create
 router.post('/workouts', function (req, res) {
     const exercisesArray = [];
     for (i = 0; i < req.body.exercise.name.length; i++) {
