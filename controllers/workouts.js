@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const Workout = require('../models/workout');
 const Movement = require('../models/movement');
-const { route } = require('./movements');
+
 
 const exercisesArray = [];
 
@@ -73,6 +73,15 @@ router.get('/workouts/:id/edit', function (req, res) {
                 workout: foundWorkout,
                 movements: allMovements
             });
+        });
+    });
+});
+
+// show
+router.get('/workouts/:id', function (req, res) {
+    Workout.findById(req.params.id, function (error, foundWorkout) {
+        res.render('workout-show.ejs', {
+            workout: foundWorkout
         });
     });
 });

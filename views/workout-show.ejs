@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<%- include('./partials/head') %> 
+<%- include('./partials/nav') %> 
+
+<body>
+    <h1><%= workout.day %></h1>
+
+    <div>
+        <% for (i = 0; i < workout.exercise.length; i++) { %>
+            <h3><%= workout.exercise[i].name %></h3>
+            <p>Weight: <%= workout.exercise[i].weight %></p>
+            <p>Sets: <%= workout.exercise[i].sets %></p>
+            <p>Repetitions pet Set: <%= workout.exercise[i].reps %></p>
+            <input type="checkbox"> Complete
+        <% } %> 
+    </div>
+
+    <%- include('./partials/footer') %> 
+
+</body>
+</html>
