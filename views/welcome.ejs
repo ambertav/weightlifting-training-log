@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+    <%- include('./partials/head'); %> 
+    <%- include('./partials/nav'); %> 
+<body>
+    <h1>WELCOME</h1>
+
+    <div>
+        <h3>Please Login</h3>
+        <form action="/login" method="POST" autocomplete="off">
+            <label>
+                Email:
+                <input type="email" name="email" required>
+            </label>
+            <label>
+                Password:
+                <input type="password" name="password" required>
+            </label>
+            <input type="submit" value="Login">
+        </form>
+        <p>Don't have an account? <a href="/signup">Sign up now</a></p>
+    </div>
+
+    <%- include('./partials/footer'); %> 
+
+</body>
+</html>
