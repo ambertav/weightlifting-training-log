@@ -26,7 +26,7 @@ db.on('error', function (error) {
 });
 
 app.use(express.static('public'));
-app.use(express.urlencoded({ extended: false }));
+app.use(express.urlencoded({ extended: true }));
 app.use(methodOverride('_method'));
 app.use(session({
     secret: process.env.SECRET,
@@ -43,13 +43,18 @@ app.use(function (req, res, next) {
     next();
 });
 
+function isAuthenticated (req, res, next) {
+    if (!req.session.userId) return res.redirect('/login');
+    next();
+}
+
 app.get('/', function (req, res) {
     res.render('welcome.ejs');
 });
 
 app.use(usersRouter);
-app.use(workoutsRouter);
-app.use(movementsRouter);
+app.use(isAuthenticated, workoutsRouter);
+app.use(isAuthenticated, movementsRouter);
 
 app.listen(PORT, function () {
     console.log(`express is listening on port: ${PORT}`);
