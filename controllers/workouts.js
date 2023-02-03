@@ -3,13 +3,12 @@ const router = express.Router();
 const Workout = require('../models/workout');
 const Movement = require('../models/movement');
 
-
-const exercisesArray = [];
+let exercisesArray = [];
 
 // index
 router.get('/workouts', function (req, res) {
-    Workout.find({}, function (error, allWorkouts) {
-        res.render('workout-index.ejs', {
+    Workout.find({createdBy: req.session.userId}, function (error, allWorkouts) {
+        res.render('workout/index.ejs', {
             workouts: allWorkouts
         });
     });
@@ -17,8 +16,8 @@ router.get('/workouts', function (req, res) {
 
 // new
 router.get('/workouts/new', function (req, res) {
-    Movement.find({}, function (error, allMovements) {
-        res.render('workout-new.ejs', {
+    Movement.find({createdBy: req.session.userId}, function (error, allMovements) {
+        res.render('workout/new.ejs', {
             movements: allMovements
         });
     });
@@ -26,13 +25,14 @@ router.get('/workouts/new', function (req, res) {
 
 // delete
 router.delete('/workouts/:id', function (req, res) {
-    Workout.findByIdAndDelete(req.params.id, function (error, deletedWorkout) {
+    Workout.findOneAndDelete({createdBy: req.session.userId, _id: req.params.id}, function (error, deletedWorkout) {
         res.redirect('/workouts');
     });
 });
 
 // update
 router.put('/workouts/:id', function (req, res) {
+    exercisesArray = [];
     for (i = 0; i < req.body.exercise.name.length; i++) {
         let exercise = {
             name: req.body.exercise.name[i],
@@ -43,13 +43,14 @@ router.put('/workouts/:id', function (req, res) {
         exercisesArray.push(exercise);
     }
     req.body.exercise = exercisesArray;
-    Workout.findByIdAndUpdate(req.params.id, req.body, function (error, updatedWorkout) {
+    Workout.findOneAndUpdate({createdBy: req.session.userId, _id: req.params.id}, req.body, function (error, updatedWorkout) {
         res.redirect('/workouts');
     });
 });
 
 // create
 router.post('/workouts', function (req, res) {
+    exercisesArray = [];
     for (i = 0; i < req.body.exercise.name.length; i++) {
         let exercise = {
             name: req.body.exercise.name[i],
@@ -60,6 +61,7 @@ router.post('/workouts', function (req, res) {
         exercisesArray.push(exercise);
     }
     req.body.exercise = exercisesArray;
+    req.body.createdBy = req.session.userId;
         Workout.create(req.body, function (error, createdWorkout) {
         res.redirect('/workouts');
     });
@@ -67,9 +69,9 @@ router.post('/workouts', function (req, res) {
 
 // edit
 router.get('/workouts/:id/edit', function (req, res) {
-    Workout.findById(req.params.id, function (error, foundWorkout) {
-        Movement.find({}, function (error, allMovements) {
-            res.render('workout-edit.ejs', {
+    Workout.findById({createdBy: req.session.userId, _id: req.params.id}, function (error, foundWorkout) {
+        Movement.find({createdBy: req.session.userId}, function (error, allMovements) {
+            res.render('workout/edit.ejs', {
                 workout: foundWorkout,
                 movements: allMovements
             });
@@ -80,7 +82,7 @@ router.get('/workouts/:id/edit', function (req, res) {
 // show
 router.get('/workouts/:id', function (req, res) {
     Workout.findById(req.params.id, function (error, foundWorkout) {
-        res.render('workout-show.ejs', {
+        res.render('workout/show.ejs', {
             workout: foundWorkout
         });
     });

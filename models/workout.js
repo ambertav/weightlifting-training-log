@@ -24,7 +24,12 @@ const workoutSchema = new Schema ({
             required: true
         }, 
     }],
-    completed: false
+    createdBy: {
+        type: Schema.Types.ObjectId,
+        ref: 'User'
+    }
+}, {
+    timestamps: true
 });
 
 module.exports = mongoose.model('Workout', workoutSchema);

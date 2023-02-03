@@ -7,7 +7,13 @@ const movementSchema = new Schema ({
         required: true,
     },
     description: String,
-    musclesWorked: Array
+    musclesWorked: Array,
+    createdBy: {
+        type: Schema.Types.ObjectId,
+        ref: 'User'
+    }
+}, {
+    timestamps: true
 });
 
 module.exports = mongoose.model('Movement', movementSchema);
