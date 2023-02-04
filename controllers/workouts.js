@@ -32,6 +32,11 @@ router.delete('/workouts/:id', function (req, res) {
 
 // update
 router.put('/workouts/:id', function (req, res) {
+    if (!Array.isArray(req.body.exercise.name)) {
+        for (const [key, value] of Object.entries(req.body.exercise)) {
+            req.body.exercise[key] = [value];
+        }
+    }
     exercisesArray = [];
     for (i = 0; i < req.body.exercise.name.length; i++) {
         let exercise = {
@@ -50,6 +55,11 @@ router.put('/workouts/:id', function (req, res) {
 
 // create
 router.post('/workouts', function (req, res) {
+    if (!Array.isArray(req.body.exercise.name)) {
+        for (const [key, value] of Object.entries(req.body.exercise)) {
+            req.body.exercise[key] = [value];
+        }
+    }
     exercisesArray = [];
     for (i = 0; i < req.body.exercise.name.length; i++) {
         let exercise = {
