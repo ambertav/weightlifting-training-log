@@ -1,68 +1,74 @@
 <!DOCTYPE html>
 <html lang="en">
 
-<%- include('./partials/head'); %> 
-<%- include('./partials/nav'); %> 
+<%- include('../partials/head'); %>
+<%- include('../partials/nav'); %>
 
 <body>
-    <h1>Add a New Workout</h1>
-    <form action="/workouts" method="POST">
-        <Label>
-            Select Day:
-            <select name="day" required>
-                <option value="Sunday">Sunday</option>
-                <option value="Monday">Monday</option>
-                <option value="Tuesday">Tuesday</option>
-                <option value="Wednesday">Wednesday</option>
-                <option value="Thursday">Thursday</option>
-                <option value="Friday">Friday</option>
-                <option value="Saturday">Saturday</option>
-            </select>
-        </Label>
-        <label>
-            Select Movement
-            <select name="exercise[name]" required>
-                <% movements.forEach(function (movement) { %>
-                    <option value="<%= movement.name %>"><%= movement.name %></option>
-                <% }); %>
-            </select>
-        </label>
-        <label>
-            Weight
-            <input type="number" name="exercise[weight]" min="0" required>
-        </label>
-        <label>
-            Sets
-            <input type="number" name="exercise[sets]" min="1" required>
-        </label>
-        <label>
-            Repetitions per Set
-            <input type="number" name="exercise[reps]" min="1" required>
-        </label>
-        <label>
-            Select Movement
-            <select name="exercise[name]" required>
-                <% movements.forEach(function (movement) { %>
-                    <option value="<%= movement.name %>"><%= movement.name %></option>
-                <% }); %>
-            </select>
-        </label>
-        <label>
-            Weight
-            <input type="number" name="exercise[weight]" min="0" required>
-        </label>
-        <label>
-            Sets
-            <input type="number" name="exercise[sets]" min="1" required>
-        </label>
-        <label>
-            Repetitions per Set
-            <input type="number" name="exercise[reps]" min="1" required>
-        </label>
-        <input type="submit" value="Add Workout">
-    </form>
+    <h2>Add a New Workout</h2>
+    <div class="container-fluid">
+        <form action="/workouts" method="POST">
+            <div class="row md-5">
+                <Label>
+                    Select Day:
+                    <select name="day" class="form-select form-select-lg" size="4" required>
+                        <option value="Sunday">Sunday</option>
+                        <option value="Monday">Monday</option>
+                        <option value="Tuesday">Tuesday</option>
+                        <option value="Wednesday">Wednesday</option>
+                        <option value="Thursday">Thursday</option>
+                        <option value="Friday">Friday</option>
+                        <option value="Saturday">Saturday</option>
+                    </select>
+                </Label>
+            </div>
+            <h4>Exercise Details</h4>
+            <div class="inputParent">
+                <div class="inputChild">
+                    <div class="index">
+                        <label>
+                            Select Movement
+                            <select name="exercise[name]" class="form-select" size="6" required>
+                                <% movements.forEach(function (movement) { %>
+                                <option value="<%= movement.name %>"><%= movement.name %></option>
+                                <% }); %>
+                            </select>
+                        </label>
+                        <div class="right">
+                            <div class="form-floating">
+                                <input type="number" name="exercise[weight]" min="0" required class="form-control"
+                                    id="weight">
+                                <label for="weight">Weight</label>
+                            </div>
+                            <div class="form-floating">
+                                <input type="number" name="exercise[sets]" min="1" required class="form-control"
+                                    id="sets">
+                                <label for="sets">Sets</label>
+                            </div>
+                            <div class="form-floating">
+                                <input type="number" name="exercise[reps]" min="1" required class="form-control"
+                                    id="reps">
+                                <label for="reps">Repetitions per Set</label>
+                            </div>
+                            <br>
+                            <p class="btn btn-outline-danger btn-sm delete">Delete Exercise</p>
+                        </div>
+                    </div>
+                    <br>
+                </div>
+            </div>
+            <div class="mb-3 right">
+                <p class="btn btn-outline-success btn-sm add">Add Another Exercise</p>
+            </div>
+            <br>
+            <div class="center mb-5">
+                <input type="submit" value="Add Workout" class="btn btn-outline-secondary btn-lg mb-3">
+            </div>
+        </form>
+    </div>
 
-    <%- include('./partials/footer'); %> 
-    
+    <%- include('../partials/footer'); %>
+
 </body>
+
 </html>

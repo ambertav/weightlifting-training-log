@@ -6,22 +6,26 @@
 <%- include('./partials/nav'); %> 
 
 <body>
-    <h1>Sign Up</h1>
-    <form class="submit" action="/signup" method="POST">
-        <label>
-            First Name:
-            <input type="text" name="firstName" required>
-        </label>
-        <label>
-            Email:
-            <input type="email" name="email" required>
-        </label>
-        <label>
-            Password:
-            <input type="password" name="password" id="password" required>
-        </label>
-        <input type="submit" value="Sign Up">
+    <h2>Sign Up</h2>
+    <div class="container-fluid center">
+        <form class="form" action="/signup" method="POST" autocomplete="off">
+        <div class="mb-3 form-floating">
+            <input type="text" name="firstName" class="form-control" id="firstName"required>
+                <label for="firstName">First Name</label>
+        </div>
+        <div class="mb-3 form-floating">
+            <input type="email" name="email" class="form-control" id="email" required>
+            <label for="email">Email address</label>
+        </div>
+        <div class="mb-3 form-floating">
+                <input type="password" name="password" class="form-control" id="password" required>
+                <label for="password">Password</label>
+        </div>
+        <div class="mb-3 center">
+            <input type="submit" value="Sign Up" class="btn btn-outline-secondary btn-lg">
+        </div>
     </form>
+    </div>
 
     <%- include('./partials/footer'); %> 
 
