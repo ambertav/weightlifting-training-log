@@ -1,25 +1,25 @@
 <!DOCTYPE html>
 <html lang="en">
 
-<%- include('../partials/head'); %> 
-<%- include('../partials/nav'); %> 
+<%- include('../partials/head'); %>
+<%- include('../partials/nav'); %>
 
 <body>
     <h2><%= workout.day %></h2>
     <div class="container">
         <div class="index">
             <% for (i = 0; i < workout.exercise.length; i++) { %>
-                <div class="exercise">
-                    <h3><%= workout.exercise[i].name %></h3>
-                    <p>Weight: <%= workout.exercise[i].weight %></p>
-                    <p>Sets: <%= workout.exercise[i].sets %></p>
-                    <p>Repetitions pet Set: <%= workout.exercise[i].reps %></p>
-                    <div class="form-check form-switch">
-                        <input type="checkbox" name="complete" role="switch" class="form-check-input complete">
-                        <label for="switch" class="form-check-label">Complete</label>
-                    </div>
+            <div class="exercise">
+                <h3><%= workout.exercise[i].name %></h3>
+                <p>Weight: <%= workout.exercise[i].weight %></p>
+                <p>Sets: <%= workout.exercise[i].sets %></p>
+                <p>Repetitions pet Set: <%= workout.exercise[i].reps %></p>
+                <div class="form-check form-switch">
+                    <input type="checkbox" name="complete" role="switch" class="form-check-input complete">
+                    <label for="switch" class="form-check-label">Complete</label>
                 </div>
-                <% } %> 
+            </div>
+            <% } %>
         </div>
         <br>
         <br>
@@ -29,12 +29,13 @@
         <br>
         <br>
         <div class="center">
-                <a href="/workouts" class="btn btn-outline-secondary mb-3">Back to Workouts</a>
+            <a href="/workouts" class="btn btn-outline-secondary mb-3">Back to Workouts</a>
         </div>
 
-        
+
     </div>
-    <%- include('../partials/footer'); %> 
-        
+    <%- include('../partials/footer'); %>
+
 </body>
+
 </html>

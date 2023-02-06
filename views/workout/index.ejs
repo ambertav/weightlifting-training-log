@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 
-<%- include('../partials/head'); %> 
-<%- include('../partials/nav'); %> 
+<%- include('../partials/head'); %>
+<%- include('../partials/nav'); %>
 
 <body>
     <h2>Workout Index</h2>
@@ -10,41 +10,43 @@
         <% if (workouts.length > 0) { %>
         <ul class="index">
             <% workouts.forEach(function (workout, index) { %>
-                <div class="card">
-                    <a href="workouts/<%= workout._id %>">
-                        <h4>
-                            <%= workout.day %>
-                        </h4>
-                    </a>
-                    <li class="card-body center">
-                            <% for (i = 0; i < workout.exercise.length; i ++) { %>
-                                <%= workout.exercise[i].name %>
-                                <br>
-                            <% } %> 
-                    </li>
+            <div class="card">
+                <a href="workouts/<%= workout._id %>">
+                    <h4>
+                        <%= workout.day %>
+                    </h4>
                 </a>
-                        <div class="card-footer">
-                                <p>
-                                    <a href="/workouts/<%=workout._id %>/edit" class="btn btn-outline-warning btn-sm">Edit workout</a>
-                                    <form action="/workouts/<%= workout._id %>?_method=DELETE" method="POST">
-                                        <input type="submit" value="Delete Workout" class="btn btn-outline-danger btn-sm ">
-                                    </form>
-                                </p>
-                        </div>
+                <li class="card-body center">
+                    <% for (i = 0; i < workout.exercise.length; i ++) { %>
+                    <%= workout.exercise[i].name %>
+                    <br>
+                    <% } %>
+                </li>
+                </a>
+                <div class="card-footer">
+                    <p>
+                        <a href="/workouts/<%=workout._id %>/edit" class="btn btn-outline-warning btn-sm">Edit
+                            workout</a>
+                        <form action="/workouts/<%= workout._id %>?_method=DELETE" method="POST">
+                            <input type="submit" value="Delete Workout" class="btn btn-outline-danger btn-sm ">
+                        </form>
+                    </p>
+                </div>
             </div>
-            <% }); %> 
+            <% }); %>
         </ul>
-        <div class="right mb-3">
-            <a href="/workouts/new" class="btn btn-outline-secondary btn-lg mb-3">Add a New Workout</a>
+        <div class="right mb-5">
+            <a href="/workouts/new" class="btn btn-outline-secondary btn-lg mb-5">Add a New Workout</a>
         </div>
         <% } else { %>
         <div class="center mb-5">
-                <a href="/workouts/new" class="btn btn-outline-secondary btn-lg">Click here to get started</a>
+            <a href="/workouts/new" class="btn btn-outline-secondary btn-lg">Click here to get started</a>
             <% } %>
         </div>
-</div>
+    </div>
 
-    <%- include('../partials/footer'); %> 
-    
+    <%- include('../partials/footer'); %>
+
 </body>
+
 </html>

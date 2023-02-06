@@ -1,11 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const User = require('../models/user');
-const Movement = require('../models/movement');
 const bcrypt = require('bcrypt');
-const seedMovements = require('../data');
-
-let match = '';
 
 // sign up form
 router.get('/signup', function (req, res) {
@@ -30,15 +26,15 @@ router.get('/login', function (req, res) {
 // handle form submission
 router.post('/login', function (req, res) {
     User.findOne({
-        email: req.body.email
-    },
-    function (error, foundUser) {
-        if (!foundUser) return res.redirect('/login');
-        const isMatched = bcrypt.compareSync(req.body.password, foundUser.password);
-        if (!isMatched) return res.redirect('/login');
-        req.session.userId = foundUser._id;
-        res.redirect('/workouts');
-    });
+            email: req.body.email
+        },
+        function (error, foundUser) {
+            if (!foundUser) return res.redirect('/login');
+            const isMatched = bcrypt.compareSync(req.body.password, foundUser.password);
+            if (!isMatched) return res.redirect('/login');
+            req.session.userId = foundUser._id;
+            res.redirect('/workouts');
+        });
 });
 
 // logout

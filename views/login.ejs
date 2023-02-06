@@ -2,8 +2,8 @@
 <html lang="en">
 
 <%- include('./partials/head'); %>
+<%- include('./partials/nav'); %>
 
-<%- include('./partials/nav'); %> 
 <body>
     <h2>Please Login</h2>
     <div class="container-fluid center">
@@ -13,8 +13,8 @@
                 <label for="email">Email address</label>
             </div>
             <div class="mb-3 form-floating">
-                    <input type="password" name="password" class="form-control" id="password" required>
-                    <label for="password">Password</label>
+                <input type="password" name="password" class="form-control" id="password" required>
+                <label for="password">Password</label>
             </div>
             <div class="mb-3 center">
                 <input type="submit" value="Login" class="btn btn-outline-secondary btn-lg">
@@ -22,7 +22,8 @@
         </form>
     </div>
 
-    <%- include('./partials/footer'); %> 
+    <%- include('./partials/footer'); %>
 
 </body>
+
 </html>

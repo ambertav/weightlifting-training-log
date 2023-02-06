@@ -3,25 +3,42 @@
     <%- include('./partials/head'); %> 
     <%- include('./partials/nav'); %> 
 <body>
-    <h1>WELCOME</h1>
 
-    <div>
-        <h3>Please Login</h3>
-        <form action="/login" method="POST" autocomplete="off">
-            <label>
-                Email:
-                <input type="email" name="email" required>
-            </label>
-            <label>
-                Password:
-                <input type="password" name="password" required>
-            </label>
-            <input type="submit" value="Login">
-        </form>
-        <p>Don't have an account? <a href="/signup">Sign up now</a></p>
-    </div>
+    <div class="container index welcome-index">
 
-    <%- include('./partials/footer'); %> 
+        <div class="jumbotron">
+            <h1 class="display-4">Hello, Welcome to the Weightlifting Training Log App!</h1>
+            <p class="lead">
+                An app that allows you to plan and track your weighlifting workouts for the week
+            </p>
+            <hr class="my-4">
+            <p>
+                Use the default movements to add to your weightlifting workouts, or create your own!
+            </p>
+            <p class="lead">
+              <a class="btn btn-outline-success btn-sm" href="https://github.com/ambertav/workout-tracker" target="_blank" role="button">Learn more on GitHub</a>
+            </p>
+          </div>
+          <div class="index">
+              <h2>Please Login</h2>
+              <form action="/login" method="POST" autocomplete="off" class="welcome-form">
+                  <div class="mb-3 form-floating">
+                      <input type="email" name="email" class="form-control" id="email" required>
+                      <label for="email">Email address</label>
+                  </div>
+                  <div class="mb-3 form-floating">
+                          <input type="password" name="password" class="form-control" id="password" required>
+                          <label for="password">Password</label>
+                  </div>
+                  <div class="mb-3 center">
+                      <input type="submit" value="Login" class="btn btn-outline-secondary btn-lg">
+                  </div>
+              </form>
+              <p>Don't have an account? <a href="/signup" class="btn btn-outline-secondary btn-sm">Sign up now</a></p>
+          </div>
+        </div>
+        
+        <%- include('./partials/footer'); %> 
 
 </body>
 </html>

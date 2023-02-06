@@ -8,7 +8,7 @@ $(document).ready(function () {
 
     let completedWorkouts = 0;
     let workoutsTotal = $complete.length;
-    
+
     $(document).on('click', $delete, deleteExercise);
     $add.on('click', addExercise);
     $complete.on('change', updateProgress);
@@ -23,11 +23,10 @@ $(document).ready(function () {
 
     function deleteExercise(evt) {
         if (evt.target.tagName !== 'P') return;
-        console.log('hi');
         $(evt.target).closest($('.inputChild')).remove();
     }
 
-    function updateProgress (evt) {
+    function updateProgress(evt) {
         if ($(evt.target).is(':checked')) {
             completedWorkouts += 1;
             let percentComplete = Math.floor((completedWorkouts / workoutsTotal) * 100);

@@ -7,12 +7,12 @@ body {
     height: 100%;
 }
 
-nav > ul {
+nav>ul {
     display: flex;
     justify-content: right;
 }
 
-nav > ul > li {
+nav>ul>li {
     padding: 20px;
     font-size: 20px;
 }
@@ -32,7 +32,7 @@ select {
     padding-inline-start: 50%;
 }
 
-div > button {
+div>button {
     margin-bottom: 50px;
     margin-top: 20px;
 }
@@ -44,6 +44,17 @@ a {
 
 p {
     font-size: 18px;
+}
+
+footer {
+    position: relative;
+    bottom: 0;
+    width: 100%;
+    background-color: #E37383;
+    padding: 20px;
+    color: white;
+    font-weight: 400;
+    font-size: 20px;
 }
 
 .form {
@@ -128,22 +139,14 @@ p {
 
 .container-fluid {
     overflow: scroll;
- }
+}
 
- .muscles {
+.muscles {
     font-size: 14px;
     padding: 3px;
     font-style: italic;
- }
+}
 
 #description {
     height: 80px;
-}
-
-footer {
-    position: relative;
-    bottom: 0;
-    width: 100%;
-    background-color: #E37383;
-    padding: 20px;
 }
