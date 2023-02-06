@@ -3,9 +3,15 @@ $(document).ready(function () {
     const $inputChild = $('.inputChild');
     const $add = $('.add');
     let $delete = $('.delete');
+    const $complete = $('.complete');
+    const $progress = $('.progress-bar');
 
+    let completedWorkouts = 0;
+    let workoutsTotal = $complete.length;
+    
     $(document).on('click', $delete, deleteExercise);
     $add.on('click', addExercise);
+    $complete.on('change', updateProgress);
 
     function addExercise(evt) {
         if (evt.target.tagName !== 'P') return;
@@ -19,5 +25,17 @@ $(document).ready(function () {
         if (evt.target.tagName !== 'P') return;
         console.log('hi');
         $(evt.target).closest($('.inputChild')).remove();
+    }
+
+    function updateProgress (evt) {
+        if ($(evt.target).is(':checked')) {
+            completedWorkouts += 1;
+            let percentComplete = Math.floor((completedWorkouts / workoutsTotal) * 100);
+            $progress.css('width', `${percentComplete}%`);
+        } else {
+            completedWorkouts -= 1;
+            let percentComplete = Math.floor((completedWorkouts / workoutsTotal) * 100);
+            $progress.css('width', `${percentComplete}%`);
+        }
     }
 });
