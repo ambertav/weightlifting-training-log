@@ -18,11 +18,6 @@ router.post('/signup', function (req, res) {
     req.body.password = hashedPassword;
     User.create(req.body, function (error, newUser) {
         req.session.userId = newUser._id;
-        seedMovements.forEach(function (seedM) {
-            seedM.createdBy = req.session.userId;
-        });
-        Movement.create(seedMovements, function (error, movements) {
-        });
         res.redirect('/workouts');
     });
 });

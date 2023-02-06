@@ -2,6 +2,8 @@ const express = require('express');
 const router = express.Router();
 const Workout = require('../models/workout');
 const Movement = require('../models/movement');
+require('dotenv').config();
+const ADMINID = process.env.ADMINID;
 
 let exercisesArray = [];
 
@@ -16,7 +18,7 @@ router.get('/workouts', function (req, res) {
 
 // new
 router.get('/workouts/new', function (req, res) {
-    Movement.find({createdBy: req.session.userId}, function (error, allMovements) {
+    Movement.find({createdBy: {$in: [req.session.userId, null]}}, function (error, allMovements) {
         res.render('workout/new.ejs', {
             movements: allMovements
         });
@@ -32,7 +34,7 @@ router.delete('/workouts/:id', function (req, res) {
 
 // update
 router.put('/workouts/:id', function (req, res) {
-    if (!Array.isArray(req.body.exercise.name)) {
+        if (!Array.isArray(req.body.exercise.name)) {
         for (const [key, value] of Object.entries(req.body.exercise)) {
             req.body.exercise[key] = [value];
         }
@@ -80,7 +82,7 @@ router.post('/workouts', function (req, res) {
 // edit
 router.get('/workouts/:id/edit', function (req, res) {
     Workout.findById({createdBy: req.session.userId, _id: req.params.id}, function (error, foundWorkout) {
-        Movement.find({createdBy: req.session.userId}, function (error, allMovements) {
+        Movement.find({createdBy: {$in: [req.session.userId, null]}}, function (error, allMovements) {
             res.render('workout/edit.ejs', {
                 workout: foundWorkout,
                 movements: allMovements
