@@ -41,7 +41,7 @@ A full CRUD web application built via a MEN stack, that allows users to plan and
 - Venture to the movements page to add your own movement options
 - Start creating workouts with the default and/or added movements 
 
-**[Click here](https://weightlifting-log.herokuapp.com/){:target="_blank"} to see the deployed application**
+**[Click here](https://weightlifting-log.herokuapp.com/) to see the deployed application**
 
 
 ### Future Enhancements
