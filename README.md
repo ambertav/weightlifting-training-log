@@ -1,7 +1,7 @@
 
 # Weightlifting Training Log
 
-A CRUD web application built via a MEN stack, that allows users to plan and track weightlifting workouts for the week.
+A full CRUD web application built via a MEN stack, that allows users to plan and track olympic weightlifting workouts for the week.
 
 ## Technologies Used
 
@@ -9,6 +9,7 @@ A CRUD web application built via a MEN stack, that allows users to plan and trac
 - Express.js
 - MongoDB
 - Mongoose
+- Heroku
 - HTML5
 - CSS3
 - JavaScript
