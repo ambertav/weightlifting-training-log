@@ -12,6 +12,17 @@ $(document).ready(function () {
     $(document).on('click', $delete, deleteExercise);
     $add.on('click', addExercise);
     $complete.on('change', updateProgress);
+    $('#password, #confirmation').on('keyup', confirmPassword);
+
+    function confirmPassword (evt) {
+        if ($('#password').val().length === 0) return;
+        if ($('#password').val() === $('#confirmation').val()) {
+            $('#signupSubmit').removeAttr('disabled');
+        } else {
+            $('#signupSubmit').attr('disabled', true);
+            $('#message').html('Passwords do not match').css('color', 'red');
+        }
+    }
 
     function addExercise(evt) {
         if (evt.target.tagName !== 'P') return;

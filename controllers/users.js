@@ -5,11 +5,20 @@ const bcrypt = require('bcrypt');
 
 // sign up form
 router.get('/signup', function (req, res) {
-    res.render('signup.ejs');
+    res.render('signup.ejs', {
+        error: null
+    });
 });
 
 // handle form submission
 router.post('/signup', function (req, res) {
+    let error = null;
+    if (req.body.password !== req.body.passwordConfirmation) {
+        error = 'password and password confirmation do not match';
+        return res.render('signup.ejs', {
+            error
+        });
+    }
     const hashedPassword = bcrypt.hashSync(req.body.password, 10);
     req.body.password = hashedPassword;
     User.create(req.body, function (error, newUser) {

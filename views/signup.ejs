@@ -20,8 +20,13 @@
                 <input type="password" name="password" class="form-control" id="password" required>
                 <label for="password">Password</label>
             </div>
+            <div class="mb-3 form-floating">
+                <input type="password" name="passwordConfirmation" class="form-control red" id="confirmation" required>
+                <label for="confirmation">Confirm Password</label>
+                <span id="message"></span>
+            </div>
             <div class="mb-3 center">
-                <input type="submit" value="Sign Up" class="btn btn-outline-secondary btn-lg">
+                <input type="submit" value="Sign Up" id="signupSubmit" class="btn btn-outline-secondary btn-lg" disabled>
             </div>
         </form>
     </div>
