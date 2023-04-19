@@ -29,18 +29,29 @@ router.post('/signup', function (req, res) {
 
 // login form
 router.get('/login', function (req, res) {
-    res.render('login.ejs');
+    res.render('login.ejs', {
+        error: null
+    });
 });
 
 // handle form submission
 router.post('/login', function (req, res) {
+    let errorMessage = 'Invalid email or password, please try again.'
     User.findOne({
             email: req.body.email
         },
         function (error, foundUser) {
-            if (!foundUser) return res.redirect('/login');
+            if (!foundUser) {
+                return res.render('login.ejs', {
+                    error: errorMessage
+                });
+            }
             const isMatched = bcrypt.compareSync(req.body.password, foundUser.password);
-            if (!isMatched) return res.redirect('/login');
+            if (!isMatched) {
+                return res.render('login.ejs', {
+                    error: errorMessage
+                });
+            }
             req.session.userId = foundUser._id;
             res.redirect('/workouts');
         });

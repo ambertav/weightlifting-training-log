@@ -14,16 +14,6 @@ $(document).ready(function () {
     $complete.on('change', updateProgress);
     $('#password, #confirmation').on('keyup', confirmPassword);
 
-    function confirmPassword (evt) {
-        if ($('#password').val().length === 0) return;
-        if ($('#password').val() === $('#confirmation').val()) {
-            $('#signupSubmit').removeAttr('disabled');
-        } else {
-            $('#signupSubmit').attr('disabled', true);
-            $('#message').html('Passwords do not match').css('color', 'red');
-        }
-    }
-
     function addExercise(evt) {
         if (evt.target.tagName !== 'P') return;
         let $clone = $($inputChild.eq($inputChild.length - 1).clone());
@@ -46,6 +36,19 @@ $(document).ready(function () {
             completedWorkouts -= 1;
             let percentComplete = Math.floor((completedWorkouts / workoutsTotal) * 100);
             $progress.css('width', `${percentComplete}%`);
+        }
+    }
+
+    function confirmPassword() {
+        if ($('#password').val().length === 0) return;
+        if ($('#password').val() === $('#confirmation').val()) {
+            $('#signupSubmit').removeAttr('disabled');
+            $('#message').text('');
+        } else {
+            $('#signupSubmit').attr('disabled', true);
+            if ($('#confirmation').val().length > 0) {
+                $('#message').text('Passwords do not match').css('color', 'red');
+            }
         }
     }
 });

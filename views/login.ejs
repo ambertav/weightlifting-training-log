@@ -16,6 +16,12 @@
                 <input type="password" name="password" class="form-control" id="password" required>
                 <label for="password">Password</label>
             </div>
+            <div class="center">
+                <% if (error) { %>
+                    <span style="color: red;"><%= error %></span>
+                <% } %>
+            </div>
+            <br>
             <div class="mb-3 center">
                 <input type="submit" value="Login" class="btn btn-outline-secondary btn-lg">
             </div>
