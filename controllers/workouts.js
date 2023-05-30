@@ -10,7 +10,6 @@ router.get('/workouts', function (req, res) {
     Workout.find({createdBy: req.session.userId})
     .populate('exercise.movement')
     .exec(function (error, allWorkouts) {
-        console.log(allWorkouts);
         res.render('workout/index.ejs', {
             workouts: allWorkouts
         });
@@ -19,11 +18,9 @@ router.get('/workouts', function (req, res) {
 
 // new
 router.get('/workouts/new', function (req, res) {
-    Movement.find({
-        createdBy: {
-            $in: [req.session.userId, null]
-        }
-    }, function (error, allMovements) {
+    Movement.find({createdBy: {$in: [req.session.userId, null]}})
+    .populate('exercise.movement')
+    .exec(function (error, allMovements) {
         res.render('workout/new.ejs', {
             movements: allMovements
         });
@@ -100,7 +97,9 @@ router.get('/workouts/:id/edit', function (req, res) {
     Workout.findById({
         createdBy: req.session.userId,
         _id: req.params.id
-    }, function (error, foundWorkout) {
+    })
+    .populate('exercise.movement')
+    .exec(function (error, foundWorkout) {
         Movement.find({
             createdBy: {
                 $in: [req.session.userId, null]
