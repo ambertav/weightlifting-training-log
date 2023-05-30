@@ -17,7 +17,8 @@
                     id="description"><%= movement.description %></textarea>
                 <label for="description">Description</label>
             </div>
-            <div class="check-grid">
+            <p>Muscles Worked:</p>
+            <div class="check-grid mb-5">
                 <% muscleGroups.forEach(function (muscle) { %>
                 <div class="form-check">
                     <input type="checkbox" name="musclesWorked[<%= muscle %>]" class="form-check-input"
@@ -28,6 +29,19 @@
                     </label>
                 </div>
                 <% }); %>
+            </div>
+            <p>Cardio and/or Weighted?</p>
+            <div class="mb-3">
+                <div class="form-check">
+                    <input type="checkbox" name="isCardio" class="form-check-input"
+                    <%= movement.isCardio ? 'checked' : '' %>>
+                    <label for="isCardio">Cardio</label>
+                </div>
+                <div class="form-check">
+                    <input type="checkbox" name="isWeighted" class="form-check-input"
+                    <%= movement.isWeighted ? 'checked' : '' %>>
+                    <label for="isWeighted">Weighted</label>
+                </div>
             </div>
             <br>
             <br>
