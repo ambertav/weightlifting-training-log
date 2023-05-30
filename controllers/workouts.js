@@ -53,6 +53,8 @@ router.put('/workouts/:id', function (req, res) {
             weight: req.body.exercise.weight[i],
             sets: req.body.exercise.sets[i],
             reps: req.body.exercise.reps[i],
+            minutes: req.body.exercise.minutes[i],
+            caloriesBurned: req.body.exercise.caloriesBurned[i],
         };
         exercisesArray.push(exercise);
     }
@@ -79,6 +81,8 @@ router.post('/workouts', function (req, res) {
             weight: req.body.exercise.weight[i],
             sets: req.body.exercise.sets[i],
             reps: req.body.exercise.reps[i],
+            minutes: req.body.exercise.minutes[i],
+            caloriesBurned: req.body.exercise.caloriesBurned[i],
         };
         exercisesArray.push(exercise);
     }
