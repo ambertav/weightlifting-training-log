@@ -7,7 +7,10 @@ const workoutSchema = new Schema({
         required: true
     },
     exercise: [{
-        name: String,
+        movement: {
+            type: Schema.Types.ObjectId,
+            ref: 'Movement',
+        },
         weight: {
             type: Number,
             min: 0,
