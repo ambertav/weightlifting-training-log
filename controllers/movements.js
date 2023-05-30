@@ -46,6 +46,8 @@ router.put('/movements/:id', function (req, res) {
         });
     }
     req.body.musclesWorked = muscleArray;
+    req.body.isCardio = req.body.isCardio === 'on' ? true : false;
+    req.body.isWeighted = req.body.isWeighted === 'on' ? true : false;
     Movement.findOneAndUpdate({
         createdBy: req.session.userId,
         _id: req.params.id
@@ -67,8 +69,8 @@ router.post('/movements', function (req, res) {
         });
     }
     req.body.musclesWorked = muscleArray;
-    req.body.isCardio = req.body.isCardio === 'on' ? true : false
-    req.body.isWeighted = req.body.isWeighted === 'on' ? true : false
+    req.body.isCardio = req.body.isCardio === 'on' ? true : false;
+    req.body.isWeighted = req.body.isWeighted === 'on' ? true : false;
     req.body.createdBy = req.session.userId;
     Movement.create(req.body, function (error, createdMovement) {
         res.redirect('/movements');
