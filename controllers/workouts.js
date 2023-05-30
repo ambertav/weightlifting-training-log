@@ -7,9 +7,10 @@ let exercisesArray = [];
 
 // index
 router.get('/workouts', function (req, res) {
-    Workout.find({
-        createdBy: req.session.userId
-    }, function (error, allWorkouts) {
+    Workout.find({createdBy: req.session.userId})
+    .populate('exercise.movement')
+    .exec(function (error, allWorkouts) {
+        console.log(allWorkouts);
         res.render('workout/index.ejs', {
             workouts: allWorkouts
         });
@@ -41,15 +42,15 @@ router.delete('/workouts/:id', function (req, res) {
 
 // update
 router.put('/workouts/:id', function (req, res) {
-    if (!Array.isArray(req.body.exercise.name)) {
+    if (!Array.isArray(req.body.exercise.movement)) {
         for (const [key, value] of Object.entries(req.body.exercise)) {
             req.body.exercise[key] = [value];
         }
     }
     exercisesArray = [];
-    for (i = 0; i < req.body.exercise.name.length; i++) {
+    for (i = 0; i < req.body.exercise.movement.length; i++) {
         let exercise = {
-            name: req.body.exercise.name[i],
+            movement: req.body.exercise.movement[i],
             weight: req.body.exercise.weight[i],
             sets: req.body.exercise.sets[i],
             reps: req.body.exercise.reps[i],
@@ -69,15 +70,16 @@ router.put('/workouts/:id', function (req, res) {
 
 // create
 router.post('/workouts', function (req, res) {
-    if (!Array.isArray(req.body.exercise.name)) {
+    console.log(req.body);
+    if (!Array.isArray(req.body.exercise.movement)) {
         for (const [key, value] of Object.entries(req.body.exercise)) {
             req.body.exercise[key] = [value];
         }
     }
     exercisesArray = [];
-    for (i = 0; i < req.body.exercise.name.length; i++) {
+    for (i = 0; i < req.body.exercise.movement.length; i++) {
         let exercise = {
-            name: req.body.exercise.name[i],
+            movement: req.body.exercise.movement[i],
             weight: req.body.exercise.weight[i],
             sets: req.body.exercise.sets[i],
             reps: req.body.exercise.reps[i],
@@ -114,7 +116,9 @@ router.get('/workouts/:id/edit', function (req, res) {
 
 // show
 router.get('/workouts/:id', function (req, res) {
-    Workout.findById(req.params.id, function (error, foundWorkout) {
+    Workout.findById(req.params.id)
+    .populate('exercise.movement')
+    .exec(function (error, foundWorkout) {
         res.render('workout/show.ejs', {
             workout: foundWorkout
         });
