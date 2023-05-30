@@ -8,6 +8,8 @@ const movementSchema = new Schema({
     },
     description: String,
     musclesWorked: Array,
+    isCardio: Boolean,
+    isWeighted: Boolean,
     createdBy: {
         type: Schema.Types.ObjectId,
         ref: 'User',
