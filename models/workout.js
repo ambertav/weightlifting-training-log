@@ -11,19 +11,30 @@ const workoutSchema = new Schema({
         weight: {
             type: Number,
             min: 0,
-            required: true
         },
         sets: {
             type: Number,
             min: 1,
-            required: true
         },
         reps: {
             type: Number,
             min: 1,
-            required: true
+        },
+        minutes: {
+            type: Number,
+            min: 1
+        },
+        caloriesBurned: {
+            type: Number,
+            min: 1
         },
     }],
+    completed: {
+        type: Boolean,
+        default: false,
+        required: true
+    },
+    isfavorite: Boolean,
     createdBy: {
         type: Schema.Types.ObjectId,
         ref: 'User'
