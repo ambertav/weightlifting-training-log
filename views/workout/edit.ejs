@@ -41,19 +41,29 @@
                         </label>
                         <div class="right">
                             <div class="form-floating">
-                                <input type="number" name="exercise[weight]" min="0" required class="form-control"
+                                <input type="number" name="exercise[weight]" min="0"  class="form-control"
                                     id="weight" value="<%= workout.exercise[i].weight %>">
                                 <label for="weight">Weight</label>
                             </div>
                             <div class="form-floating">
-                                <input type="number" name="exercise[sets]" min="1" required class="form-control"
+                                <input type="number" name="exercise[sets]" min="1"  class="form-control"
                                     id="sets" value="<%= workout.exercise[i].sets %>">
                                 <label for="sets">Sets</label>
                             </div>
                             <div class="form-floating">
-                                <input type="number" name="exercise[reps]" min="1" required class="form-control"
+                                <input type="number" name="exercise[reps]" min="1"  class="form-control"
                                     id="reps" value="<%= workout.exercise[i].reps %>">
                                 <label for="reps">Repetitions per Set</label>
+                            </div>
+                            <div class="form-floating">
+                                <input type="number" name="exercise[minutes]" min="1" class="form-control"
+                                    id="minutes" value="<%= workout.exercise[i].minutes %>">
+                                <label for="reps">Minutes</label>
+                            </div>
+                            <div class="form-floating">
+                                <input type="number" name="exercise[caloriesBurned]" min="1" class="form-control"
+                                    id="calories" value="<%= workout.exercise[i].caloriesBurned %>">
+                                <label for="reps">Calories Burned</label>
                             </div>
                             <br>
                             <p class="btn btn-outline-danger btn-sm delete">Delete Exercise</p>
