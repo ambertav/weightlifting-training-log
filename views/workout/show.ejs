@@ -10,10 +10,16 @@
         <div class="index">
             <% for (i = 0; i < workout.exercise.length; i++) { %>
             <div class="exercise">
-                <h3><%= workout.exercise[i].name %></h3>
-                <p>Weight: <%= workout.exercise[i].weight %></p>
-                <p>Sets: <%= workout.exercise[i].sets %></p>
-                <p>Repetitions per Set: <%= workout.exercise[i].reps %></p>
+                <h3><%= workout.exercise[i].movement.name %></h3>
+                <% if (workout.exercise[i].movement.isWeighted) { %>
+                    <p>Weight: <%= workout.exercise[i].weight %></p>
+                    <p>Sets: <%= workout.exercise[i].sets %></p>
+                    <p>Repetitions per Set: <%= workout.exercise[i].reps %></p>
+                <% } %>
+                <% if (workout.exercise[i].movement.isCardio) { %>
+                    <p>Duration: <%= workout.exercise[i].minutes %> minutes</p>
+                    <p>Calories Burned: <%= workout.exercise[i].caloriesBurned %></p>
+                <% } %>
                 <div class="form-check form-switch">
                     <input type="checkbox" name="complete" role="switch" class="form-check-input complete">
                     <label for="switch" class="form-check-label">Complete</label>
