@@ -18,9 +18,11 @@ router.get('/workouts', function (req, res) {
 
 // new
 router.get('/workouts/new', function (req, res) {
-    Movement.find({createdBy: {$in: [req.session.userId, null]}})
-    .populate('exercise.movement')
-    .exec(function (error, allMovements) {
+    Movement.find({
+        createdBy: {
+            $in: [req.session.userId, null]
+        }
+    }, function (error, allMovements) {
         res.render('workout/new.ejs', {
             movements: allMovements
         });
@@ -67,7 +69,6 @@ router.put('/workouts/:id', function (req, res) {
 
 // create
 router.post('/workouts', function (req, res) {
-    console.log(req.body);
     if (!Array.isArray(req.body.exercise.movement)) {
         for (const [key, value] of Object.entries(req.body.exercise)) {
             req.body.exercise[key] = [value];
