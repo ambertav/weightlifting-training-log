@@ -57,6 +57,17 @@ router.post('/login', function (req, res) {
         });
 });
 
+// user profile
+router.get('/profile', function (req, res) {
+    User.findOne({
+        _id: req.session.userId
+    }, function (error, user) {
+        res.render('profile.ejs', {
+            user
+        });
+    });
+});
+
 // logout
 router.get('/logout', function (req, res) {
     req.session.destroy(function (error) {
