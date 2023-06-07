@@ -114,6 +114,22 @@ router.get('/workouts/:id/edit', function (req, res) {
     });
 });
 
+// toggle complete and favorite
+router.put('/workouts/:id/toggle', function (req, res) {
+    if (req.body.change === 'isComplete') {
+        Workout.findById({
+            createdBy: req.session.userId,
+            _id: req.body.id
+        }, function (error, workout) {
+            workout.isComplete = !workout.isComplete
+            workout.save();
+        });
+    }
+    if (req.body === 'favorite') {
+        console.log('favorite')
+    }
+})
+
 // show
 router.get('/workouts/:id', function (req, res) {
     Workout.findById(req.params.id)
