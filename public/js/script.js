@@ -1,4 +1,5 @@
 $(document).ready(function () {
+    const URL = 'http://localhost:3000/'
     const $inputParent = $('.inputParent');
     const $inputChild = $('.inputChild');
     const $add = $('.add');
@@ -14,7 +15,7 @@ $(document).ready(function () {
     $complete.on('change', updateProgress);
     $('#password, #confirmation').on('keyup', confirmPassword);
 
-    function addExercise(evt) {
+    function addExercise (evt) {
         if (evt.target.tagName !== 'P') return;
         let $clone = $($inputChild.eq($inputChild.length - 1).clone());
         $clone.find('.form-control').val('');
@@ -22,16 +23,21 @@ $(document).ready(function () {
         $clone.appendTo($inputParent);
     }
 
-    function deleteExercise(evt) {
+    function deleteExercise (evt) {
         if (evt.target.tagName !== 'P') return;
         $(evt.target).closest($('.inputChild')).remove();
     }
 
-    function updateProgress(evt) {
+    function updateProgress (evt) {
         if ($(evt.target).is(':checked')) {
             completedWorkouts += 1;
             let percentComplete = Math.floor((completedWorkouts / workoutsTotal) * 100);
             $progress.css('width', `${percentComplete}%`);
+            if (completedWorkouts === workoutsTotal) {
+                completeWorkout(`${evt.target.id}`);
+                $complete.off('change', updateProgress)
+                $complete.attr('disabled', true)
+            }
         } else {
             completedWorkouts -= 1;
             let percentComplete = Math.floor((completedWorkouts / workoutsTotal) * 100);
@@ -39,7 +45,7 @@ $(document).ready(function () {
         }
     }
 
-    function confirmPassword() {
+    function confirmPassword () {
         if ($('#password').val().length === 0) return;
         if ($('#password').val() === $('#confirmation').val()) {
             $('#signupSubmit').removeAttr('disabled');
@@ -50,5 +56,18 @@ $(document).ready(function () {
                 $('#message').text('Passwords do not match').css('color', 'red');
             }
         }
+    }
+
+    async function completeWorkout (id) {
+        await fetch(URL + 'workouts/' + id + '/toggle?_method=PUT', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'Application/json',
+            },
+            body: JSON.stringify({
+                'id': `${id}`,
+                'change': 'isComplete'
+            })
+        });
     }
 });

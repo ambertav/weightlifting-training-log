@@ -21,7 +21,7 @@
                     <p>Calories Burned: <%= workout.exercise[i].caloriesBurned %></p>
                 <% } %>
                 <div class="form-check form-switch">
-                    <input type="checkbox" name="complete" role="switch" class="form-check-input complete">
+                    <input type="checkbox" name="complete" role="switch" class="form-check-input complete" id="<%= workout._id %>">
                     <label for="switch" class="form-check-label">Complete</label>
                 </div>
             </div>
