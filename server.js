@@ -2,6 +2,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const methodOverride = require('method-override');
 const session = require('express-session');
+const bodyParser = require('body-parser');
 const movementsRouter = require('./controllers/movements');
 const usersRouter = require('./controllers/users');
 const workoutsRouter = require('./controllers/workouts');
@@ -28,6 +29,7 @@ db.on('error', function (error) {
 app.use(express.static('public'));
 app.use(express.urlencoded({ extended: true }));
 app.use(methodOverride('_method'));
+app.use(bodyParser.json());
 app.use(session({
     secret: process.env.SECRET,
     resave: false,
