@@ -21,7 +21,9 @@
                     <p>Calories Burned: <%= workout.exercise[i].caloriesBurned %></p>
                 <% } %>
                 <div class="form-check form-switch">
-                    <input type="checkbox" name="complete" role="switch" class="form-check-input complete" id="<%= workout._id %>">
+                    <input type="checkbox" name="complete" role="switch" class="form-check-input complete" id="<%= workout._id %>"
+                    <%= workout.isComplete ? 'disabled' : '' %> 
+                    <%= workout.isComplete ? 'checked' : '' %> >
                     <label for="switch" class="form-check-label">Complete</label>
                 </div>
             </div>
@@ -30,7 +32,7 @@
         <br>
         <br>
         <div class="progress" role="progressbar" aria-valuenow="0" aria-valuemax="100" aria-valuemin="0">
-            <div class="progress-bar progress-bar-striped bg-success" style="width: 0%"></div>
+            <div class="progress-bar progress-bar-striped bg-success" <%= workout.isComplete ? 'style=width:100%': 'style=width:0%' %> ></div>
         </div>
         <br>
         <br>
