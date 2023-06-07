@@ -32,12 +32,12 @@ const workoutSchema = new Schema({
             min: 1
         },
     }],
-    completed: {
+    isComplete: {
         type: Boolean,
         default: false,
         required: true
     },
-    isfavorite: Boolean,
+    isFavorite: Boolean,
     createdBy: {
         type: Schema.Types.ObjectId,
         ref: 'User'
