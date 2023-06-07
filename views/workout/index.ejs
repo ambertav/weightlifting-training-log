@@ -7,41 +7,50 @@
 <body>
     <h2>Workout Index</h2>
     <div class="container">
-        <% if (workouts.length > 0) { %>
         <ul class="index">
-            <% workouts.forEach(function (workout, index) { %>
-            <div class="card">
-                <a href="workouts/<%= workout._id %>">
-                    <h4>
-                        <%= workout.day %>
-                    </h4>
-                </a>
-                <li class="card-body center">
-                    <% for (i = 0; i < workout.exercise.length; i ++) { %>
-                    <%= workout.exercise[i].movement.name %>
-                    <br>
-                    <% } %>
-                </li>
-                </a>
-                <div class="card-footer">
-                    <p>
-                        <a href="/workouts/<%=workout._id %>/edit" class="btn btn-outline-warning btn-sm">Edit
-                            workout</a>
-                        <form action="/workouts/<%= workout._id %>?_method=DELETE" method="POST">
-                            <input type="submit" value="Delete Workout" class="btn btn-outline-danger btn-sm ">
-                        </form>
-                    </p>
+            <% displayWorkout(0); %>
+            <% function displayWorkout (workoutIndex) { %>
+                <% if (workouts.length === 0) { %>
+                        <div class="center mb-5">
+                            <a href="/workouts/new" class="btn btn-outline-secondary btn-lg">Click here to get started</a>
+                        </div>
+                        <% return; %>
+                <% } %>
+
+                <% if (workoutIndex === workouts.length) { %>
+                    <% return; %>
+                <% } %>
+
+                <% const workout = workouts[workoutIndex] %>
+
+                <div class="card m-3">
+                    <a href="workouts/<%= workout._id %>">
+                        <h4>
+                            <%= workout.day %>
+                        </h4>
+                    </a>
+                    <li class="card-body center">
+                        <% for (i = 0; i < workout.exercise.length; i ++) { %>
+                        <%= workout.exercise[i].movement.name %>
+                        <br>
+                        <% } %>
+                    </li>
+                    </a>
+                    <div class="card-footer">
+                        <p>
+                            <a href="/workouts/<%=workout._id %>/edit" class="btn btn-outline-warning btn-sm">Edit
+                                workout</a>
+                            <form action="/workouts/<%= workout._id %>?_method=DELETE" method="POST">
+                                <input type="submit" value="Delete Workout" class="btn btn-outline-danger btn-sm ">
+                            </form>
+                        </p>
+                    </div>
                 </div>
-            </div>
-            <% }); %>
+                <% displayWorkout(workoutIndex + 1) %>
+            <% } %>
         </ul>
         <div class="right mb-5">
             <a href="/workouts/new" class="btn btn-outline-secondary btn-lg mb-5">Add a New Workout</a>
-        </div>
-        <% } else { %>
-        <div class="center mb-5">
-            <a href="/workouts/new" class="btn btn-outline-secondary btn-lg">Click here to get started</a>
-            <% } %>
         </div>
     </div>
 
