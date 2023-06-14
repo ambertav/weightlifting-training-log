@@ -35,8 +35,9 @@ $(document).ready(function () {
             $progress.css('width', `${percentComplete}%`);
             if (completedWorkouts === workoutsTotal) {
                 completeWorkout(`${evt.target.id}`);
-                $complete.off('change', updateProgress)
-                $complete.attr('disabled', true)
+                $complete.off('change', updateProgress);
+                $complete.attr('disabled', true);
+                $('.progress').after($('<br><div>Congratulations, workout completed!</div>').addClass('center'));
             }
         } else {
             completedWorkouts -= 1;

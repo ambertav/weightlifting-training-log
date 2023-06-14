@@ -34,6 +34,10 @@
         <div class="progress" role="progressbar" aria-valuenow="0" aria-valuemax="100" aria-valuemin="0">
             <div class="progress-bar progress-bar-striped bg-success" <%= workout.isComplete ? 'style=width:100%': 'style=width:0%' %> ></div>
         </div>
+        <% if (workout.isComplete) { %>
+            <br>
+            <div class="center">Congratulations, workout completed!</div>
+        <% } %>
         <br>
         <br>
         <div class="center">
