@@ -28,6 +28,19 @@ db.on('error', function (error) {
     console.log(`is mongo not running? ${error.message}`);
 });
 
+const {
+    S3Client,
+    PutObjectCommand
+} = require('@aws-sdk/client-s3');
+
+const s3Config = {
+    accessKeyId: process.env.AWS_ACCESS_KEY,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+    region: process.env.AWS_REGION
+};
+
+const s3Client = new S3Client(s3Config);
+
 app.use(express.static('public'));
 app.use(express.urlencoded({ extended: true }));
 app.use(methodOverride('_method'));
