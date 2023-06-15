@@ -3,6 +3,8 @@ const mongoose = require('mongoose');
 const methodOverride = require('method-override');
 const session = require('express-session');
 const bodyParser = require('body-parser');
+const fileUpload = require('express-fileupload');
+
 const movementsRouter = require('./controllers/movements');
 const usersRouter = require('./controllers/users');
 const workoutsRouter = require('./controllers/workouts');
@@ -35,6 +37,7 @@ app.use(session({
     resave: false,
     saveUninitialized: false
 }));
+app.use(fileUpload());
 
 app.use(function (req, res, next) {
     if (req.session.userId) {
