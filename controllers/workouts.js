@@ -121,12 +121,20 @@ router.put('/workouts/:id/toggle', function (req, res) {
             createdBy: req.session.userId,
             _id: req.body.id
         }, function (error, workout) {
-            workout.isComplete = !workout.isComplete
+            workout.isComplete = !workout.isComplete;
             workout.save();
         });
     }
-    if (req.body === 'favorite') {
-        console.log('favorite')
+    if (req.body.change === 'isFavorite') {
+        Workout.findById({
+            createdBy: req.session.userId,
+            _id: req.body.id
+        }, function (error, workout) {
+            workout.isFavorite = !workout.isFavorite;
+            workout.save(function () {
+                res.redirect(`/workouts/${req.body.id}`);
+            });
+        });
     }
 })
 
