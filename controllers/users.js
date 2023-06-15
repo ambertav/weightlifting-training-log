@@ -58,10 +58,8 @@ router.post('/login', function (req, res) {
 });
 
 // user profile
-router.get('/profile', function (req, res) {
-    User.findOne({
-        _id: req.session.userId
-    }, function (error, user) {
+router.get('/users/me', function (req, res) {
+    User.findById(req.session.userId, function (error, user) {
         res.render('profile.ejs', {
             user
         });
