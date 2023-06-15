@@ -34,9 +34,11 @@ const {
 } = require('@aws-sdk/client-s3');
 
 const s3Config = {
-    accessKeyId: process.env.AWS_ACCESS_KEY,
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-    region: process.env.AWS_REGION
+    region: process.env.AWS_REGION,
+    credentials: {
+        accessKeyId: process.env.AWS_ACCESS_KEY,
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+    }
 };
 
 const s3Client = new S3Client(s3Config);
