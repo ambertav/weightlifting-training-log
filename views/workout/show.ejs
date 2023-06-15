@@ -5,7 +5,20 @@
 <%- include('../partials/nav'); %>
 
 <body>
-    <h2><%= workout.day %></h2>
+    <div>
+        <h2><%= workout.day %></h2>
+        <div class="right favorite">
+            <form action="/workouts/<%= workout._id %>/toggle/?_method=PUT" method="POST">
+                <input type="hidden" name="id" value="<%= workout._id %>">
+                <input type="hidden" name="change" value="isFavorite">
+                <% if (workout.isFavorite) { %>
+                    <input type="submit" value="Remove from favorites">
+                <% } else { %>
+                    <input type="submit" value="Add to favorites">
+                <% } %>
+                </form>
+        </div>
+    </div>
     <div class="container">
         <div class="index">
             <% for (i = 0; i < workout.exercise.length; i++) { %>
