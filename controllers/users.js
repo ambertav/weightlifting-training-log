@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const User = require('../models/user');
+const Workout = require('../models/workout');
 const bcrypt = require('bcrypt');
 
 require('dotenv').config();
@@ -78,8 +79,14 @@ router.post('/login', function (req, res) {
 // user profile
 router.get('/users/me', function (req, res) {
     User.findById(req.session.userId, function (error, user) {
-        res.render('profile.ejs', {
-            user
+        Workout.find({
+            createdBy: req.session.userId,
+            isFavorite: true
+        }, function (error, favWorkouts) {
+            res.render('profile.ejs', {
+                user,
+                favWorkouts
+            });
         });
     });
 });

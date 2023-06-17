@@ -21,6 +21,13 @@
         <h5>Friends list</h5>
         <h5>Add friends</h5>
         <h5>Favorite Workouts</h5>
+            <ul>
+                <% for (i = 0; i < favWorkouts.length; i++) { %>
+                    <li>
+                        <a href="/workouts/<%= favWorkouts[i]._id %>"><%= favWorkouts[i]._id %></a>
+                    </li>
+                <% } %>
+            </ul>
         <h5>Muscle distribution</h5>
             <p>Weekly</p>
             <p>Daily?</p>
