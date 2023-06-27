@@ -1,8 +1,8 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
-const workoutSchema = new Schema({
-    day: {
+const favoriteSchema = new Schema({
+    name: {
         type: String,
         required: true
     },
@@ -32,11 +32,6 @@ const workoutSchema = new Schema({
             min: 1
         },
     }],
-    isComplete: {
-        type: Boolean,
-        default: false,
-        required: true
-    },
     createdBy: {
         type: Schema.Types.ObjectId,
         ref: 'User'
@@ -45,4 +40,5 @@ const workoutSchema = new Schema({
     timestamps: true
 });
 
-module.exports = mongoose.model('Workout', workoutSchema);
+
+module.exports = mongoose.model('Favorite', favoriteSchema);
