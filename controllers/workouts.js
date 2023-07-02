@@ -115,7 +115,7 @@ router.get('/workouts/:id/edit', function (req, res) {
 });
 
 // toggle complete and favorite
-router.put('/workouts/:id/toggle', function (req, res) {
+router.put('/workouts/:id/complete', function (req, res) {
     if (req.body.change === 'isComplete') {
         Workout.findById({
             createdBy: req.session.userId,
@@ -123,17 +123,6 @@ router.put('/workouts/:id/toggle', function (req, res) {
         }, function (error, workout) {
             workout.isComplete = !workout.isComplete;
             workout.save();
-        });
-    }
-    if (req.body.change === 'isFavorite') {
-        Workout.findById({
-            createdBy: req.session.userId,
-            _id: req.body.id
-        }, function (error, workout) {
-            workout.isFavorite = !workout.isFavorite;
-            workout.save(function () {
-                res.redirect(`/workouts/${req.body.id}`);
-            });
         });
     }
 })

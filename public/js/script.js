@@ -60,7 +60,7 @@ $(document).ready(function () {
     }
 
     async function completeWorkout (id) {
-        await fetch(URL + 'workouts/' + id + '/toggle?_method=PUT', {
+        await fetch(URL + 'workouts/' + id + '/complete?_method=PUT', {
             method: 'POST',
             headers: {
                 'Content-Type': 'Application/json',
