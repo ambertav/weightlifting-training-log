@@ -63,13 +63,16 @@ router.put('/users/me/photo/edit', async function (req, res) {
     }
 });
 
+// search for other users
+router.get('/users/search', function (req, res) {
+    res.render('search.ejs');
+});
+
 // view other profiles
-router.get('/users/:username', function (req, res) {
+router.get('/users/profile/:username', function (req, res) {
     User.findOne({
         username: req.params.username
     }, function (error, user) {
-        console.log(req.session.userId);
-        console.log(user._id.toHexString());
         if (user._id.toHexString() === req.session.userId) {
             res.redirect('/users/me');
         } else {
@@ -80,8 +83,6 @@ router.get('/users/:username', function (req, res) {
         }
     });
 })
-
-// search for other users
 
 
 module.exports = router;
