@@ -6,34 +6,29 @@
 
 <body>
     <div class="container">
-        <h1>Hello, <%= user.firstName.replace(user.firstName.charAt(0), user.firstName.charAt(0).toUpperCase()) %>!</h1>
-
-        <% if (user.profilePhoto !== 'none') { %>
-            <img src="<%= user.profilePhoto %>" alt="<%= user.firstName %>'s profile photo" width="100px" height="100px">
+        <% if (viewer) { %>
+            <h1><%= user.username.replace(user.username.charAt(0), user.username.charAt(0).toUpperCase())%></h1>
         <% } else { %>
-            <h5>no image to display</h5>
+            <h1>Hello, <%= user.firstName.replace(user.firstName.charAt(0), user.firstName.charAt(0).toUpperCase()) %>!</h1>
         <% } %>
-        <form action="/users/me/photo/edit/?_method=PUT" method="POST" enctype="multipart/form-data">
-            <input type="file" name="profilePhoto" id="profilePhoto">
-            <input type="submit" value="Upload Photo">
-        </form>
-
-        <h5>Friends list</h5>
-        <h5>Add friends</h5>
-        <h5>Favorite Workouts</h5>
-            <ul>
-                <% for (i = 0; i < favWorkouts.length; i++) { %>
-                    <li>
-                        <a href="/workouts/<%= favWorkouts[i]._id %>"><%= favWorkouts[i]._id %></a>
-                    </li>
-                <% } %>
-            </ul>
-        <h5>Muscle distribution</h5>
-            <p>Weekly</p>
-            <p>Daily?</p>
-    </div>
-
-
+            <% if (user.profilePhoto !== 'none') { %>
+                <img src="<%= user.profilePhoto %>" alt="<%= user.firstName %>'s profile photo" width="100px" height="100px">
+            <% } else { %>
+                <h5>no image to display</h5>
+            <% } %>
+            <% if (!viewer) { %>
+            <form action="/users/me/photo/edit/?_method=PUT" method="POST" enctype="multipart/form-data">
+                <input type="file" name="profilePhoto" id="profilePhoto">
+                <input type="submit" value="Upload Photo">
+            </form>
+            <% } %>
+            <h5>Friends list</h5>
+            <h5>Add friends</h5>
+            <h5>Favorite Workouts</h5>
+            <h5>Muscle distribution</h5>
+                <p>Weekly</p>
+                <p>Daily?</p>
+        </div>
 
 
 
