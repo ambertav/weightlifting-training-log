@@ -8,6 +8,7 @@ const fileUpload = require('express-fileupload');
 const movementsRouter = require('./controllers/movements');
 const usersRouter = require('./controllers/users');
 const workoutsRouter = require('./controllers/workouts');
+const profilesRouter = require('./controllers/profiles');
 
 const app = express();
 
@@ -60,6 +61,7 @@ app.get('/', function (req, res) {
 app.use(usersRouter);
 app.use(isAuthenticated, workoutsRouter);
 app.use(isAuthenticated, movementsRouter);
+app.use(isAuthenticated, profilesRouter);
 
 app.listen(PORT, function () {
     console.log(`express is listening on port: ${PORT}`);
