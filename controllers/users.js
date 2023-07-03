@@ -85,7 +85,8 @@ router.get('/users/me', function (req, res) {
         }, function (error, favWorkouts) {
             res.render('profile.ejs', {
                 user,
-                favWorkouts
+                favWorkouts,
+                viewer: null
             });
         });
     });
@@ -116,6 +117,26 @@ router.put('/users/me/photo/edit', async function (req, res) {
         console.log('Error', err);
     }
 });
+
+// view other profiles
+router.get('/users/:username', function (req, res) {
+    User.findOne({
+        username: req.params.username
+    }, function (error, user) {
+        console.log(req.session.userId);
+        console.log(user._id.toHexString());
+        if (user._id.toHexString() === req.session.userId) {
+            res.redirect('/users/me');
+        } else {
+            res.render('profile.ejs', {
+                user,
+                viewer: req.session.userId
+            });
+        }
+    });
+})
+
+// search for other users
 
 // logout
 router.get('/logout', function (req, res) {
