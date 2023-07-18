@@ -23,6 +23,13 @@
             </form>
             <% } %>
             <h5>Friends list</h5>
+            <% if (viewer) { %>
+                <form action="/users/request" method="POST">
+                    <input type="hidden" name="from" value="<%= viewer %>">
+                    <input type="hidden" name="to" value="<%= user._id %>">
+                    <input type="submit" value="Request Friend">
+                </form>
+            <% } %>
             <h5>Add friends</h5>
             <h5>Favorite Workouts</h5>
             <h5>Muscle distribution</h5>
