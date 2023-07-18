@@ -9,6 +9,7 @@ const movementsRouter = require('./controllers/movements');
 const usersRouter = require('./controllers/users');
 const workoutsRouter = require('./controllers/workouts');
 const profilesRouter = require('./controllers/profiles');
+const requestRouter = require('./controllers/requests');
 
 const app = express();
 
@@ -62,6 +63,7 @@ app.use(usersRouter);
 app.use(isAuthenticated, workoutsRouter);
 app.use(isAuthenticated, movementsRouter);
 app.use(isAuthenticated, profilesRouter);
+app.use(isAuthenticated, requestRouter);
 
 app.listen(PORT, function () {
     console.log(`express is listening on port: ${PORT}`);
