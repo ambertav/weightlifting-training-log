@@ -24,7 +24,7 @@
             <% } %>
             <h5>Friends list</h5>
             <% if (viewer) { %>
-                <% if (existingRequest) { %>
+                <% if (existingRequest !== null) { %>
                     <h3>Request Pending</h3>
                 <% } else { %>
                     <form action="/users/request" method="POST">
