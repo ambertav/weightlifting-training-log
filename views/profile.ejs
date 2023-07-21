@@ -25,7 +25,9 @@
             <h5>Friends list</h5>
             <% if (viewer) { %>
                 <% if (existingRequest !== null) { %>
-                    <h3>Request Pending</h3>
+                    <h5>Request Pending</h5>
+                <% } else if (user.gymBuddies.includes(viewer)) { %>
+                    <h5>already friends</h5>
                 <% } else { %>
                     <form action="/users/request" method="POST">
                         <input type="hidden" name="from" value="<%= viewer %>">
@@ -43,6 +45,11 @@
                                     <%= requests[i].from.username %>
                                 </a>
                             </li>
+                            <form action="/users/request/edit/?_method=PUT" method="POST">
+                                <input type="hidden" name="requestId" value="<%= requests[i]._id %>">
+                                <input type="submit" name="decision" value="Accept">
+                                <input type="submit" name="decision" value="Decline">
+                            </form>
                         <% } %>
                     </ul>
                 <% } %>
