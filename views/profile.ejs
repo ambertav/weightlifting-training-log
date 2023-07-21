@@ -24,11 +24,15 @@
             <% } %>
             <h5>Friends list</h5>
             <% if (viewer) { %>
-                <form action="/users/request" method="POST">
-                    <input type="hidden" name="from" value="<%= viewer %>">
-                    <input type="hidden" name="to" value="<%= user._id %>">
-                    <input type="submit" value="Request Friend">
-                </form>
+                <% if (existingRequest) { %>
+                    <h3>Request Pending</h3>
+                <% } else { %>
+                    <form action="/users/request" method="POST">
+                        <input type="hidden" name="from" value="<%= viewer %>">
+                        <input type="hidden" name="to" value="<%= user._id %>">
+                        <input type="submit" value="Request Friend">
+                    </form>
+                <% } %>
             <% } else { %>
                 <h5>Pending Requests</h5>
                 <% if (requests) { %>
