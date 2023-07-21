@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const User = require('../models/user');
 const Workout = require('../models/workout');
+const Request = require('../models/request');
 
 require('dotenv').config();
 
@@ -28,10 +29,16 @@ router.get('/users/me', function (req, res) {
             createdBy: req.session.userId,
             isFavorite: true
         }, function (error, favWorkouts) {
-            res.render('profile.ejs', {
-                user,
-                favWorkouts,
-                viewer: null
+            Request.find({
+                to: req.session.userId,
+            }).populate('from')
+            .exec(function (error, requests) {
+                res.render('profile.ejs', {
+                    user,
+                    favWorkouts,
+                    requests,
+                    viewer: null
+                });
             });
         });
     });
