@@ -29,6 +29,19 @@
                     <input type="hidden" name="to" value="<%= user._id %>">
                     <input type="submit" value="Request Friend">
                 </form>
+            <% } else { %>
+                <h5>Pending Requests</h5>
+                <% if (requests) { %>
+                    <ul>
+                        <% for (i = 0; i < requests.length; i++) { %>
+                            <li>
+                                <a href="/users/profile/<%= requests[i].from.username %>">
+                                    <%= requests[i].from.username %>
+                                </a>
+                            </li>
+                        <% } %>
+                    </ul>
+                <% } %>
             <% } %>
             <h5>Add friends</h5>
             <h5>Favorite Workouts</h5>
