@@ -83,9 +83,14 @@ router.get('/users/profile/:username', function (req, res) {
         if (user._id.toHexString() === req.session.userId) {
             res.redirect('/users/me');
         } else {
-            res.render('profile.ejs', {
-                user,
-                viewer: req.session.userId
+            Request.find({
+                from: {$in: [req.session.userId, user._id]},
+            }, function (error, existingRequest) {
+                res.render('profile.ejs', {
+                    user,
+                    viewer: req.session.userId,
+                    existingRequest
+                });
             });
         }
     });
