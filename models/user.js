@@ -22,10 +22,6 @@ const userSchema = new Schema({
         type: String,
         required: true
     },
-    gymBuddies: [{
-        type: Schema.Types.ObjectId,
-        ref: 'User',
-    }],
     profilePhoto: {
         type: String,
         default: 'none'
