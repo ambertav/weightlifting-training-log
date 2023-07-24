@@ -30,8 +30,11 @@ router.get('/users/me', function (req, res) {
             isFavorite: true
         }, function (error, favWorkouts) {
             Request.find({
-                to: req.session.userId,
-            }).populate('from')
+                $or: [
+                    {to: req.session.userId},
+                    {from: req.session.userId},
+                ]
+            }).populate('from').populate('to')
             .exec(function (error, requests) {
                 res.render('profile.ejs', {
                     user,
