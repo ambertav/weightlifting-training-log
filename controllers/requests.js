@@ -21,17 +21,15 @@ router.post('/users/request', function (req, res) {
 router.put('/users/request/edit', function (req, res) {
     Request.findById(req.body.requestId, function (error, foundRequest) {
         if (req.body.decision === 'Accept') {
-            User.find({
-                _id: {$in: [foundRequest.from, foundRequest.to]}
-            }, function (error, users) {
-                    users[0].gymBuddies.push(users[1]._id)
-                    users[1].gymBuddies.push(users[0]._id)
-                    users[0].save().then(users[1].save());
+            foundRequest.status = 'accepted'
+            foundRequest.save().then(function () {
+                res.redirect('/users/me')
+            });
+        } else {
+            Request.findByIdAndDelete(foundRequest._id, function (error, deletedRequest) {
+                res.redirect('/users/me');
             });
         }
-        Request.findByIdAndDelete(foundRequest._id, function (error, deletedRequest) {
-            res.redirect('/users/me');
-        });
     });
 });
 
