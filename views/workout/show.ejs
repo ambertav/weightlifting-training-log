@@ -8,7 +8,7 @@
     <div>
         <h2><%= workout.day %></h2>
         <div class="right favorite">
-            <form action="/workouts/<%= workout._id %>/toggle/?_method=PUT" method="POST">
+            <form action="/workouts/<%= workout._id %>/favorite" method="POST">
                 <input type="hidden" name="id" value="<%= workout._id %>">
                 <input type="hidden" name="change" value="isFavorite">
                 <% if (workout.isFavorite) { %>
