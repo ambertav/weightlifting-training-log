@@ -8,15 +8,13 @@
     <div>
         <h2><%= workout.day %></h2>
         <div class="right favorite">
-            <form action="/workouts/<%= workout._id %>/favorite" method="POST">
+            <button id="addFavorite">Add to Favorites</button>
+            <form class="d-none" action="/workouts/<%= workout._id %>/favorite" method="POST">
                 <input type="hidden" name="id" value="<%= workout._id %>">
                 <input type="hidden" name="change" value="isFavorite">
-                <% if (workout.isFavorite) { %>
-                    <input type="submit" value="Remove from favorites">
-                <% } else { %>
-                    <input type="submit" value="Add to favorites">
-                <% } %>
-                </form>
+                <input type="text" name="name" placeholder="Add a name to this workout">
+                <input type="submit" value="Submit">
+            </form>
         </div>
     </div>
     <div class="container">

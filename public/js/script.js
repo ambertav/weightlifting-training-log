@@ -14,6 +14,7 @@ $(document).ready(function () {
     $add.on('click', addExercise);
     $complete.on('change', updateProgress);
     $('#password, #confirmation').on('keyup', confirmPassword);
+    $('#addFavorite').on('click', handleFavorite);
 
     function addExercise (evt) {
         if (evt.target.tagName !== 'P') return;
@@ -57,6 +58,12 @@ $(document).ready(function () {
                 $('#message').text('Passwords do not match').css('color', 'red');
             }
         }
+    }
+
+    function handleFavorite (evt) {
+        evt.preventDefault();
+        let $form = $(evt.target).siblings('form');
+        $form.hasClass('d-none') ? $form.removeClass('d-none') : $form.addClass('d-none');
     }
 
     async function completeWorkout (id) {
