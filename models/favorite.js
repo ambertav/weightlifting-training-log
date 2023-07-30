@@ -35,7 +35,11 @@ const favoriteSchema = new Schema({
     createdBy: {
         type: Schema.Types.ObjectId,
         ref: 'User'
-    }
+    },
+    sharedWith: [{
+        type: Schema.Types.ObjectId,
+        ref: 'User'
+    }]
 }, {
     timestamps: true
 });
