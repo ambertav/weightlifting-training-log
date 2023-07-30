@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+    <%- include('../partials/head'); %> 
+    <%- include('../partials/nav'); %> 
+<body>
+
+    <h2>Favorite Workouts</h2>
+    <div class="container">
+        <ul class="index">
+            <% displayFavorite(0); %>
+            <% function displayFavorite (index) { %>
+                <% if (favorites.length === 0) { %>
+                    <div class="center mb-5">
+                        <a href="/workouts/new" class="btn btn-outline-secondary btn-lg">Save workouts by adding them to your favorites!</a>
+                    </div>
+                    <% return; %>
+                <% } %>
+                    
+                    <% if (index === favorites.length) { %>
+                        <% return; %>
+                    <% } %>
+                        
+                    <% const favorite = favorites[index] %>
+
+                <div class="card m-3">
+                    <a href="favorites/<%= favorite._id %>">
+                        <h4>
+                            <%= favorite.name.replace(favorite.name.charAt(0), favorite.name.charAt(0).toUpperCase()) %>
+                        </h4>
+                    </a>
+                    <li class="card-body center">
+                        <% for (i = 0; i < favorite.exercise.length; i ++) { %>
+                        <%= favorite.exercise[i].movement.name %>
+                        <br>
+                        <% } %>
+                    </li>
+                    </a>
+                    <div class="card-footer">
+                        <p>
+                            <a href="/favorites/<%=favorite._id %>/share" class="btn btn-outline-warning btn-sm mt-2 mb-3">Share with Gym Buddies</a>
+                            <br>
+                            <a href="/favorites/<%=favorite._id %>/copy" class="btn btn-outline-success btn-sm">Copy to Workouts</a>
+                            <br>
+                            <form action="/favorites/<%= favorite._id %>?_method=DELETE" method="POST">
+                                <input type="submit" value="Remove Favorite" class="btn btn-outline-danger btn-sm ">
+                            </form>
+                        </p>
+                    </div>
+                </div>
+                <% displayFavorite(index + 1) %>
+            <% } %>
+            </div>
+        </ul>
+    </div>
+
+    <%- include('../partials/footer'); %> 
+
+</body>
+</html>
