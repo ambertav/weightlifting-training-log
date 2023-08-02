@@ -31,6 +31,16 @@ router.post('/workouts/:id/favorite', function (req, res) {
     });
 });
 
+// show
+router.get('/favorites/:id', function (req, res) {
+    Favorite.findById(req.params.id)
+    .populate('exercise.movement')
+    .exec(function (error, favorite) {
+        res.render('favorite/show.ejs', {
+            favorite
+        });
+    });
+});
 
 
 
