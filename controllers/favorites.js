@@ -17,7 +17,20 @@ router.get('/favorites', function (req, res) {
             favorites
         });
     })
-})
+});
+
+// copy to workouts
+router.post('/favorites/:id/copy', function (req, res) {
+    Favorite.findById(req.params.id, function (error, favorite) {
+        let { exercise } = favorite;
+        let addWorkout = { exercise };
+        addWorkout.day = req.body.day;
+        addWorkout.createdBy = req.session.userId;
+        Workout.create(addWorkout, function (error, createdWorkout) {
+            res.redirect('/workouts');
+        });
+    });
+});
 
 // create
 router.post('/workouts/:id/favorite', function (req, res) {
@@ -26,7 +39,7 @@ router.post('/workouts/:id/favorite', function (req, res) {
         let addFavorite = { exercise, createdBy };
         addFavorite.name = req.body.name;
         Favorite.create(addFavorite, function (error, createdFavorite) {
-            res.redirect(`/workouts/${workout._id}`);
+            res.render(`/workouts/${workout._id}`);
         });
     });
 });
