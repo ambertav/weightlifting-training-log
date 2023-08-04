@@ -5,10 +5,39 @@
 <%- include('./partials/nav'); %>
 
 <body>
-    
-    <h1>this is the user search page</h1>
+    <h2>Search for Users</h2>
+    <div class="container-fluid center">
+        <form action="/users/search" method="POST" autocomplete="off" class="form">
+            <div class="mb-3 form-floating">
+                <input type="text" name="searchTerm" class="form-control" id="searchTerm" required>
+                <label for="searchTerm">Search by Username</label>
+            </div>
+            <div class="center">
+                <% if (error) { %>
+                    <span style="color: red;"><%= error %></span>
+                <% } %>
+            </div>
+            <br>
+            <div class="mb-3 center">
+                <input type="submit" value="Search" class="btn btn-outline-secondary btn-lg">
+            </div>
+        </form>
+    </div>
 
-    <%- include('./partials/footer'); %>
+    <% if (results) { %>
+        <div>
+            <ul>
+                <% for (i = 0; i < results.length; i++) { %>
+                    <li>
+                        <a href="/users/profile/<%= results[i].username %>"><%= results[i].username %></a>
+                    </li>
+                <% } %>
+            </ul>
+        </div>
+    <% } %>
+    
+
+<%- include('./partials/footer'); %>
 
 </body>
 
