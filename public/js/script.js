@@ -14,7 +14,7 @@ $(document).ready(function () {
     $add.on('click', addExercise);
     $complete.on('change', updateProgress);
     $('#password, #confirmation').on('keyup', confirmPassword);
-    $('#addFavorite').on('click', handleFavorite);
+    $('#addFavorite, #copy, #share').on('click', handleShowForm);
 
     function addExercise (evt) {
         if (evt.target.tagName !== 'P') return;
@@ -60,7 +60,7 @@ $(document).ready(function () {
         }
     }
 
-    function handleFavorite (evt) {
+    function handleShowForm (evt) {
         evt.preventDefault();
         let $form = $(evt.target).siblings('form');
         $form.hasClass('d-none') ? $form.removeClass('d-none') : $form.addClass('d-none');
