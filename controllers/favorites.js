@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const Workout = require('../models/workout');
 const Favorite = require('../models/favorite');
+const Request = require('../models/request');
 const Movement = require('../models/movement');
 
 // index
@@ -49,8 +50,24 @@ router.get('/favorites/:id', function (req, res) {
     Favorite.findById(req.params.id)
     .populate('exercise.movement')
     .exec(function (error, favorite) {
-        res.render('favorite/show.ejs', {
-            favorite
+        Request.find({
+            $or: [
+            {to: req.session.userId},
+            {from: req.session.userId},
+        ]}).populate('to').populate('from')
+        .exec(function (error, requests) {
+            let friends = [];
+            for (i = 0; i< requests.length; i++) {
+                if (requests[i].to._id.toHexString() === req.session.userId) {
+                    friends.push(requests[i].from);
+                } else if (requests[i].from._id.toHexString() === req.session.userId) {
+                    friends.push(requests[i].to);
+                }
+            }
+            res.render('favorite/show.ejs', {
+                favorite,
+                friends
+            });
         });
     });
 });
