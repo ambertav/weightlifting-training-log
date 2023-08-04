@@ -75,7 +75,28 @@ router.put('/users/me/photo/edit', async function (req, res) {
 
 // search for other users
 router.get('/users/search', function (req, res) {
-    res.render('search.ejs');
+    res.render('search.ejs', {
+        error: null,
+        results: null
+    });
+});
+
+// handle search submission
+router.post('/users/search', function (req, res) {
+    let errorMessage = '';
+    User.find({
+        username: {
+            $regex: `${req.body.searchTerm.toLowerCase()}`
+        }
+    }, function (error, results) {
+        if (results.length === 0) {
+            errorMessage = 'No users found, please try again';
+        }
+        res.render('search.ejs', {
+            error: errorMessage,
+            results
+        });
+    });
 });
 
 // view other profiles
