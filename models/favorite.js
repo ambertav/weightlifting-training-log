@@ -32,11 +32,7 @@ const favoriteSchema = new Schema({
             min: 1
         },
     }],
-    createdBy: {
-        type: Schema.Types.ObjectId,
-        ref: 'User'
-    },
-    sharedWith: [{
+    accessibleBy: [{
         type: Schema.Types.ObjectId,
         ref: 'User'
     }]

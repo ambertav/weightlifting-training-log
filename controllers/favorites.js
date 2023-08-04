@@ -8,10 +8,7 @@ const Movement = require('../models/movement');
 // index
 router.get('/favorites', function (req, res) {
     Favorite.find({
-        $or: [
-            {createdBy: req.session.userId},
-            {sharedWith: req.session.userId},
-        ]
+        accessibleBy: req.session.userId
     }).populate('exercise.movement')
     .exec(function (error, favorites) {
         res.render('favorite/index.ejs', {
@@ -23,21 +20,17 @@ router.get('/favorites', function (req, res) {
 // update -- share favorites
 router.put('/favorites/:id/share', function (req, res) {
     Favorite.findOneAndUpdate({
-        $or: [
-            {createdBy: req.session.userId},
-            {sharedWith: req.session.userId},
-        ],
+        accessibleBy: req.session.userId,
         _id: req.params.id
     }).exec(function (error, favorite) {
-        if (!favorite.sharedWith.includes(req.body.friend)) {
-            favorite.sharedWith.push(req.body.friend);
+        if (!favorite.accessibleBy.includes(req.body.friend)) {
+            favorite.accessibleBy.push(req.body.friend);
         }
         favorite.save(function () {
             res.redirect('/favorites');
         });
     });
 });
-
 
 // copy to workouts
 router.post('/favorites/:id/copy', function (req, res) {
@@ -56,10 +49,11 @@ router.post('/favorites/:id/copy', function (req, res) {
 router.post('/workouts/:id/favorite', function (req, res) {
     Workout.findById(req.params.id, function (error, workout) {
         let { exercise, createdBy } = workout;
-        let addFavorite = { exercise, createdBy };
+        let addFavorite = { exercise };
         addFavorite.name = req.body.name;
+        addFavorite.accessibleBy = [createdBy];
         Favorite.create(addFavorite, function (error, createdFavorite) {
-            res.render(`/workouts/${workout._id}`);
+            res.redirect(`/workouts/${workout._id}`);
         });
     });
 });
