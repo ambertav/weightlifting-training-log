@@ -20,6 +20,25 @@ router.get('/favorites', function (req, res) {
     })
 });
 
+// update -- share favorites
+router.put('/favorites/:id/share', function (req, res) {
+    Favorite.findOneAndUpdate({
+        $or: [
+            {createdBy: req.session.userId},
+            {sharedWith: req.session.userId},
+        ],
+        _id: req.params.id
+    }).exec(function (error, favorite) {
+        if (!favorite.sharedWith.includes(req.body.friend)) {
+            favorite.sharedWith.push(req.body.friend);
+        }
+        favorite.save(function () {
+            res.redirect('/favorites');
+        });
+    });
+});
+
+
 // copy to workouts
 router.post('/favorites/:id/copy', function (req, res) {
     Favorite.findById(req.params.id, function (error, favorite) {
