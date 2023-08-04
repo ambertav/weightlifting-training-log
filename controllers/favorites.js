@@ -32,6 +32,27 @@ router.put('/favorites/:id/share', function (req, res) {
     });
 });
 
+// update -- remove from favorites
+router.put('/favorites/:id/remove', function (req, res) {
+    Favorite.findOne({
+        accessibleBy: {
+            $in: req.session.userId
+        },
+        _id: req.params.id
+    }).exec(function (error, favorite) {
+        if (favorite.accessibleBy.length > 1) {
+            favorite.accessibleBy.splice(favorite.accessibleBy.indexOf(req.session.userId), 1);
+            favorite.save(function () {
+                res.redirect('/favorites');
+            });
+        } else if (favorite.accessibleBy.length === 1) {
+            Favorite.findByIdAndDelete(favorite._id, function () {
+                res.redirect('/favorites');
+            });
+        }
+    });
+});
+
 // copy to workouts
 router.post('/favorites/:id/copy', function (req, res) {
     Favorite.findById(req.params.id, function (error, favorite) {
