@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<%- include('../partials/head'); %>
+<%- include('../partials/nav'); %>
+
+<body>
+    <div>
+        <h2><%= favorite.name %></h2>
+    </div>
+    <div class="container">
+        <div class="index">
+            <% for (i = 0; i < favorite.exercise.length; i++) { %>
+            <div class="exercise">
+                <h3><%= favorite.exercise[i].movement.name %></h3>
+                <% if (favorite.exercise[i].movement.isWeighted) { %>
+                    <p>Weight: <%= favorite.exercise[i].weight %></p>
+                    <p>Sets: <%= favorite.exercise[i].sets %></p>
+                    <p>Repetitions per Set: <%= favorite.exercise[i].reps %></p>
+                <% } %>
+                <% if (favorite.exercise[i].movement.isCardio) { %>
+                    <p>Duration: <%= favorite.exercise[i].minutes %> minutes</p>
+                    <p>Calories Burned: <%= favorite.exercise[i].caloriesBurned %></p>
+                <% } %>
+                <div class="form-check form-switch">
+                </div>
+            </div>
+            <% } %>
+        </div>
+        <br>
+        <br>
+        <div class="center">
+            <button class="btn btn-outline-warning btn-sm mt-2 mb-3" id="share">
+                Share with Gym Buddies
+            </button>
+            <form class="d-none" action="/favorites/<%= favorite._id %>/share?_method=PUT" method="POST">
+                <input type="hidden" name="id" value="<%= favorite._id %>">
+                <label for="friends">Choose a friend to share with</label>
+                <select id="friends" name="friend" required>
+                    <% for (i = 0; i < friends.length; i++) { %>
+                        <option value="<%= friends[i]._id %>"><%= friends[i].username %></option>
+                            <% } %>
+                    </select>
+                <input type="submit" value="Share">
+            </form>
+            <br>
+        </div>
+        <div class="center">
+            <button class="btn btn-outline-success btn-sm" id="copy">
+                Copy to Workouts
+            </button>
+            <form class="d-none" action="/favorites/<%= favorite._id %>/copy" method="POST">
+                <input type="hidden" name="id" value="<%= favorite._id %>">
+                <Label>
+                    Select Day:
+                    <select name="day" class="form-select form-select-lg" size="4" required>
+                        <option value="Sunday">Sunday</option>
+                        <option value="Monday">Monday</option>
+                        <option value="Tuesday">Tuesday</option>
+                        <option value="Wednesday">Wednesday</option>
+                        <option value="Thursday">Thursday</option>
+                        <option value="Friday">Friday</option>
+                        <option value="Saturday">Saturday</option>
+                    </select>
+                </Label>
+                <input type="submit" value="Create Workout">
+            </form>
+        </div>
+        <div class="center">
+            <br>
+            <br>
+            <a href="/favorites" class="btn btn-outline-secondary mb-3">Back to Favorites</a>
+        </div>
+
+
+    </div>
+    <%- include('../partials/footer'); %>
+
+</body>
+
+</html>
