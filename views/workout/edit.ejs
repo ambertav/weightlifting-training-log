@@ -38,7 +38,7 @@
                             <div class="index">
                                 <label>
                                     Select Movement
-                                    <select name="exercise[movement]" class="form-select" size="6" required>
+                                    <select name="exercise[movement][]" class="form-select" size="6" required>
                                         <% movements.forEach(function (movement) { %>
                                             <option value="<%= movement._id %>"
                                                 <% if (exercise.movement.name === movement.name) { %> selected <% } %>>
@@ -49,27 +49,27 @@
                                     </label>
                                     <div class="right">
                                         <div class="form-floating">
-                                            <input type="number" name="exercise[weight]" min="0"  class="form-control"
+                                            <input type="number" name="exercise[weight][]" min="0"  class="form-control"
                                             id="weight" value="<%= exercise.weight %>">
                                             <label for="weight">Weight</label>
                                         </div>
                                         <div class="form-floating">
-                                            <input type="number" name="exercise[sets]" min="1"  class="form-control"
+                                            <input type="number" name="exercise[sets][]" min="1"  class="form-control"
                                             id="sets" value="<%= exercise.sets %>">
                                             <label for="sets">Sets</label>
                                         </div>
                                         <div class="form-floating">
-                                            <input type="number" name="exercise[reps]" min="1"  class="form-control"
+                                            <input type="number" name="exercise[reps][]" min="1"  class="form-control"
                                             id="reps" value="<%= exercise.reps %>">
                                             <label for="reps">Repetitions per Set</label>
                                         </div>
                                         <div class="form-floating">
-                                            <input type="number" name="exercise[minutes]" min="1" class="form-control"
+                                            <input type="number" name="exercise[minutes][]" min="1" class="form-control"
                                             id="minutes" value="<%= exercise.minutes %>">
                                             <label for="reps">Minutes</label>
                                         </div>
                                         <div class="form-floating">
-                                            <input type="number" name="exercise[caloriesBurned]" min="1" class="form-control"
+                                            <input type="number" name="exercise[caloriesBurned][]" min="1" class="form-control"
                                             id="calories" value="<%= exercise.caloriesBurned %>">
                                             <label for="reps">Calories Burned</label>
                                         </div>
