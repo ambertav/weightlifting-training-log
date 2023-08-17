@@ -3,8 +3,6 @@ const router = express.Router();
 const Workout = require('../models/workout');
 const Movement = require('../models/movement');
 
-let exercisesArray = [];
-
 // index
 router.get('/workouts', async function (req, res) {
     try {
@@ -57,57 +55,38 @@ router.delete('/workouts/:id', async function (req, res) {
 });
 
 // update
-router.put('/workouts/:id', function (req, res) {
-    if (!Array.isArray(req.body.exercise.movement)) {
-        for (const [key, value] of Object.entries(req.body.exercise)) {
-            req.body.exercise[key] = [value];
-        }
-    }
-    exercisesArray = [];
-    for (i = 0; i < req.body.exercise.movement.length; i++) {
-        let exercise = {
-            movement: req.body.exercise.movement[i],
-            weight: req.body.exercise.weight[i],
-            sets: req.body.exercise.sets[i],
-            reps: req.body.exercise.reps[i],
-            minutes: req.body.exercise.minutes[i],
-            caloriesBurned: req.body.exercise.caloriesBurned[i],
-        };
-        exercisesArray.push(exercise);
-    }
-    req.body.exercise = exercisesArray;
-    Workout.findOneAndUpdate({
-        createdBy: req.session.userId,
-        _id: req.params.id
-    }, req.body, function (error, updatedWorkout) {
+router.put('/workouts/:id', async function (req, res) {
+    try {
+        const formattedExerciseArray = formatExercise(req.body.exercise);
+        req.body.exercise = formattedExerciseArray;
+
+        const updatedWorkout = await Workout.findOneAndUpdate({
+            createdBy: req.session.userId,
+            _id: req.params.id
+        }, req.body, {
+            new: true
+        });
         res.redirect('/workouts');
-    });
+    } catch (error) {
+        console.error(error);
+        res.status(500).send('An error occurred while updating the workout.');
+    }
 });
 
 // create
-router.post('/workouts', function (req, res) {
-    if (!Array.isArray(req.body.exercise.movement)) {
-        for (const [key, value] of Object.entries(req.body.exercise)) {
-            req.body.exercise[key] = [value];
-        }
-    }
-    exercisesArray = [];
-    for (i = 0; i < req.body.exercise.movement.length; i++) {
-        let exercise = {
-            movement: req.body.exercise.movement[i],
-            weight: req.body.exercise.weight[i],
-            sets: req.body.exercise.sets[i],
-            reps: req.body.exercise.reps[i],
-            minutes: req.body.exercise.minutes[i],
-            caloriesBurned: req.body.exercise.caloriesBurned[i],
-        };
-        exercisesArray.push(exercise);
-    }
-    req.body.exercise = exercisesArray;
-    req.body.createdBy = req.session.userId;
-    Workout.create(req.body, function (error, createdWorkout) {
+router.post('/workouts', async function (req, res) {
+    try {
+        const formattedExerciseArray = formatExercise(req.body.exercise);
+
+        req.body.exercise = formattedExerciseArray;
+        req.body.createdBy = req.session.userId;
+
+        const createdWorkout = await Workout.create(req.body);
         res.redirect('/workouts');
-    });
+    } catch (error) {
+        console.error(error);
+        res.status(500).send('An error occurred while creating the workout.');
+    }
 });
 
 // edit
@@ -141,19 +120,17 @@ router.get('/workouts/:id/edit', async function (req, res) {
 // toggle complete
 router.put('/workouts/:id/complete', async function (req, res) {
     try {
-        if (req.body.change === 'isComplete') {
-            const workout = await Workout.findOne({
-                createdBy: req.session.userId,
-                _id: req.body.id
-            });
+        const workout = await Workout.findOne({
+            createdBy: req.session.userId,
+            _id: req.body.id
+        });
 
-            if (workout) {
-                workout.isComplete = !workout.isComplete;
-                await workout.save();
-                res.sendStatus(200);
-            } else {
-                res.status(404).send('Workout not found.');
-            }
+        if (workout) {
+            workout.isComplete = !workout.isComplete;
+            await workout.save();
+            res.sendStatus(200);
+        } else {
+            res.status(404).send('Workout not found.');
         }
     } catch (error) {
         console.error(error)
@@ -176,5 +153,25 @@ router.get('/workouts/:id', async function (req, res) {
         res.status(500).send('An error occurred while fetching the workout.');
     }
 });
+
+
+// formatting the exercise array for create and update routes
+function formatExercise(exercise) {
+    const exerciseObjects = [];
+    const properties = ['movement', 'weight', 'sets', 'reps', 'minutes', 'caloriesBurned']; // all possible properties
+
+    // iterating through indices of 'movement' array to get access to indices of values in each key
+    for (let i = 0; i < exercise.movement.length; i++) {
+        const exerciseObject = {};
+        // iterating through properties to process values
+        for (const prop of properties) {
+            const value = exercise[prop][i];
+            if (value !== '') exerciseObject[prop] = value; // only saving values if not empty string as to not have null keys in database
+        }
+        exerciseObjects.push(exerciseObject); // adding each formatted exercise to array
+    }
+    return exerciseObjects;
+}
+
 
 module.exports = router;
