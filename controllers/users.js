@@ -11,20 +11,33 @@ router.get('/signup', function (req, res) {
 });
 
 // handle form submission
-router.post('/signup', function (req, res) {
-    let error = null;
-    if (req.body.password !== req.body.passwordConfirmation) {
-        error = 'password and password confirmation do not match';
-        return res.render('signup.ejs', {
-            error
+router.post('/signup', async function (req, res) {
+    try {
+        // validate if passwords match
+        if (req.body.password !== req.body.passwordConfirmation) {
+            const errorMessage = 'Passwords do not match';
+            return res.render('signup.ejs', {
+                error: errorMessage
+            });
+        }
+
+        // hash password with bcrypt, save to req.body
+        const hashedPassword = await bcrypt.hashSync(req.body.password, 10);
+        req.body.password = hashedPassword;
+
+        const newUser = await User.create(req.body);
+
+        // set user session
+        req.session.userId = newUser._id;
+
+        res.redirect('/workouts');
+    } catch (error) {
+        console.error(error);
+        const errorMessage = 'An error occurred during signup.';
+        res.render('signup.ejs', {
+            error: errorMessage
         });
     }
-    const hashedPassword = bcrypt.hashSync(req.body.password, 10);
-    req.body.password = hashedPassword;
-    User.create(req.body, function (error, newUser) {
-        req.session.userId = newUser._id;
-        res.redirect('/workouts');
-    });
 });
 
 // login form
@@ -35,26 +48,35 @@ router.get('/login', function (req, res) {
 });
 
 // handle form submission
-router.post('/login', function (req, res) {
-    let errorMessage = 'Invalid email or password, please try again.'
-    User.findOne({
+router.post('/login', async function (req, res) {
+    try {
+        const foundUser = await User.findOne({
             email: req.body.email
-        },
-        function (error, foundUser) {
-            if (!foundUser) {
-                return res.render('login.ejs', {
-                    error: errorMessage
-                });
-            }
-            const isMatched = bcrypt.compareSync(req.body.password, foundUser.password);
-            if (!isMatched) {
-                return res.render('login.ejs', {
-                    error: errorMessage
-                });
-            }
-            req.session.userId = foundUser._id;
-            res.redirect('/workouts');
         });
+
+        // if no user by email found, send back to login page with error
+        if (!foundUser) return res.render('login.ejs', {
+            error: 'Invalid email or password, please try again.'
+        });
+        else {
+            const isMatched = await bcrypt.compareSync(req.body.password, foundUser.password);
+
+            // if password provided doesn't match, send back to login page with error
+            if (!isMatched) return res.render('login.ejs', {
+                error: 'Invalid email or password, please try again.'
+            });
+
+            // set user session
+            req.session.userId = foundUser._id;
+
+            res.redirect('/workouts');
+        }
+    } catch (error) {
+        console.error(error);
+        res.render('login.ejs', {
+            error: 'An error occurred during login.'
+        });
+    }
 });
 
 // logout
