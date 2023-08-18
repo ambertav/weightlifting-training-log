@@ -1,22 +1,50 @@
 $(document).ready(function () {
     const URL = 'http://localhost:3000/'
-    const $inputParent = $('.inputParent');
-    const $inputChild = $('.inputChild');
+
+    // password and confirmation field inputs
+    const $password = $('#password');
+    const $confirmation = $('#confirmation');
+
+    // DOM elements for workouts edit and new templates in which to insert and delete exercise form inputs
+    const $inputParent = $('.workoutInputParent');
+    const $inputChild = $('.workoutInputChild');
+
+    // add and delete buttons on workouts edit and new templates
     const $add = $('.add');
     let $delete = $('.delete');
+
+    // progess bar and complete checkboxes on workout show template
     const $complete = $('.complete');
     const $progress = $('.progress-bar');
 
     let completedWorkouts = 0;
     let workoutsTotal = $complete.length;
 
-    $(document).on('click', $delete, deleteExercise);
+
+
+    // Event Binders 
+    $password.add($confirmation).on('keyup', confirmPassword);
+    $inputParent.on('click', $delete, deleteExercise);
     $add.on('click', addExercise);
     $complete.on('change', updateProgress);
-    $('#password, #confirmation').on('keyup', confirmPassword);
     $('#addFavorite, #copy, #share').on('click', handleShowForm);
+    $('#profilePhoto').on('change', enableSubmit);
 
-    function addExercise (evt) {
+
+
+    // Event Handlers
+    function confirmPassword() {
+        const passwordVal = $password.val()
+        if (passwordVal.length === 0) return;
+        const confirmVal = $confirmation.val()
+
+        const match = passwordVal === confirmVal;
+
+        $('#signupSubmit').prop('disabled', !match);
+        if (confirmVal.length > 0) $('#message').text(match ? '' : 'Passwords do not match').css('color', 'red');
+    }
+
+    function addExercise(evt) {
         if (evt.target.tagName !== 'P') return;
         let $clone = $($inputChild.eq($inputChild.length - 1).clone());
         $clone.find('.form-control').val('');
@@ -24,49 +52,45 @@ $(document).ready(function () {
         $clone.appendTo($inputParent);
     }
 
-    function deleteExercise (evt) {
+    function deleteExercise(evt) {
         if (evt.target.tagName !== 'P') return;
-        $(evt.target).closest($('.inputChild')).remove();
+        $(evt.target).closest($('.workoutInputChild')).remove();
     }
 
-    function updateProgress (evt) {
-        if ($(evt.target).is(':checked')) {
-            completedWorkouts += 1;
-            let percentComplete = Math.floor((completedWorkouts / workoutsTotal) * 100);
-            $progress.css('width', `${percentComplete}%`);
-            if (completedWorkouts === workoutsTotal) {
-                completeWorkout(`${evt.target.id}`);
-                $complete.off('change', updateProgress);
-                $complete.attr('disabled', true);
-                $('.progress').after($('<br><div>Congratulations, workout completed!</div>').addClass('center'));
-            }
-        } else {
-            completedWorkouts -= 1;
-            let percentComplete = Math.floor((completedWorkouts / workoutsTotal) * 100);
-            $progress.css('width', `${percentComplete}%`);
+    // updates workout completion progress on workout show template
+    function updateProgress(evt) {
+        const isChecked = $(evt.target).is(':checked');
+
+        if (isChecked) completedWorkouts += 1;
+        else completedWorkouts -= 1;
+
+        const percentComplete = Math.floor((completedWorkouts / workoutsTotal) * 100);
+        $progress.css('width', `${percentComplete}%`);
+
+        if (completedWorkouts === workoutsTotal) {
+            completeWorkout(`${evt.target.id}`);
+            $complete.off('change', updateProgress);
+            $complete.attr('disabled', true);
+            $('.progress').after($('<br><div>Congratulations, workout completed!</div>').addClass('center'));
         }
     }
 
-    function confirmPassword () {
-        if ($('#password').val().length === 0) return;
-        if ($('#password').val() === $('#confirmation').val()) {
-            $('#signupSubmit').removeAttr('disabled');
-            $('#message').text('');
-        } else {
-            $('#signupSubmit').attr('disabled', true);
-            if ($('#confirmation').val().length > 0) {
-                $('#message').text('Passwords do not match').css('color', 'red');
-            }
-        }
-    }
-
-    function handleShowForm (evt) {
+    // for displaying hidden forms for adding, sharing favorites and copying to workouts
+    function handleShowForm(evt) {
         evt.preventDefault();
         let $form = $(evt.target).siblings('form');
         $form.hasClass('d-none') ? $form.removeClass('d-none') : $form.addClass('d-none');
     }
 
-    async function completeWorkout (id) {
+    // for profile photo submit button
+    function enableSubmit(evt) {
+        if ($(evt.target).val() !== '') {
+            $(evt.target).siblings().removeAttr('disabled');
+        }
+    }
+
+    // updates workout completion status
+    async function completeWorkout(id) {
         await fetch(URL + 'workouts/' + id + '/complete?_method=PUT', {
             method: 'POST',
             headers: {
@@ -74,7 +98,6 @@ $(document).ready(function () {
             },
             body: JSON.stringify({
                 'id': `${id}`,
-                'change': 'isComplete'
             })
         });
     }
