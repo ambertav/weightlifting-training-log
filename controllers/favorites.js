@@ -3,107 +3,151 @@ const router = express.Router();
 const Workout = require('../models/workout');
 const Favorite = require('../models/favorite');
 const Request = require('../models/request');
-const Movement = require('../models/movement');
 
 // index
-router.get('/favorites', function (req, res) {
-    Favorite.find({
-        accessibleBy: req.session.userId
-    }).populate('exercise.movement')
-    .exec(function (error, favorites) {
+router.get('/favorites', async function (req, res) {
+    try {
+        const favorites = await Favorite.find({
+                accessibleBy: req.session.userId
+            })
+            .populate('exercise.movement')
+            .exec();
+
         res.render('favorite/index.ejs', {
             favorites
         });
-    })
+    } catch (error) {
+        console.error(error);
+        res.status(500).send('An error occurred while fetching favorites.');
+    }
 });
 
 // update -- share favorites
-router.put('/favorites/:id/share', function (req, res) {
-    Favorite.findOneAndUpdate({
-        accessibleBy: req.session.userId,
-        _id: req.params.id
-    }).exec(function (error, favorite) {
-        if (!favorite.accessibleBy.includes(req.body.friend)) {
-            favorite.accessibleBy.push(req.body.friend);
-        }
-        favorite.save(function () {
-            res.redirect('/favorites');
+router.put('/favorites/:id/share', async function (req, res) {
+    try {
+        const updatedFavorite = await Favorite.findOneAndUpdate({
+            accessibleBy: req.session.userId,
+            _id: req.params.id
+        }, {
+            $addToSet: {
+                accessibleBy: req.body.friend // adds friend Id if not already present
+            }
+        }, {
+            new: true
         });
-    });
+
+        res.redirect('/favorites');
+    } catch (error) {
+        console.error(error);
+        res.status(500).send('An error occurred while updating the favorite.');
+    }
 });
 
 // update -- remove from favorites
-router.put('/favorites/:id/remove', function (req, res) {
-    Favorite.findOne({
-        accessibleBy: {
-            $in: req.session.userId
-        },
-        _id: req.params.id
-    }).exec(function (error, favorite) {
-        if (favorite.accessibleBy.length > 1) {
-            favorite.accessibleBy.splice(favorite.accessibleBy.indexOf(req.session.userId), 1);
-            favorite.save(function () {
-                res.redirect('/favorites');
-            });
-        } else if (favorite.accessibleBy.length === 1) {
-            Favorite.findByIdAndDelete(favorite._id, function () {
-                res.redirect('/favorites');
-            });
-        }
-    });
+router.put('/favorites/:id/remove', async function (req, res) {
+    const removedUser = req.session.userId;
+
+    try {
+        const updatedFavorite = await Favorite.findOneAndUpdate({
+            _id: req.params.id,
+            accessibleBy: removedUser
+        }, {
+            $pull: {
+                accessibleBy: removedUser // removes the user from the accessibleBy array
+            }
+        }, {
+            new: true
+        }).exec();
+
+        if (!updatedFavorite) return res.status(404).send('Favorite not found or user does not have access.');
+
+        // delete favorite instance if all users have removed themselves to prevent ghost records
+        if (updatedFavorite.accessibleBy.length === 0) await Favorite.findByIdAndDelete(updatedFavorite._id);
+
+        res.redirect('/favorites');
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).send('An error occurred while removing access from the favorite.');
+    }
 });
 
 // copy to workouts
-router.post('/favorites/:id/copy', function (req, res) {
-    Favorite.findById(req.params.id, function (error, favorite) {
-        let { exercise } = favorite;
-        let addWorkout = { exercise };
-        addWorkout.day = req.body.day;
-        addWorkout.createdBy = req.session.userId;
-        Workout.create(addWorkout, function (error, createdWorkout) {
-            res.redirect('/workouts');
-        });
-    });
+router.post('/favorites/:id/copy', async function (req, res) {
+    try {
+        const favorite = await Favorite.findById(req.params.id);
+        if (!favorite) return res.status(404).send('Favorite not found.');
+
+        const { exercise } = favorite;
+        const newWorkout = {
+            day: req.body.day,
+            exercise,
+            createdBy: req.session.userId
+        }
+
+        const createdWorkout = await Workout.create(newWorkout);
+
+        res.redirect('/workouts');
+    } catch (error) {
+        console.error(error);
+        res.status(500).send('An error occurred while copying the favorite and creating the workout.');
+    }
 });
 
 // create
-router.post('/workouts/:id/favorite', function (req, res) {
-    Workout.findById(req.params.id, function (error, workout) {
-        let { exercise, createdBy } = workout;
-        let addFavorite = { exercise };
-        addFavorite.name = req.body.name;
-        addFavorite.accessibleBy = [createdBy];
-        Favorite.create(addFavorite, function (error, createdFavorite) {
-            res.redirect(`/workouts/${workout._id}`);
-        });
-    });
+router.post('/workouts/:id/favorite', async function (req, res) {
+    try {
+        const workout = await Workout.findById(req.params.id);
+        if (!workout) return res.status(404).send('Workout not found.');
+
+        const { exercise, createdBy } = workout;
+        const newFavorite = {
+            name: req.body.name,
+            exercise,
+            accessibleBy: [createdBy]
+        };
+
+        const createdFavorite = await Favorite.create(newFavorite);
+        res.redirect(`/workouts/${workout._id}`);
+    } catch (error) {
+        console.error(error);
+        res.status(500).send('An error occurred while creating the favorite.');
+    }
 });
 
 // show
-router.get('/favorites/:id', function (req, res) {
-    Favorite.findById(req.params.id)
-    .populate('exercise.movement')
-    .exec(function (error, favorite) {
-        Request.find({
-            $or: [
-            {to: req.session.userId},
-            {from: req.session.userId},
-        ]}).populate('to').populate('from')
-        .exec(function (error, requests) {
-            let friends = [];
-            for (i = 0; i< requests.length; i++) {
-                if (requests[i].to._id.toHexString() === req.session.userId) {
-                    friends.push(requests[i].from);
-                } else if (requests[i].from._id.toHexString() === req.session.userId) {
-                    friends.push(requests[i].to);
-                }
-            }
-            res.render('favorite/show.ejs', {
-                favorite,
-                friends
-            });
+router.get('/favorites/:id', async function (req, res) {
+    try {
+        const favorite = await Favorite.findById(req.params.id)
+            .populate('exercise.movement')
+            .exec();
+
+        const requests = await Request.find({
+                $or: [{
+                        to: req.session.userId
+                    },
+                    {
+                        from: req.session.userId
+                    },
+                ]
+            })
+            .populate('to from')
+            .exec();
+
+        const friends = [];
+        for (const request of requests) {
+            if (request.to._id.toHexString() === req.session.userId) friends.push(request.from);
+            else if (request.from._id.toHexString() === req.session.userId) friends.push(request.to);
+        }
+
+        res.render('favorite/show.ejs', {
+            favorite,
+            friends
         });
-    });
+    } catch (error) {
+        console.error(error);
+        res.status(500).send('An error occurred while fetching the favorite.');
+    }
 });
 
 
