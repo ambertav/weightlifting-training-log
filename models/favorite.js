@@ -4,7 +4,8 @@ const Schema = mongoose.Schema;
 const favoriteSchema = new Schema({
     name: {
         type: String,
-        required: true
+        required: true,
+        trim: true
     },
     exercise: [{
         movement: {

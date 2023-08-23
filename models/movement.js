@@ -5,8 +5,12 @@ const movementSchema = new Schema({
     name: {
         type: String,
         required: true,
+        trim: true
     },
-    description: String,
+    description: {
+        type: String,
+        trim: true
+    },
     musclesWorked: Array,
     isCardio: Boolean,
     isWeighted: Boolean,
