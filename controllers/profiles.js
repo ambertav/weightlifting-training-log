@@ -1,54 +1,33 @@
 const express = require('express');
 const router = express.Router();
 const User = require('../models/user');
-const Workout = require('../models/workout');
 const Request = require('../models/request');
-
-require('dotenv').config();
-
-const {
-    S3Client,
-    PutObjectCommand
-} = require('@aws-sdk/client-s3');
-
-const s3Config = {
-    region: process.env.AWS_REGION,
-    credentials: {
-        accessKeyId: process.env.AWS_ACCESS_KEY,
-        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-    }
-};
-
-const s3Client = new S3Client(s3Config);
-const s3BaseUrl = 'https://s3.us-east-2.amazonaws.com/';
+const { s3Client, s3BaseUrl, PutObjectCommand } = require('../aws');
 
 // user profile
-router.get('/users/me', function (req, res) {
-    User.findById(req.session.userId, function (error, user) {
-        Workout.find({
-            createdBy: req.session.userId,
-            isFavorite: true
-        }, function (error, favWorkouts) {
-            Request.find({
-                $or: [
-                    {to: req.session.userId},
-                    {from: req.session.userId},
-                ]
-            })
-            .populate({
-                path: 'to from',
-                select: '_id username'
-            })
-            .exec(function (error, requests) {
-                res.render('profile.ejs', {
-                    user,
-                    favWorkouts,
-                    requests,
-                    viewer: null
-                });
-            });
+router.get('/users/me', async function (req, res) {
+    try {
+        const user = await User.findById(req.session.userId);
+
+        const requests = await Request.find({
+            $or: [
+                { to: req.session.userId },
+                { from: req.session.userId },
+            ]
+        }).populate({
+            path: 'to from',
+            select: '_id username'
+        }).exec();
+
+        res.render('profile.ejs', {
+            user,
+            requests,
+            viewer: null // indicates that the profile belongs to current user
         });
-    });
+    } catch (error) {
+        console.error(error);
+        res.status(500).send('Internal Server Error');
+    }
 });
 
 // user profile photo upload
@@ -66,16 +45,26 @@ router.put('/users/me/photo/edit', async function (req, res) {
 
     try {
         await s3Client.send(new PutObjectCommand(bucketParams));
-        User.findById(req.session.userId, function (error, user) {
-            user.profilePhoto = `${s3BaseUrl}${bucketParams.Bucket}/${fileName}`
-            user.save(function () {
-                res.redirect('/users/me');
-            });
-        })
-    } catch (err) {
-        console.log('Error', err);
+        const s3ProfilePhotoUrl = `${s3BaseUrl}${bucketParams.Bucket}/${fileName}`;
+
+        try {
+            const user = await User.findById(req.session.userId);
+            user.profilePhoto = s3ProfilePhotoUrl;
+            await user.save();
+
+            res.redirect('/users/me');
+
+        } catch (userError) {
+            console.error('Error updating user profile photo:', userError);
+            res.status(500).send('Error updating user profile photo');
+        }
+
+    } catch (s3Error) {
+        console.error('Error uploading profile photo to AWS S3:', s3Error);
+        res.status(500).send('Error uploading profile photo to AWS S3');
     }
 });
+
 
 // search for other users
 router.get('/users/search', function (req, res) {
@@ -86,44 +75,55 @@ router.get('/users/search', function (req, res) {
 });
 
 // handle search submission
-router.post('/users/search', function (req, res) {
-    let errorMessage = '';
-    User.find({
-        username: {
-            $regex: `${req.body.searchTerm.toLowerCase()}`
-        }
-    }, function (error, results) {
-        if (results.length === 0) {
-            errorMessage = 'No users found, please try again';
-        }
+router.post('/users/search', async function (req, res) {
+    try {
+        let errorMessage = '';
+        const results = await User.find({
+            username: {
+                $regex: `${req.body.searchTerm.toLowerCase()}`
+            }
+        });
+
+        if (results.length === 0) errorMessage = 'No users found, please try again';
+
         res.render('search.ejs', {
             error: errorMessage,
             results
         });
-    });
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).send('Internal Server Error');
+    }
 });
 
 // view other profiles
-router.get('/users/profile/:username', function (req, res) {
-    User.findOne({
-        username: req.params.username
-    }, function (error, user) {
-        if (user._id.toHexString() === req.session.userId) {
-            res.redirect('/users/me');
-        } else {
-            Request.findOne({
-                from: {$in: [req.session.userId, user._id]},
-                to: {$in: [req.session.userId, user._id]}
-            }, function (error, existingRequest) {
-                res.render('profile.ejs', {
-                    user,
-                    viewer: req.session.userId,
-                    existingRequest
-                });
-            });
-        }
-    });
-})
+router.get('/users/profile/:username', async function (req, res) {
+    try {
+        const user = await User.findOne({ username: req.params.username });
+        if (!user) return res.status(404).send('User not found');
+
+        if (user._id.toHexString() === req.session.userId) return res.redirect('/users/me');
+
+        const existingRequest = await Request.findOne({
+            from: { $in: [req.session.userId, user._id] },
+            to: { $in: [req.session.userId, user._id] }
+        });
+
+        res.render('profile.ejs', {
+            user,
+            viewer: req.session.userId,
+            existingRequest
+        });
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).send('Internal Server Error');
+    }
+});
+
+
+
 
 
 module.exports = router;
