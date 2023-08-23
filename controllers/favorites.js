@@ -131,7 +131,10 @@ router.get('/favorites/:id', async function (req, res) {
                     },
                 ]
             })
-            .populate('to from')
+            .populate({
+                path: 'to from',
+                select: '_id username'
+            })
             .exec();
 
         const friends = [];

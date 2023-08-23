@@ -34,7 +34,11 @@ router.get('/users/me', function (req, res) {
                     {to: req.session.userId},
                     {from: req.session.userId},
                 ]
-            }).populate('from').populate('to')
+            })
+            .populate({
+                path: 'to from',
+                select: '_id username'
+            })
             .exec(function (error, requests) {
                 res.render('profile.ejs', {
                     user,
