@@ -11,31 +11,28 @@
             <% displayWorkout(0); %>
             <% function displayWorkout (workoutIndex) { %>
                 <% if (workouts.length === 0) { %>
-                        <div class="center mb-5">
-                            <a href="/workouts/new" class="btn btn-outline-secondary btn-lg">Click here to get started</a>
-                        </div>
-                        <% return; %>
+                    <div class="center mb-5">
+                        <a href="/workouts/new" class="btn btn-outline-secondary btn-lg">Click here to get started</a>
+                    </div>
+                    <% return; %>
                 <% } %>
-
+                    
                 <% if (workoutIndex === workouts.length) { %>
                     <% return; %>
                 <% } %>
-
+                        
                 <% const workout = workouts[workoutIndex] %>
 
                 <div class="card m-3">
                     <a href="workouts/<%= workout._id %>">
-                        <h4>
-                            <%= workout.day %>
-                        </h4>
+                        <h4><%= workout.day %></h4>
                     </a>
                     <li class="card-body center">
-                        <% for (i = 0; i < workout.exercise.length; i ++) { %>
-                        <%= workout.exercise[i].movement.name %>
-                        <br>
+                        <% for (i = 0; i < workout.exercise.length; i++) { %>
+                            <%= workout.exercise[i].movement.name %>
+                            <br>
                         <% } %>
                     </li>
-                    </a>
                     <div class="card-footer">
                         <p>
                             <a href="/workouts/<%=workout._id %>/edit" class="btn btn-outline-warning btn-sm">Edit

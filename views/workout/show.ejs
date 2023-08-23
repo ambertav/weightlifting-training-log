@@ -20,24 +20,24 @@
     <div class="container">
         <div class="index">
             <% for (i = 0; i < workout.exercise.length; i++) { %>
-            <div class="exercise">
-                <h3><%= workout.exercise[i].movement.name %></h3>
-                <% if (workout.exercise[i].movement.isWeighted) { %>
-                    <p>Weight: <%= workout.exercise[i].weight %></p>
-                    <p>Sets: <%= workout.exercise[i].sets %></p>
-                    <p>Repetitions per Set: <%= workout.exercise[i].reps %></p>
-                <% } %>
-                <% if (workout.exercise[i].movement.isCardio) { %>
-                    <p>Duration: <%= workout.exercise[i].minutes %> minutes</p>
-                    <p>Calories Burned: <%= workout.exercise[i].caloriesBurned %></p>
-                <% } %>
-                <div class="form-check form-switch">
-                    <input type="checkbox" name="complete" role="switch" class="form-check-input complete" id="<%= workout._id %>"
-                    <%= workout.isComplete ? 'disabled' : '' %> 
-                    <%= workout.isComplete ? 'checked' : '' %> >
-                    <label for="switch" class="form-check-label">Complete</label>
+                <% const exercise = workout.exercise[i] %>
+                <div class="exercise">
+                    <h3><%= exercise.movement.name %></h3>
+                    <% if (exercise.movement.isWeighted) { %>
+                        <p>Weight: <%= exercise.weight %></p>
+                        <p>Sets: <%= exercise.sets %></p>
+                        <p>Repetitions per Set: <%= exercise.reps %></p>
+                    <% } %>
+                    <% if (exercise.movement.isCardio) { %>
+                        <p>Duration: <%= exercise.minutes %> minutes</p>
+                        <p>Calories Burned: <%= exercise.caloriesBurned %></p>
+                    <% } %>
+                    <div class="form-check form-switch">
+                        <input type="checkbox" name="complete" role="switch" class="form-check-input complete" id="<%= workout._id %>"
+                        <%= workout.isComplete ? 'disabled checked' : '' %>>
+                        <label for="switch" class="form-check-label">Complete</label>
+                    </div>
                 </div>
-            </div>
             <% } %>
         </div>
         <br>
@@ -54,9 +54,8 @@
         <div class="center">
             <a href="/workouts" class="btn btn-outline-secondary mb-3">Back to Workouts</a>
         </div>
-
-
     </div>
+
     <%- include('../partials/footer'); %>
 
 </body>
