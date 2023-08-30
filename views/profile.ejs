@@ -6,108 +6,119 @@
 
 <body>
     <div class="container">
-        <% if (viewer) { %>
-            <h1><%= user.username.replace(user.username.charAt(0), user.username.charAt(0).toUpperCase())%></h1>
-        <% } else { %>
-            <h1>Hello, <%= user.firstName.replace(user.firstName.charAt(0), user.firstName.charAt(0).toUpperCase()) %>!</h1>
-        <% } %>
-            <% if (user.profilePhoto !== 'none') { %>
-                <img src="<%= user.profilePhoto %>" alt="<%= user.firstName %>'s profile photo" width="100px" height="100px">
-            <% } else { %>
-                <h5>no image to display</h5>
-            <% } %>
-            <% if (!viewer) { %>
-            <form action="/users/me/photo/edit/?_method=PUT" method="POST" enctype="multipart/form-data">
-                <input type="file" name="profilePhoto" id="profilePhoto">
-                <input type="submit" value="Upload Photo">
-            </form>
-            <% } %>
-            <h5>Friends list</h5>
+        <div class="mb-5">
             <% if (viewer) { %>
-                <% if (existingRequest !== null) { %>
-                    <h5>Request Pending</h5>
-                <% } else { %>
-                    <form action="/users/request" method="POST">
-                        <input type="hidden" name="from" value="<%= viewer %>">
-                        <input type="hidden" name="to" value="<%= user._id %>">
-                        <input type="submit" value="Request Friend">
-                    </form>
-                <% } %>
+            <h1><%= user.username.replace(user.username.charAt(0), user.username.charAt(0).toUpperCase())%></h1>
             <% } else { %>
-                <% let friends = [] %>
-                <% let awaiting = [] %>
-                <% function sortRequests (requests) { %>
-                    <% for (i = 0; i < requests.length; i++) { %>
-                        <% if (requests[i].status === 'pending') { %>
-                            <% awaiting.push(requests[i]) %>
-                        <% } else { %>
-                            <% friends.push(requests[i]) %>
-                        <% } %>
-                    <% } %>
-                <% } %>
-                <% sortRequests(requests) %>
-                <h5>Pending Requests</h5>
-                    <ul>
-                        <% if (awaiting.length > 0) { %>
-                            <% displayAwaiting(0, awaiting) %>
-                            <% function displayAwaiting (index, awaiting) { %>
-                                <% if (index === awaiting.length) { %>
-                                    <% return; %>
-                                <% } %>
-
-                                <li>
-                                    <a href="/users/profile/<%= awaiting[index].from.username %>">
-                                        <%= awaiting[index].from.username %>
-                                    </a>
-                                    </li>
-                                    <form action="/users/request/edit/?_method=PUT" method="POST">
-                                        <input type="hidden" name="requestId" value="<%= awaiting[index]._id %>">
-                                        <input type="submit" name="decision" value="Accept">
-                                        <input type="submit" name="decision" value="Decline">
-                                    </form>
-                                </li>
-                                <% displayAwaiting(index + 1, awaiting) %>
-                        <% } %>
-                        <% } else { %>
-                            <li>No pending requests</li>
-                        <% } %>
-                    </ul>
-                    <h5>Friends List</h5>
-                    <ul>
-                        <% if (friends.length > 0) { %>
-                            <% displayFriend(0, friends) %>
-                            <% function displayFriend (index, friends) { %>
-                                <% if (index === friends.length) { %>
-                                    <% return; %>
-                                <% } %>
-
-                                <% let friend = null %>
-                                <li>
-                                    <% if (friends[index].to._id.toHexString() === user._id.toHexString()) { %>
-                                        <% friend = friends[index].from %>
-                                    <% } else { %>
-                                        <% friend = friends[index].to %>
-                                    <% } %>
-
-                                    <a href="/users/profile/<%= friend.username %>">
-                                        <%= friend.username %>
-                                    </a>
-                                </li>
-
-                            <% displayFriend(index + 1, friends) %>
-                        <% } %>
-                        <% } else { %>
-                            <li>No friends</li>
-                        <% } %>
-                    </ul>
+            <h1>Hello, <%= user.firstName.replace(user.firstName.charAt(0), user.firstName.charAt(0).toUpperCase()) %>!</h1>
             <% } %>
-            <h5>Favorite Workouts</h5>
-            <h5>Muscle distribution</h5>
-                <p>Weekly</p>
-                <p>Daily?</p>
+            <img src="<%= user.profilePhoto %>" alt="<%= user.firstName %>'s profile photo" width="200px" height="200px">
         </div>
+        <div>
+            <% const date = new Date(user.createdAt) %>
+            <span>Member Since: <%= new Intl.DateTimeFormat('en-US', { month: 'long', year: 'numeric'}).format(date) %></span>
+            <br>
+            <% if (user.bio) %> <span><%= user.bio %></span>
+        </div>
+        <% if (!viewer) { %>
+            <span><%= %></span>
+            <button class="btn btn-outline-warning mt-1" id="editProfile">Edit Profile</button>
+            <div class="mb-2 d-none" id="profileDiv">
+                <span>Change profile photo:</span>
+                <form action="/users/me/photo/edit/?_method=PUT" method="POST" enctype="multipart/form-data" class="form">
+                    <input type="file" name="profilePhoto" id="profilePhoto">
+                    <input type="submit" value="Upload Photo" class="btn btn-outline-dark btn-sm mt-1" disabled>
+                </form>
+                <form action="/users/me/bio/edit/?_method=PUT" method="POST" class="">
+                    <textarea name="bio" id="" cols="30" rows="3" maxlength="100" placeholder="update your bio"></textarea>
+                    <input type="submit" value="Update Bio" class="btn btn-outline-dark btn-sm mt-1">
+                </form>
+            </div>
+        <% } %>
 
+        <div class="index">
+            <% if (viewer) { %>
+            <% if (existingRequest === null) { %>
+            <form action="/users/request" method="POST">
+                <input type="hidden" name="from" value="<%= viewer %>">
+                <input type="hidden" name="to" value="<%= user._id %>">
+                <input type="submit" value="Request Friend">
+            </form>
+            <% } else if (existingRequest.status === 'pending') { %>
+            <h5>Request Pending</h5>
+            <% } else if (existingRequest.status === 'accepted') { %>
+            <h5>You can now share your favorite workouts with
+                <%= user.username.replace(user.username.charAt(0), user.username.charAt(0).toUpperCase()) %>!</h5>
+            <a href="/favorites">Click here to browse favorites</a>
+            <% } %>
+            <% } else { %>
+            <% let friends = [] %>
+            <% let awaiting = [] %>
+            <% function sortRequests (requests) { %>
+            <% for (i = 0; i < requests.length; i++) { %>
+            <% if (requests[i].status === 'pending') { %>
+            <% awaiting.push(requests[i]) %>
+            <% } else { %>
+            <% friends.push(requests[i]) %>
+            <% } %>
+            <% } %>
+            <% } %>
+            <% sortRequests(requests) %>
+            <div class="index">
+                <h5>Pending Requests</h5>
 
+                <ul>
+                    <% if (awaiting.length > 0) { %>
+                    <% for (i = 0; i < awaiting.length; i++) { %>
+                    <% let pending = null %>
+                    <li class="mb-2">
+                        <% if (awaiting[i].to._id.toHexString() === user._id.toHexString()) { %>
+                        <% pending = awaiting[i].from %>
+                        <a href="/users/profile/<%= pending.username %>">
+                            <%= pending.username %>
+                        </a>
+                        <form action="/users/request/edit/?_method=PUT" method="POST">
+                            <input type="hidden" name="requestId" value="<%= awaiting[i]._id %>">
+                            <input type="submit" name="decision" value="Accept" class="btn btn-outline-success btn-sm">
+                            <input type="submit" name="decision" value="Decline" class="btn btn-outline-danger btn-sm">
+                        </form>
+                    </li>
+                    <% } else { %>
+                    <li class="mb-2">Waiting for response from <a
+                            href="/users/profile/<%= awaiting[i].to.username %>"><%= awaiting[i].to.username %></a></li>
+                    <% } %>
+                    <% } %>
+                    <% } else { %>
+                    <li>No pending requests</li>
+                    <% } %>
+                </ul>
+            </div>
+            <div class="index">
+                <h5>Friends List</h5>
+                <ul>
+                    <% if (friends.length > 0) { %>
+                    <% for (i = 0; i < friends.length; i++) { %>
+                    <% let friend = null %>
+                    <li>
+                        <% if (friends[i].to._id.toHexString() === user._id.toHexString()) { %>
+                            <% friend = friends[i].from %>
+                        <% } else { %>
+                            <% friend = friends[i].to %>
+                        <% } %>
+
+                        <a href="/users/profile/<%= friend.username %>">
+                            <%= friend.username %>
+                        </a>
+                    </li>
+                    <% } %>
+                    <% } else { %>
+                    <li>No friends</li>
+                    <% } %>
+                </ul>
+                <% } %>
+            </div>
+        </div>
+    </div>
 
     <%- include('./partials/footer'); %>
 
