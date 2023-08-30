@@ -32,6 +32,7 @@ const userSchema = new Schema({
     bio: {
         type: String,
         maxLength: 100,
+        default: '',
         trim: true
     },
 }, {

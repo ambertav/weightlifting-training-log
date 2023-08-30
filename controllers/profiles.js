@@ -65,6 +65,20 @@ router.put('/users/me/photo/edit', async function (req, res) {
     }
 });
 
+// user profile update bio
+router.put('/users/me/bio/edit', async function (req, res) {
+    try {
+        const user = await User.findById(req.session.userId);
+
+        user.bio = req.body.bio;
+        await user.save();
+
+        res.redirect('/users/me');
+    } catch (error) {
+        console.error(error);
+        res.status(500).send('Error updating user bio');
+    }
+});
 
 // search for other users
 router.get('/users/search', function (req, res) {
