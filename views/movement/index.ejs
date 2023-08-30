@@ -14,9 +14,7 @@
                     <%= movement.name %>
                     <ul class="muscles">
                         <% movement.musclesWorked.forEach(function (m) { %>
-                        <li class="muscles">
-                            <%= m %>
-                        </li>
+                        <li class="muscles"><%= m %></li>
                         <% }); %>
                     </ul>
                 </h5>
@@ -29,6 +27,16 @@
             </li>
             <% }); %>
         </ul>
+
+        <div class="pagination">
+            <% if (currentPage > 1) { %>
+                <a href="/movements?page=<%= currentPage - 1 %>" class="btn btn-outline-secondary">Previous</a>
+            <% } %> 
+            <% if (currentPage < totalPages) { %>
+                <a href="/movements?page=<%= currentPage + 1 %>" class="btn btn-outline-secondary">Next</a>
+            <% } %> 
+        </div>
+
         <div class="right mb-5">
             <a href="/movements/new" class="btn btn-outline-secondary btn-lg mb-5">Add a New Movement</a>
         </div>

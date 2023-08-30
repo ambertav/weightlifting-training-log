@@ -3,19 +3,36 @@ const router = express.Router();
 const Movement = require('../models/movement');
 
 const muscleGroups = ['Deltoids', 'Triceps', 'Biceps', 'Forearms', 'Chest', 'Abdominals', 'Upper Back', 'Lower Back', 'Glutes', 'Quadriceps', 'Hamstrings', 'Calves'];
+const pageSize = 15;
 
 // index
 router.get('/movements', async function (req, res) {
     try {
-        const allMovements = await Movement.find({
+        const page = req.query.page || 1;
+
+        // count of all the movements accessible by user
+        const totalMovements = await Movement.countDocuments({
             createdBy: {
-                $in: [req.session.userId, null] // allows access both default and movements created specifically by user
+                $in: [req.session.userId, null]
             }
         });
 
+        const totalPages = Math.ceil(totalMovements / pageSize);
+
+        const movements = await Movement.find({
+            createdBy: {
+                $in: [req.session.userId, null] // allows access both default and movements created specifically by user
+            }
+        })
+        .skip((page - 1) * pageSize)
+        .limit(pageSize);
+
         res.render('movement/index.ejs', {
-            movements: allMovements
+            movements,
+            currentPage: page,
+            totalPages
         });
+
     } catch (error) {
         console.error(error);
         res.status(500).send('An error occurred while fetching movements.');
