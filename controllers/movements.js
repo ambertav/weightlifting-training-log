@@ -10,25 +10,36 @@ router.get('/movements', async function (req, res) {
     try {
         const page = req.query.page || 1;
 
+        // creates filtering parameters
+        const filter = {}
+        if (req.query.muscle) filter.musclesWorked = { $all: req.query.muscle };
+
         // count of all the movements accessible by user
         const totalMovements = await Movement.countDocuments({
-            createdBy: {
-                $in: [req.session.userId, null]
-            }
+            $and: [
+                filter,
+                {
+                    createdBy: { $in: [req.session.userId, null] }
+                }
+            ]
         });
 
         const totalPages = Math.ceil(totalMovements / pageSize);
 
         const movements = await Movement.find({
-            createdBy: {
-                $in: [req.session.userId, null] // allows access both default and movements created specifically by user
-            }
+            $and: [
+                filter,
+                {
+                    createdBy: { $in: [req.session.userId, null] }
+                }
+            ]
         })
         .skip((page - 1) * pageSize)
         .limit(pageSize);
 
         res.render('movement/index.ejs', {
             movements,
+            muscleGroups,
             currentPage: page,
             totalPages
         });

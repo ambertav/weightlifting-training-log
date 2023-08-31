@@ -5,19 +5,28 @@
 <%- include('../partials/nav'); %>
 
 <body>
+    <div class="container-fluid">
     <h2>Movements</h2>
-    <div class="container">
+    <div class="right">
+        <form action="/movements" method="GET" class="form w-25 center">
+            <select multiple name="muscle" class="form-select form-select-sm w-50" size="4">
+                <% for (const muscle of muscleGroups) { %>
+                        <option name="<%= muscle %>" value="<%= muscle %>">
+                        <label for="<%= muscle %>"><%= muscle %></label>
+                <% } %>
+            </select>
+            <input type="submit" value="Filter" class="btn btn-outline-success btn-sm">
+        </form>
+        <a href="/movements" class="btn btn-outline-secondary btn-sm">Clear</a>
+    </div>
+    <% if (movements.length === 0) { %>
+        <h5 class="center mb-5">No movements found</h5>
+    <% } else { %>
         <ul class="index-grid">
             <% movements.forEach(function (movement) { %>
             <li class="list">
-                <h5>
-                    <%= movement.name %>
-                    <ul class="muscles">
-                        <% movement.musclesWorked.forEach(function (m) { %>
-                        <li class="muscles"><%= m %></li>
-                        <% }); %>
-                    </ul>
-                </h5>
+                <h5><%= movement.name %></h5>
+                <p class="movement-index"><%= movement.description %></p>
                 <% if (movement.createdBy !== null) { %>
                 <a href="/movements/<%= movement._id %>/edit" class="btn btn-outline-warning btn-sm">Edit</a>
                 <form action="/movements/<%= movement._id %>?_method=DELETE" method="POST">
@@ -28,7 +37,7 @@
             <% }); %>
         </ul>
 
-        <div class="pagination">
+        <div class="pagination center mb-5">
             <% if (currentPage > 1) { %>
                 <a href="/movements?page=<%= currentPage - 1 %>" class="btn btn-outline-secondary">Previous</a>
             <% } %> 
@@ -36,7 +45,7 @@
                 <a href="/movements?page=<%= currentPage + 1 %>" class="btn btn-outline-secondary">Next</a>
             <% } %> 
         </div>
-
+        <% } %>
         <div class="right mb-5">
             <a href="/movements/new" class="btn btn-outline-secondary btn-lg mb-5">Add a New Movement</a>
         </div>
