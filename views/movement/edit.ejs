@@ -24,9 +24,7 @@
                     <input type="checkbox" name="musclesWorked[<%= muscle %>]" class="form-check-input"
                         <% movement.musclesWorked.forEach(function (m) { %> <% if (m === muscle) { %> checked <% } %>
                         <% }); %>>
-                    <label for="<%= muscle %>">
-                        <%= muscle %>
-                    </label>
+                    <label for="<%= muscle %>"><%= muscle %></label>
                 </div>
                 <% }); %>
             </div>

@@ -27,9 +27,8 @@ $(document).ready(function () {
     $inputParent.on('click', $delete, deleteExercise);
     $add.on('click', addExercise);
     $complete.on('change', updateProgress);
-    $('#addFavorite, #copy, #share').on('click', handleShowForm);
+    $('#addFavorite, #copy, #share, #editProfile').on('click', handleShowForm);
     $('#profilePhoto').on('change', enableSubmit);
-
 
 
     // Event Handlers
@@ -78,7 +77,9 @@ $(document).ready(function () {
     // for displaying hidden forms for adding, sharing favorites and copying to workouts
     function handleShowForm(evt) {
         evt.preventDefault();
-        let $form = $(evt.target).siblings('form');
+        let $form = null;
+        if (evt.target.id === 'editProfile') $form = $(evt.target).siblings('#profileDiv');
+        else $form = $(evt.target).siblings('form');
         $form.hasClass('d-none') ? $form.removeClass('d-none') : $form.addClass('d-none');
     }
 

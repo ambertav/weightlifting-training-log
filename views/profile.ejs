@@ -8,11 +8,12 @@
     <div class="container">
         <div class="mb-5">
             <% if (viewer) { %>
-            <h1><%= user.username.replace(user.username.charAt(0), user.username.charAt(0).toUpperCase())%></h1>
+                <h1 class="text-capitalize"><%= user.username %></h1>
             <% } else { %>
-            <h1>Hello, <%= user.firstName.replace(user.firstName.charAt(0), user.firstName.charAt(0).toUpperCase()) %>!</h1>
+                <h1 class="text-capitalize">Hello, <%= user.firstName%>!</h1>
             <% } %>
-            <img src="<%= user.profilePhoto %>" alt="<%= user.firstName %>'s profile photo" width="200px" height="200px">
+
+            <img src="<%= user.profilePhoto %>" alt="<%= user.username %>'s profile photo" width="200px" height="200px">
         </div>
         <div>
             <% const date = new Date(user.createdAt) %>
@@ -20,7 +21,9 @@
             <br>
             <% if (user.bio) %> <span><%= user.bio %></span>
         </div>
+
         <% if (!viewer) { %>
+            <% console.log(exerciseStats) %>
             <span><%= %></span>
             <button class="btn btn-outline-warning mt-1" id="editProfile">Edit Profile</button>
             <div class="mb-2 d-none" id="profileDiv">
@@ -36,6 +39,19 @@
             </div>
         <% } %>
 
+
+        <div>
+            <div>
+                Muscle Distribution graph
+                
+            </div>
+            <div>
+                <ul>Cardio Stats</ul>
+                    <li><%= exerciseStats.cardioStats.totalMinutes %> minutes</li>
+                    <li><%= exerciseStats.cardioStats.totalCalories %> calories burned</li>
+            </div>
+        </div>
+
         <div class="index">
             <% if (viewer) { %>
             <% if (existingRequest === null) { %>
@@ -48,7 +64,7 @@
             <h5>Request Pending</h5>
             <% } else if (existingRequest.status === 'accepted') { %>
             <h5>You can now share your favorite workouts with
-                <%= user.username.replace(user.username.charAt(0), user.username.charAt(0).toUpperCase()) %>!</h5>
+                <p class="text-capitalize"><%= user.username %>!</p></h5>
             <a href="/favorites">Click here to browse favorites</a>
             <% } %>
             <% } else { %>

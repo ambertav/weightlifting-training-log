@@ -22,9 +22,7 @@
                 <% muscleGroups.forEach(function (muscle) { %>
                 <div class="form-check">
                     <input type="checkbox" name="musclesWorked[<%= muscle %>]" class="form-check-input">
-                    <label for="<%= muscle %>">
-                        <%= muscle %>
-                    </label>
+                    <label for="<%= muscle %>"><%= muscle %></label>
                 </div>
                 <% }); %>
             </div>

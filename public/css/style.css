@@ -17,6 +17,11 @@ nav>ul>li {
     font-size: 20px;
 }
 
+nav>ul>li:first-child {
+    margin-right: auto;
+    font-size: 26px;
+}
+
 ul {
     list-style: none;
 }
@@ -51,7 +56,7 @@ footer {
     bottom: 0;
     width: 100%;
     background-color: #E37383;
-    padding: 20px;
+    padding: 15px;
     color: white;
     font-weight: 400;
     font-size: 20px;
@@ -141,7 +146,7 @@ footer {
     overflow: scroll;
 }
 
-.muscles {
+.movement-index {
     font-size: 14px;
     padding: 3px;
     font-style: italic;

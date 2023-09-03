@@ -29,7 +29,10 @@ router.get('/workouts/new', async function (req, res) {
                     $in: [req.session.userId, null] // allows search for both default and movements created specifically by user
                 }
             })
+            .select('_id name')
+            .lean()
             .exec();
+
         res.render('workout/new.ejs', {
             movements: availableMovements
         });
@@ -104,6 +107,8 @@ router.get('/workouts/:id/edit', async function (req, res) {
                     $in: [req.session.userId, null]
                 }
             })
+            .select('_id name')
+            .lean()
             .exec();
 
         if (foundWorkout) res.render('workout/edit.ejs', {

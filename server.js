@@ -32,7 +32,9 @@ db.on('error', function (error) {
 });
 
 app.use(express.static('public'));
-app.use(express.urlencoded({ extended: true }));
+app.use(express.urlencoded({
+    extended: true
+}));
 app.use(methodOverride('_method'));
 app.use(bodyParser.json());
 app.use(session({
@@ -51,7 +53,7 @@ app.use(function (req, res, next) {
     next();
 });
 
-function isAuthenticated (req, res, next) {
+function isAuthenticated(req, res, next) {
     if (!req.session.userId) return res.redirect('/login');
     next();
 }

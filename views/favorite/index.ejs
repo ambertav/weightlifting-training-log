@@ -37,11 +37,7 @@
                     </a>
                     <div class="card-footer">
                         <p>
-                            <a href="/favorites/<%=favorite._id %>/share" class="btn btn-outline-warning btn-sm mt-2 mb-3">Share with Gym Buddies</a>
-                            <br>
-                            <a href="/favorites/<%=favorite._id %>/copy" class="btn btn-outline-success btn-sm">Copy to Workouts</a>
-                            <br>
-                            <form action="/favorites/<%= favorite._id %>?_method=DELETE" method="POST">
+                            <form action="/favorites/<%= favorite._id %>/remove?_method=PUT" method="POST">
                                 <input type="submit" value="Remove Favorite" class="btn btn-outline-danger btn-sm ">
                             </form>
                         </p>
