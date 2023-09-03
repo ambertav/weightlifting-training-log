@@ -69,7 +69,7 @@ router.get('/users/me', async function (req, res) {
             }
         ]);
 
-        console.log(volumePerMovement);
+        const exerciseStats = formatExerciseStats(volumePerMovement);
 
         const requests = await Request.find({
             $or: [
@@ -84,6 +84,7 @@ router.get('/users/me', async function (req, res) {
         res.render('profile.ejs', {
             user,
             requests,
+            exerciseStats,
             viewer: null // indicates that the profile belongs to current user
         });
     } catch (error) {
@@ -198,6 +199,41 @@ router.get('/users/profile/:username', async function (req, res) {
     }
 });
 
+function formatExerciseStats (volumePerMovement) {
+    const musclePercent = {};
+
+    let totalVolume = 0;
+    let totalMinutes = 0;
+    let totalCalories = 0;
+  
+    for (const movement of volumePerMovement) {
+        totalVolume += movement.volume;
+        totalMinutes += movement.minutes;
+        totalCalories += movement.calories;
+
+        // assuming that each muscle worked within a movement is worked equally:
+        // divide movement volume by amount of muscles to get volume per muscle in each movement
+        for (const muscle of movement.musclesWorked) {
+            musclePercent[muscle] = (musclePercent[muscle] || 0) + (movement.volume / movement.musclesWorked.length);
+        }
+    }
+  
+    // convert volume per muscle in each movement to percentage per muscle of total volume
+    for (const muscle in musclePercent) {
+        musclePercent[muscle] = +(musclePercent[muscle] / totalVolume * 100).toFixed(1);
+    }
+
+    // store total minutes and calories burned
+    const cardioStats = {
+        totalMinutes,
+        totalCalories
+    }
+  
+    return {
+        musclePercent,
+        cardioStats
+    };
+}
 
 
 module.exports = router;
