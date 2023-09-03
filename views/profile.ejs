@@ -23,8 +23,6 @@
         </div>
 
         <% if (!viewer) { %>
-            <% console.log(exerciseStats) %>
-            <span><%= %></span>
             <button class="btn btn-outline-warning mt-1" id="editProfile">Edit Profile</button>
             <div class="mb-2 d-none" id="profileDiv">
                 <span>Change profile photo:</span>
@@ -38,19 +36,64 @@
                 </form>
             </div>
         <% } %>
-
-
+        <% if (exerciseStats) { %>
         <div>
+            <h5>Workout Metrics</h5>
             <div>
-                Muscle Distribution graph
+                <h6>Muscle Distribution</h6>
+                <canvas id="muscleDoughnut" class="w-75 h-50"></canvas>
+
+                <script defer>
+                $(document).ready(function () {
+                    const muscles = JSON.parse('<%- JSON.stringify(exerciseStats.musclePercent) %>');
+                    // Access the data from the EJS template variable
                 
+                    // Get the canvas element and create the doughnut chart
+                    const dough = document.getElementById('muscleDoughnut').getContext('2d');
+                
+                    new Chart(dough, {
+                        type: 'doughnut',
+                        data: {
+                            labels: Object.keys(muscles),
+                            datasets: [{
+                                data: Object.values(muscles),
+                                backgroundColor: [
+                                    'red',
+                                    'blue',
+                                    'green',
+                                    'orange',
+                                    'purple',
+                                    'pink',
+                                    'brown',
+                                    'black',
+                                    'gray',
+
+                                ],
+                            }],
+                        },
+                    });
+                });
+                </script>
             </div>
             <div>
-                <ul>Cardio Stats</ul>
-                    <li><%= exerciseStats.cardioStats.totalMinutes %> minutes</li>
-                    <li><%= exerciseStats.cardioStats.totalCalories %> calories burned</li>
+                <h6>Cardiovascular Stats</h6>
+                <table class="table w-25 text-center">
+                    <thead>
+                        <tr>
+                            <th>Minutes</th>
+                            <th>Calories Burned</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><%= exerciseStats.cardioStats.totalMinutes %></td>
+                            <td><%= exerciseStats.cardioStats.totalCalories %></td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
         </div>
+        <% } %>
 
         <div class="index">
             <% if (viewer) { %>
