@@ -1,13 +1,75 @@
 const express = require('express');
+const mongoose = require('mongoose');
 const router = express.Router();
 const User = require('../models/user');
 const Request = require('../models/request');
+const Workout = require('../models/workout');
 const { s3Client, s3BaseUrl, PutObjectCommand } = require('../aws');
 
 // user profile
 router.get('/users/me', async function (req, res) {
     try {
         const user = await User.findById(req.session.userId);
+
+        const volumePerMovement = await Workout.aggregate([
+            {
+                $match: { createdBy: mongoose.Types.ObjectId(req.session.userId) } // find user's workouts
+            },
+            { $unwind: '$exercise' },
+            {
+                $lookup: { // get access to musclesWorked from each movement
+                    from: 'movements',
+                    localField: 'exercise.movement',
+                    foreignField: '_id',
+                    as: 'exercise.movement'
+                }
+            },
+            { $unwind: '$exercise.movement' },
+            {
+                $group: {
+                    _id: '$exercise.movement',
+                    volume: {
+                        $sum: {
+                            $cond: [ // if not cardio, sum volume (sets x reps) per movement id
+                                { $eq: ['$exercise.movement.isCardio', false] },
+                                { $multiply: ['$exercise.sets', '$exercise.reps'] }, 
+                                0
+                            ]
+                        }
+                    },
+                    minutes: {
+                        $sum: {
+                            $cond: [ // if cardio, sum minutes per movement id
+                                { $eq: ['$exercise.movement.isCardio', true] }, 
+                                '$exercise.minutes',
+                                0
+                            ]
+                        }
+                    },
+                    calories: {
+                        $sum: {
+                            $cond: [ // if cardio, sum caloried burned per movement id
+                                { $eq: ['$exercise.movement.isCardio', true] }, 
+                                '$exercise.caloriesBurned',
+                                0
+                            ]
+                        }
+                    },
+                    musclesWorked: { $first: '$exercise.movement.musclesWorked' } 
+                }
+            },              
+            {
+                $project: {
+                    _id: 0,
+                    musclesWorked: '$musclesWorked',
+                    volume: 1,
+                    minutes: 1,
+                    calories: 1
+                }
+            }
+        ]);
+
+        console.log(volumePerMovement);
 
         const requests = await Request.find({
             $or: [
@@ -135,8 +197,6 @@ router.get('/users/profile/:username', async function (req, res) {
         res.status(500).send('Internal Server Error');
     }
 });
-
-
 
 
 
