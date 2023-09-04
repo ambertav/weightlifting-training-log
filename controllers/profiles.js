@@ -90,7 +90,7 @@ router.put('/users/me/bio/edit', async function (req, res) {
 router.get('/users/search', function (req, res) {
     res.render('search.ejs', {
         error: null,
-        results: null
+        searchResults: null
     });
 });
 
@@ -98,17 +98,18 @@ router.get('/users/search', function (req, res) {
 router.post('/users/search', async function (req, res) {
     try {
         let errorMessage = '';
-        const results = await User.find({
+        const searchResults = await User.find({
             username: {
                 $regex: `${req.body.searchTerm.toLowerCase()}`
             }
-        });
+        })
+        .select('username profilePhoto');
 
-        if (results.length === 0) errorMessage = 'No users found, please try again';
+        if (searchResults.length === 0) errorMessage = 'No users found, please try again';
 
         res.render('search.ejs', {
             error: errorMessage,
-            results
+            searchResults
         });
 
     } catch (error) {

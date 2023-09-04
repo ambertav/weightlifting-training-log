@@ -33,6 +33,15 @@ router.post('/signup', async function (req, res) {
         res.redirect('/workouts');
     } catch (error) {
         console.error(error);
+        if (error.code === 11000) {
+            let errorMessage = ''
+            if (error.keyPattern.email === 1) errorMessage = 'Email is already in use.';
+            else if (error.keyPattern.username === 1) errorMessage = 'Username is already in use.';
+            return res.render('signup.ejs', {
+                error: errorMessage
+            });
+        }
+
         const errorMessage = 'An error occurred during signup.';
         res.render('signup.ejs', {
             error: errorMessage
