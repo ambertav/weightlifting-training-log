@@ -11,65 +11,8 @@ router.get('/users/me', async function (req, res) {
     try {
         const user = await User.findById(req.session.userId);
 
-        const volumePerMovement = await Workout.aggregate([
-            {
-                $match: { createdBy: mongoose.Types.ObjectId(req.session.userId) } // find user's workouts
-            },
-            { $unwind: '$exercise' },
-            {
-                $lookup: { // get access to musclesWorked from each movement
-                    from: 'movements',
-                    localField: 'exercise.movement',
-                    foreignField: '_id',
-                    as: 'exercise.movement'
-                }
-            },
-            { $unwind: '$exercise.movement' },
-            {
-                $group: {
-                    _id: '$exercise.movement',
-                    volume: {
-                        $sum: {
-                            $cond: [ // if not cardio, sum volume (sets x reps) per movement id
-                                { $eq: ['$exercise.movement.isCardio', false] },
-                                { $multiply: ['$exercise.sets', '$exercise.reps'] }, 
-                                0
-                            ]
-                        }
-                    },
-                    minutes: {
-                        $sum: {
-                            $cond: [ // if cardio, sum minutes per movement id
-                                { $eq: ['$exercise.movement.isCardio', true] }, 
-                                '$exercise.minutes',
-                                0
-                            ]
-                        }
-                    },
-                    calories: {
-                        $sum: {
-                            $cond: [ // if cardio, sum caloried burned per movement id
-                                { $eq: ['$exercise.movement.isCardio', true] }, 
-                                '$exercise.caloriesBurned',
-                                0
-                            ]
-                        }
-                    },
-                    musclesWorked: { $first: '$exercise.movement.musclesWorked' } 
-                }
-            },              
-            {
-                $project: {
-                    _id: 0,
-                    musclesWorked: '$musclesWorked',
-                    volume: 1,
-                    minutes: 1,
-                    calories: 1
-                }
-            }
-        ]);
-
-        const exerciseStats = formatExerciseStats(volumePerMovement);
+        const volumePerMovement = await getVolume(req.session.userId);
+        const exerciseStats = volumePerMovement.length > 0 ? formatExerciseStats(volumePerMovement) : null;
 
         const requests = await Request.find({
             $or: [
@@ -182,6 +125,9 @@ router.get('/users/profile/:username', async function (req, res) {
 
         if (user._id.toHexString() === req.session.userId) return res.redirect('/users/me');
 
+        const volumePerMovement = await getVolume(user._id);
+        const exerciseStats = volumePerMovement.length > 0 ? formatExerciseStats(volumePerMovement) : null;
+
         const existingRequest = await Request.findOne({
             from: { $in: [req.session.userId, user._id] },
             to: { $in: [req.session.userId, user._id] }
@@ -190,6 +136,7 @@ router.get('/users/profile/:username', async function (req, res) {
         res.render('profile.ejs', {
             user,
             viewer: req.session.userId,
+            exerciseStats,
             existingRequest
         });
 
@@ -198,6 +145,73 @@ router.get('/users/profile/:username', async function (req, res) {
         res.status(500).send('Internal Server Error');
     }
 });
+
+async function getVolume (userId) {
+    try {
+        const volume = await Workout.aggregate([
+            {
+                $match: { createdBy: mongoose.Types.ObjectId(userId) } // find user's workouts
+            },
+            { $unwind: '$exercise' },
+            {
+                $lookup: { // get access to musclesWorked from each movement
+                    from: 'movements',
+                    localField: 'exercise.movement',
+                    foreignField: '_id',
+                    as: 'exercise.movement'
+                }
+            },
+            { $unwind: '$exercise.movement' },
+            {
+                $group: {
+                    _id: '$exercise.movement',
+                    volume: {
+                        $sum: {
+                            $cond: [ // if not cardio, sum volume (sets x reps) per movement id
+                                { $eq: ['$exercise.movement.isCardio', false] },
+                                { $multiply: ['$exercise.sets', '$exercise.reps'] }, 
+                                0
+                            ]
+                        }
+                    },
+                    minutes: {
+                        $sum: {
+                            $cond: [ // if cardio, sum minutes per movement id
+                                { $eq: ['$exercise.movement.isCardio', true] }, 
+                                '$exercise.minutes',
+                                0
+                            ]
+                        }
+                    },
+                    calories: {
+                        $sum: {
+                            $cond: [ // if cardio, sum caloried burned per movement id
+                                { $eq: ['$exercise.movement.isCardio', true] }, 
+                                '$exercise.caloriesBurned',
+                                0
+                            ]
+                        }
+                    },
+                    musclesWorked: { $first: '$exercise.movement.musclesWorked' } 
+                }
+            },              
+            {
+                $project: {
+                    _id: 0,
+                    musclesWorked: '$musclesWorked',
+                    volume: 1,
+                    minutes: 1,
+                    calories: 1
+                }
+            }
+        ]);
+        
+        return volume;
+    } catch (error) {
+        console.error(error);
+        return null;
+    }
+}
 
 function formatExerciseStats (volumePerMovement) {
     const musclePercent = {};
