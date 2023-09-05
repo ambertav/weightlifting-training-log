@@ -22,11 +22,16 @@ router.get('/users/me', async function (req, res) {
         }).populate({
             path: 'to from',
             select: '_id username'
-        }).exec();
+        });
+
+        const awaiting = filterRequests(requests, 'pending');
+        const friendships = filterRequests(requests, 'accepted');
+
 
         res.render('profile.ejs', {
             user,
-            requests,
+            awaiting,
+            friendships,
             exerciseStats,
             viewer: null // indicates that the profile belongs to current user
         });
@@ -212,6 +217,12 @@ async function getVolume (userId) {
         console.error(error);
         return null;
     }
+}
+
+function filterRequests (requests, status) {
+    return requests.filter(function (req) {
+        return req.status === status;
+    });
 }
 
 function formatExerciseStats (volumePerMovement) {
