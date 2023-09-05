@@ -2,34 +2,33 @@
 <html lang="en">
 
 <%- include('./partials/head'); %>
-<%- include('./partials/nav'); %>
 
 <body>
-    <h2>Please Login</h2>
-    <div class="container-fluid center">
-        <form action="/login" method="POST" autocomplete="off" class="form">
-            <div class="mb-3 form-floating">
-                <input type="email" name="email" class="form-control" id="email" required>
-                <label for="email">Email address</label>
+    <div class="container-lg">
+        <%- include('./partials/nav'); %>
+        <div class="container w-75 my-5">
+            <div class="vert-index">
+                <h2 class="mt-4">Login</h2>
+                <form action="/login" method="POST" autocomplete="off" class="form">
+                    <div class="mb-3 form-floating">
+                        <input type="email" name="email" class="form-control" id="email" required>
+                        <label for="email">Email address</label>
+                    </div>
+                    <div class="mb-3 form-floating">
+                        <input type="password" name="password" class="form-control" id="password" required>
+                        <label for="password">Password</label>
+                    </div>
+                    <% if (error) { %>
+                        <span class="text-danger my-2 fw-bold center"><%= error %></span>
+                    <% } %>
+                    <div class="center mt-5">
+                        <input type="submit" value="Login" class="btn btn-outline-secondary btn-lg">
+                    </div>
+                </form>
             </div>
-            <div class="mb-3 form-floating">
-                <input type="password" name="password" class="form-control" id="password" required>
-                <label for="password">Password</label>
-            </div>
-            <div class="center">
-                <% if (error) { %>
-                <span style="color: red;"><%= error %></span>
-                <% } %>
-            </div>
-            <br>
-            <div class="mb-3 center">
-                <input type="submit" value="Login" class="btn btn-outline-secondary btn-lg">
-            </div>
-        </form>
+        </div>
     </div>
-
     <%- include('./partials/footer'); %>
-
 </body>
 
 </html>

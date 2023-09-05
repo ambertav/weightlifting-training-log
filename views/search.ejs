@@ -2,42 +2,49 @@
 <html lang="en">
 
 <%- include('./partials/head'); %>
-<%- include('./partials/nav'); %>
 
 <body>
-    <h2>Search for Users</h2>
-    <div class="container-fluid center">
-        <form action="/users/search" method="POST" autocomplete="off" class="form">
-            <div class="mb-3 form-floating">
-                <input type="text" name="searchTerm" class="form-control" id="searchTerm" required>
-                <label for="searchTerm">Search by Username</label>
+    <div class="container-lg">
+        <%- include('./partials/nav'); %>
+        <div class="container">
+            <div class="center mb-5">
+                <div class="w-75 vert-index">
+                    <h2>Search for Users</h2>
+                    <form action="/users/search" method="POST" autocomplete="off" class="form">
+                        <div class="mb-3 form-floating">
+                            <input type="text" name="searchTerm" class="form-control" id="searchTerm" required>
+                            <label for="searchTerm">Search by Username</label>
+                        </div>
+                        <div class="center">
+                            <% if (error) { %>
+                                <span class="text-danger my-2 fw-bold"><%= error %></span>
+                            <% } %>
+                        </div>
+                        <br>
+                        <div class="mb-3 center">
+                            <input type="submit" value="Search" class="btn btn-outline-secondary btn-lg">
+                        </div>
+                    </form>
+                </div>
             </div>
-            <div class="center">
-                <% if (error) { %>
-                    <span style="color: red;"><%= error %></span>
+                <% if (searchResults) { %>
+                    <div class="mb-5">
+                        <ul class="index-grid">
+                            <% for (const user of searchResults) { %>
+                                <li class="m-2 text-center">
+                                    <a href="/users/profile/<%= user.username %>" class="text-capitalize">
+                                        <img src="<%= user.profilePhoto %>" alt="<%= user.username %>'s profile photo" class="rounded" width="70px" height="70px">
+                                        <br>
+                                        <%= user.username %>
+                                    </a>
+                                </li>
+                            <% } %>
+                        </ul>
+                    </div>
                 <% } %>
-            </div>
-            <br>
-            <div class="mb-3 center">
-                <input type="submit" value="Search" class="btn btn-outline-secondary btn-lg">
-            </div>
-        </form>
-    </div>
-
-    <% if (results) { %>
-        <div>
-            <ul>
-                <% for (i = 0; i < results.length; i++) { %>
-                    <li>
-                        <a href="/users/profile/<%= results[i].username %>"><%= results[i].username %></a>
-                    </li>
-                <% } %>
-            </ul>
         </div>
-    <% } %>
-
+    </div>
     <%- include('./partials/footer'); %>
-
 </body>
 
 </html>

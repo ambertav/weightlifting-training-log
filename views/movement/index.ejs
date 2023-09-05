@@ -2,55 +2,62 @@
 <html lang="en">
 
 <%- include('../partials/head'); %>
-<%- include('../partials/nav'); %>
 
 <body>
     <div class="container-fluid">
-    <h2>Movements</h2>
-    <div class="right">
-        <form action="/movements" method="GET" class="form w-25 center">
-            <select multiple name="muscle" class="form-select form-select-sm w-50" size="4">
-                <% for (const muscle of muscleGroups) { %>
-                        <option name="<%= muscle %>" value="<%= muscle %>">
-                        <label for="<%= muscle %>"><%= muscle %></label>
-                <% } %>
-            </select>
-            <input type="submit" value="Filter" class="btn btn-outline-success btn-sm">
-        </form>
-        <a href="/movements" class="btn btn-outline-secondary btn-sm">Clear</a>
-    </div>
-    <% if (movements.length === 0) { %>
-        <h5 class="center mb-5">No movements found</h5>
-    <% } else { %>
-        <ul class="index-grid">
-            <% movements.forEach(function (movement) { %>
-            <li class="list">
-                <h5><%= movement.name %></h5>
-                <p class="movement-index"><%= movement.description %></p>
-                <% if (movement.createdBy !== null) { %>
-                <a href="/movements/<%= movement._id %>/edit" class="btn btn-outline-warning btn-sm">Edit</a>
-                <form action="/movements/<%= movement._id %>?_method=DELETE" method="POST">
-                    <input type="submit" value="Delete" class="btn btn-outline-danger btn-sm">
+        <%- include('../partials/nav'); %>
+        <div class="container">
+            <h2>Movements</h2>
+            <div class="index center">
+                <form action="/movements" method="GET" class="form">
+                    <select multiple name="muscle" class="form-select form-select-sm" size="4">
+                        <% for (const muscle of muscleGroups) { %>
+                            <option name="<%= muscle %>" value="<%= muscle %>">
+                            <label for="<%= muscle %>"><%= muscle %></label>
+                        <% } %>
+                    </select>
+                    <input type="submit" value="Add Filter" class="btn btn-outline-info btn-sm mx-5 mt-3">
+                    <a href="/movements" class="btn btn-outline-dark btn-sm mx-5 mt-3">Clear Filter</a>
                 </form>
-                <% } %>
-            </li>
-            <% }); %>
-        </ul>
-
-        <div class="pagination center mb-5">
-            <% if (currentPage > 1) { %>
-                <a href="/movements?page=<%= currentPage - 1 %>" class="btn btn-outline-secondary">Previous</a>
-            <% } %> 
-            <% if (currentPage < totalPages) { %>
-                <a href="/movements?page=<%= currentPage + 1 %>" class="btn btn-outline-secondary">Next</a>
-            <% } %> 
-        </div>
-        <% } %>
-        <div class="right mb-5">
-            <a href="/movements/new" class="btn btn-outline-secondary btn-lg mb-5">Add a New Movement</a>
+            </div>
+            <% if (movements.length === 0) { %>
+                <br>
+                <br>
+                <h5 class="center my-5 fw-bold text-danger">No movements found</h5>
+            <% } else { %>
+                <ul class="row mt-5">
+                    <% for (const movement of movements) { %>
+                        <div class="col-md-4">
+                            <li class="m-3 p-2">
+                                <h5 class="text-capitalize"><%= movement.name %></h5>
+                                <p class="description px-3 py-2"><%= movement.description %></p>
+                                <% if (movement.createdBy !== null) { %>
+                                    <div class="center">
+                                        <a href="/movements/<%= movement._id %>/edit"
+                                            class="btn btn-outline-warning btn-sm mx-2">Edit</a>
+                                        <form action="/movements/<%= movement._id %>?_method=DELETE" method="POST">
+                                            <input type="submit" value="Delete" class="btn btn-outline-danger btn-sm">
+                                        </form>
+                                    </div>
+                                <% } %>
+                            </li>
+                        </div>
+                        <% } %>
+                </ul>
+                <div class="center mb-5">
+                    <% if (currentPage > 1) { %>
+                        <a href="/movements?page=<%= currentPage - 1 %>" class="btn btn-outline-secondary">Previous</a>
+                    <% } %>
+                    <% if (currentPage < totalPages) { %>
+                        <a href="/movements?page=<%= currentPage + 1 %>" class="btn btn-outline-secondary">Next</a>
+                    <% } %>
+                </div>
+            <% } %>
+            <div class="right mb-5">
+                <a href="/movements/new" class="btn btn-outline-secondary btn-lg mb-3">Add a New Movement</a>
+            </div>
         </div>
     </div>
-
     <%- include('../partials/footer'); %>
 </body>
 

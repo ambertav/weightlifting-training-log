@@ -2,96 +2,88 @@
 <html lang="en">
 
 <%- include('../partials/head'); %>
-<%- include('../partials/nav'); %>
 
-<% const daysOfTheWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'] %>
+<% const daysOfTheWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']; %>
 
 <body>
-    <h2>Edit Workout</h2>
     <div class="container-fluid">
-        <form action="/workouts/<%= workout._id %>?_method=PUT" method="POST">
-            <div class="row md-5">
-                <Label>
-                    Select Day:
-                    <select name="day" class="form-select form-select-lg" size="3" required>
-                        <% for (i = 0; i < daysOfTheWeek.length; i++) { %>
-                            <option value="<%= daysOfTheWeek[i] %>"
-                                <% if (workout.day === daysOfTheWeek[i]) { %> selected<% } %>>
-                                <%= daysOfTheWeek[i] %>
-                            </option>
-                        <% } %>
-                    </select>
-                </Label>
-            </div>
-            <h4>Exercise Details</h4>
-            <div class="workoutInputParent">
-                <% displayExercise(0, movements); %>
-                <% function displayExercise (exerciseIndex, movements) { %>
-                    <% if (exerciseIndex === workout.exercise.length) { %>
-                        <% return; %>
-                    <% } %>
-
-                    <% const exercise = workout.exercise[exerciseIndex] %>
-
-                    <div class="workoutInputChild">
-                        <div class="index">
-                            <label>
-                                Select Movement
-                                <select name="exercise[movement][]" class="form-select" size="6" required>
-                                    <% movements.forEach(function (movement) { %>
-                                        <option value="<%= movement._id %>"
-                                            <% if (exercise.movement.name === movement.name) { %> selected <% } %>>
-                                            <%= movement.name %>
-                                        </option>
-                                    <% }); %>
-                                </select>
-                            </label>
-                            <div class="right">
-                                <div class="form-floating">
-                                    <input type="number" name="exercise[weight][]" min="0" class="form-control" id="weight"
-                                        value="<%= exercise.weight %>">
-                                    <label for="weight">Weight</label>
-                                </div>
-                                <div class="form-floating">
-                                    <input type="number" name="exercise[sets][]" min="1" class="form-control" id="sets"
-                                        value="<%= exercise.sets %>">
-                                    <label for="sets">Sets</label>
-                                </div>
-                                <div class="form-floating">
-                                    <input type="number" name="exercise[reps][]" min="1" class="form-control" id="reps"
-                                        value="<%= exercise.reps %>">
-                                    <label for="reps">Repetitions per Set</label>
-                                </div>
-                                <div class="form-floating">
-                                    <input type="number" name="exercise[minutes][]" min="1" class="form-control"
-                                        id="minutes" value="<%= exercise.minutes %>">
-                                    <label for="reps">Minutes</label>
-                                </div>
-                                <div class="form-floating">
-                                    <input type="number" name="exercise[caloriesBurned][]" min="1" class="form-control"
-                                        id="calories" value="<%= exercise.caloriesBurned %>">
-                                    <label for="reps">Calories Burned</label>
-                                </div>
-                                <br>
-                                <p class="btn btn-outline-danger btn-sm delete">Delete Exercise</p>
-                            </div>
-                        </div>
-                        <br>
+        <%- include('../partials/nav'); %>
+        <div class="container">
+            <h2>Edit Workout</h2>
+            <form action="/workouts/<%= workout._id %>?_method=PUT" method="POST">
+                <div class="row">
+                    <div>
+                        <p class="fs-6 fst-italic">Select Day:</p>
+                        <select name="day" class="form-select form-select-lg" size="4" required>
+                            <% for (const day of daysOfTheWeek) { %>
+                                <option value="<%= day %>" <% if (workout.day === day) { %> selected<% } %>>
+                                    <%= day %>
+                                </option>
+                            <% } %>
+                        </select>
                     </div>
-                    <% displayExercise(exerciseIndex + 1, movements); %>
-                <% } %>
-            </div>
-            <div class="mb-3 right">
-                <p class="btn btn-outline-success btn-sm add">Add Another Exercise</p>
-            </div>
-            <div class="mb-5 center">
-                <input type="submit" value="Update Workout" class="btn btn-outline-secondary btn-lg mb-5">
-            </div>
-        </form>
+                </div>
+                <h4 class="mt-4">Exercise Details</h4>
+                <div class="workoutInputParent">
+                    <% displayExercise(0, movements); %>
+                    <% function displayExercise (exerciseIndex, movements) { %>
+                        <% if (exerciseIndex === workout.exercise.length) return; %>
+
+                        <% const exercise = workout.exercise[exerciseIndex] %>
+
+                        <div class="workoutInputChild">
+                            <div class="index">
+                                <div class="p-3 mt-3">
+                                    <p class="fs-6 fst-italic">Select Movement:</p>
+                                    <select name="exercise[movement][]" class="form-select" size="7" required>
+                                        <% for (const movement of movements) { %>
+                                            <option value="<%= movement._id %>"
+                                                <% if (exercise.movement.name === movement.name) { %> selected <% } %>>
+                                                <%= movement.name %>
+                                            </option>
+                                        <% } %>
+                                    </select>
+                                </div>
+                                <div class="right">
+                                    <div class="form-floating">
+                                        <input type="number" name="exercise[weight][]" min="0" class="form-control mb-1" id="weight" value="<%= exercise.weight %>">
+                                        <label for="weight">Weight</label>
+                                    </div>
+                                    <div class="form-floating">
+                                        <input type="number" name="exercise[sets][]" min="1" class="form-control mb-1" id="sets" value="<%= exercise.sets %>">
+                                        <label for="sets">Sets</label>
+                                    </div>
+                                    <div class="form-floating">
+                                        <input type="number" name="exercise[reps][]" min="1" class="form-control mb-1" id="reps" value="<%= exercise.reps %>">
+                                        <label for="reps">Repetitions per Set</label>
+                                    </div>
+                                    <div class="form-floating">
+                                        <input type="number" name="exercise[minutes][]" min="1" class="form-control mb-1" id="minutes" value="<%= exercise.minutes %>">
+                                        <label for="reps">Minutes</label>
+                                    </div>
+                                    <div class="form-floating">
+                                        <input type="number" name="exercise[caloriesBurned][]" min="1" class="form-control" id="calories" value="<%= exercise.caloriesBurned %>">
+                                        <label for="reps">Calories Burned</label>
+                                    </div>
+                                    <br>
+                                    <p class="btn btn-outline-danger btn-sm delete">Delete Exercise</p>
+                                </div>
+                            </div>
+                            <br>
+                        </div>
+                        <% displayExercise(exerciseIndex + 1, movements); %>
+                    <% } %>
+                </div>
+                <div class="mb-3 right">
+                    <p class="btn btn-outline-success btn-sm add">Add Another Exercise</p>
+                </div>
+                <div class="mb-5 center">
+                    <input type="submit" value="Update Workout" class="btn btn-outline-secondary btn-lg mb-5">
+                </div>
+            </form>
+        </div>
     </div>
-
     <%- include('../partials/footer'); %>
-
 </body>
 
 </html>

@@ -2,185 +2,183 @@
 <html lang="en">
 
 <%- include('./partials/head'); %>
-<%- include('./partials/nav'); %>
 
 <body>
-    <div class="container">
-        <div class="mb-5">
-            <% if (viewer) { %>
-                <h1 class="text-capitalize"><%= user.username %></h1>
-            <% } else { %>
-                <h1 class="text-capitalize">Hello, <%= user.firstName%>!</h1>
-            <% } %>
+    <div class="container-fluid">
+        <%- include('./partials/nav'); %>
+        <div class="container-lg">
+            <div class="row justify-content-between">
+                <div class="col-lg-4">
+                    <% if (viewer) { %>
+                        <h1 class="text-capitalize"><%= user.username %></h1>
+                    <% } else { %>
+                        <h1 class="text-capitalize">Hello, <%= user.firstName%>!</h1>
+                    <% } %>
+                    <br>
+                    <% const date = new Date(user.createdAt) %>
+                    <p class="fs-6 fst-italic">Member Since:
+                        <%= new Intl.DateTimeFormat('en-US', { month: 'long', year: 'numeric'}).format(date) %></p>
+                    <br>
+                    <br>
+                    <div class="center">
+                        <img src="<%= user.profilePhoto %>" alt="<%= user.username %>'s profile photo" class="rounded my-5 w-50 h-40">
+                    </div>
 
-            <img src="<%= user.profilePhoto %>" alt="<%= user.username %>'s profile photo" width="200px" height="200px">
-        </div>
-        <div>
-            <% const date = new Date(user.createdAt) %>
-            <span>Member Since: <%= new Intl.DateTimeFormat('en-US', { month: 'long', year: 'numeric'}).format(date) %></span>
-            <br>
-            <% if (user.bio) %> <span><%= user.bio %></span>
-        </div>
+                    <form action="/users/me/photo/edit/?_method=PUT" method="POST" enctype="multipart/form-data"
+                        class="d-none userPhoto">
+                        <div class="form-group">
+                            <input type="file" name="profilePhoto" id="profilePhoto" class="form-control-file">
+                            <input type="submit" value="Update Photo" class="btn btn-outline-dark btn-sm mt-3" disabled>
+                        </div>
+                    </form>
 
-        <% if (!viewer) { %>
-            <button class="btn btn-outline-warning mt-1" id="editProfile">Edit Profile</button>
-            <div class="mb-2 d-none" id="profileDiv">
-                <span>Change profile photo:</span>
-                <form action="/users/me/photo/edit/?_method=PUT" method="POST" enctype="multipart/form-data" class="form">
-                    <input type="file" name="profilePhoto" id="profilePhoto">
-                    <input type="submit" value="Upload Photo" class="btn btn-outline-dark btn-sm mt-1" disabled>
-                </form>
-                <form action="/users/me/bio/edit/?_method=PUT" method="POST" class="">
-                    <textarea name="bio" id="" cols="30" rows="3" maxlength="100" placeholder="update your bio"></textarea>
-                    <input type="submit" value="Update Bio" class="btn btn-outline-dark btn-sm mt-1">
-                </form>
-            </div>
-        <% } %>
-        <% if (exerciseStats) { %>
-        <div>
-            <h5>Workout Metrics</h5>
-            <div>
-                <h6>Muscle Distribution</h6>
-                <canvas id="muscleDoughnut" class="w-75 h-50"></canvas>
-
-                <script defer>
-                $(document).ready(function () {
-                    const muscles = JSON.parse('<%- JSON.stringify(exerciseStats.musclePercent) %>');
-                    // Access the data from the EJS template variable
+                    <br>
+                    <% if (user.bio) %> <p class="fst-italic userBio my-5"><%= user.bio %></p>
+                    <form action="/users/me/bio/edit/?_method=PUT" method="POST" class="d-none userBioForm">
+                        <div class="form-floating">
+                            <textarea name="bio" class="form-control" rows="4" maxlength="100" style="height:100%"><%= user.bio %></textarea>
+                            <label for="bio">Bio</label>
+                        </div>
+                        <input type="submit" value="Update Bio" class="btn btn-outline-dark btn-sm mt-3">
+                    </form>
+                </div>
                 
-                    // Get the canvas element and create the doughnut chart
-                    const dough = document.getElementById('muscleDoughnut').getContext('2d');
-                
-                    new Chart(dough, {
-                        type: 'doughnut',
-                        data: {
-                            labels: Object.keys(muscles),
-                            datasets: [{
-                                data: Object.values(muscles),
-                                backgroundColor: [
-                                    'red',
-                                    'blue',
-                                    'green',
-                                    'orange',
-                                    'purple',
-                                    'pink',
-                                    'brown',
-                                    'black',
-                                    'gray',
+                <% if (exerciseStats) { %>
+                    <div class="col-lg-6">
+                        <br>
+                        <h5 class="mt-4">Muscle Distribution</h5>
+                        <br>
+                        <div class="h-50 center my-2">
+                            <canvas id="muscleDoughnut" width="100%" height="80%"></canvas>
+                        </div>
 
-                                ],
-                            }],
-                        },
-                    });
-                });
-                </script>
-            </div>
-            <div>
-                <h6>Cardiovascular Stats</h6>
-                <table class="table w-25 text-center">
-                    <thead>
-                        <tr>
-                            <th>Minutes</th>
-                            <th>Calories Burned</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td><%= exerciseStats.cardioStats.totalMinutes %></td>
-                            <td><%= exerciseStats.cardioStats.totalCalories %></td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-        <% } %>
+                        <script defer>
+                            $(document).ready(function () {
+                                const muscles = JSON.parse('<%- JSON.stringify(exerciseStats.musclePercent) %>');
+                                // Access the data from the EJS template variable
 
-        <div class="index">
-            <% if (viewer) { %>
-            <% if (existingRequest === null) { %>
-            <form action="/users/request" method="POST">
-                <input type="hidden" name="from" value="<%= viewer %>">
-                <input type="hidden" name="to" value="<%= user._id %>">
-                <input type="submit" value="Request Friend">
-            </form>
-            <% } else if (existingRequest.status === 'pending') { %>
-            <h5>Request Pending</h5>
-            <% } else if (existingRequest.status === 'accepted') { %>
-            <h5>You can now share your favorite workouts with
-                <p class="text-capitalize"><%= user.username %>!</p></h5>
-            <a href="/favorites">Click here to browse favorites</a>
-            <% } %>
-            <% } else { %>
-            <% let friends = [] %>
-            <% let awaiting = [] %>
-            <% function sortRequests (requests) { %>
-            <% for (i = 0; i < requests.length; i++) { %>
-            <% if (requests[i].status === 'pending') { %>
-            <% awaiting.push(requests[i]) %>
-            <% } else { %>
-            <% friends.push(requests[i]) %>
-            <% } %>
-            <% } %>
-            <% } %>
-            <% sortRequests(requests) %>
-            <div class="index">
-                <h5>Pending Requests</h5>
+                                // Get the canvas element and create the doughnut chart
+                                const dough = document.getElementById('muscleDoughnut').getContext('2d');
 
-                <ul>
-                    <% if (awaiting.length > 0) { %>
-                    <% for (i = 0; i < awaiting.length; i++) { %>
-                    <% let pending = null %>
-                    <li class="mb-2">
-                        <% if (awaiting[i].to._id.toHexString() === user._id.toHexString()) { %>
-                        <% pending = awaiting[i].from %>
-                        <a href="/users/profile/<%= pending.username %>">
-                            <%= pending.username %>
-                        </a>
-                        <form action="/users/request/edit/?_method=PUT" method="POST">
-                            <input type="hidden" name="requestId" value="<%= awaiting[i]._id %>">
-                            <input type="submit" name="decision" value="Accept" class="btn btn-outline-success btn-sm">
-                            <input type="submit" name="decision" value="Decline" class="btn btn-outline-danger btn-sm">
-                        </form>
-                    </li>
-                    <% } else { %>
-                    <li class="mb-2">Waiting for response from <a
-                            href="/users/profile/<%= awaiting[i].to.username %>"><%= awaiting[i].to.username %></a></li>
-                    <% } %>
-                    <% } %>
-                    <% } else { %>
-                    <li>No pending requests</li>
-                    <% } %>
-                </ul>
-            </div>
-            <div class="index">
-                <h5>Friends List</h5>
-                <ul>
-                    <% if (friends.length > 0) { %>
-                    <% for (i = 0; i < friends.length; i++) { %>
-                    <% let friend = null %>
-                    <li>
-                        <% if (friends[i].to._id.toHexString() === user._id.toHexString()) { %>
-                            <% friend = friends[i].from %>
-                        <% } else { %>
-                            <% friend = friends[i].to %>
-                        <% } %>
+                                new Chart(dough, {
+                                    type: 'doughnut',
+                                    data: {
+                                        labels: Object.keys(muscles),
+                                        datasets: [{
+                                            data: Object.values(muscles),
+                                            backgroundColor: [
+                                                '#f21821','blue',
+                                                'green',
+                                                'orange',
+                                                'purple',
+                                                'pink',
+                                                'brown',
+                                                'black',
+                                                'gray',
 
-                        <a href="/users/profile/<%= friend.username %>">
-                            <%= friend.username %>
-                        </a>
-                    </li>
-                    <% } %>
-                    <% } else { %>
-                    <li>No friends</li>
-                    <% } %>
-                </ul>
+                                            ],
+                                        }],
+                                    },
+                                    options: { responsive: true }
+                                });
+                            });
+                        </script>
+
+                        <div class="right my-5">
+                            <h5 class="my-3">Cardiovascular Stats</h5>
+                            <table class="table w-50 text-center mt-3">
+                                <thead>
+                                    <tr>
+                                        <th>Minutes</th>
+                                        <th>Calories Burned</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><%= exerciseStats.cardioStats.totalMinutes %></td>
+                                        <td><%= exerciseStats.cardioStats.totalCalories %></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 <% } %>
             </div>
+
+            <br>
+            <br>
+            
+            <div class="row justify-content-between">
+                <% if (viewer) { %>
+                    <div class="col-lg-4 mb-5">
+                        <% if (existingRequest === null) { %>
+                            <form action="/users/request" method="POST">
+                                <input type="hidden" name="from" value="<%= viewer %>">
+                                <input type="hidden" name="to" value="<%= user._id %>">
+                                <input type="submit" value="Request Friend">
+                            </form>
+                        <% } else if (existingRequest.status === 'pending') { %>
+                            <h5>Request Pending</h5>
+                        <% } else if (existingRequest.status === 'accepted') { %>
+                            <h5>You can now share your favorite workouts with <p class="text-capitalize"><%= user.username %>!</p></h5>
+                            <a href="/favorites">Click here to browse favorites</a>
+                        <% } %>
+                    </div>
+                <% } else { %>
+                    <div class="col-lg-4 mb-5">
+                        <h5>Pending Requests</h5>
+                        <ul>
+                            <% if (awaiting.length > 0) { %>
+                                <% for (const request of awaiting) { %>
+                                    <% const pending = request.to._id.toHexString() === user._id.toHexString() ? request.from : request.to %>
+                                    <% if (pending === request.from) { %>
+                                        <li class="py-1 px-3">
+                                            <a href="/users/profile/<%= pending.username %>"><%= pending.username %></a>
+                                            <form action="/users/request/edit/?_method=PUT" method="POST">
+                                                <input type="hidden" name="requestId" value="<%= request._id %>">
+                                                <input type="submit" name="decision" value="Accept" class="btn btn-outline-success btn-sm">
+                                                <input type="submit" name="decision" value="Decline" class="btn btn-outline-danger btn-sm">
+                                            </form>
+                                        </li>
+                                    <% } else if (pending === request.to) { %>
+                                    <li class="py-1 px-3">
+                                        <a class="text-capitalize" href="/users/profile/<%= pending.username %>"><%= pending.username %></a>
+                                    </li>
+                                    <% } %>
+                                <% } %>
+                            <% } else { %>
+                                <li class="py-1 px-3">No Pending Requests</li>
+                            <% } %>
+                        </ul>
+                    </div>
+
+                    <div class="col-lg-4 mb-5">
+                        <h5>Friends List</h5>
+                        <ul>
+                            <% if (friendships.length > 0) { %>
+                                <!-- friendships is array of object hosting the friendship, need access to user's other half of friendship -->
+                                <% for (const friendship of friendships) { %>
+                                    <% const friend = friendship.to._id.toHexString() === user._id.toHexString() ? friendship.from : friendship.to %>
+                                    <li class="py-1 px-3">
+                                        <a class="text-capitalize" href="/users/profile/<%= friend.username %>"><%= friend.username %></a>
+                                    </li>
+                                <% } %>
+                            <% } else { %>
+                                <li>No friends</li>
+                            <% } %>
+                        </ul>
+                    </div>
+                <% } %>
+            </div>
+
+            <% if (!viewer) { %>
+                <div class="right mb-5">
+                    <button class="btn btn-outline-warning mt-1" id="editProfile">Edit Profile</button>
+                </div>
+            <% } %>
         </div>
     </div>
-
     <%- include('./partials/footer'); %>
-
 </body>
 
 </html>

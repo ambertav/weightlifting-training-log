@@ -2,57 +2,53 @@
 <html lang="en">
 
 <%- include('../partials/head'); %>
-<%- include('../partials/nav'); %>
 
 <body>
-    <h2>Workout Index</h2>
-    <div class="container">
-        <ul class="index">
-            <% displayWorkout(0); %>
-            <% function displayWorkout (workoutIndex) { %>
-                <% if (workouts.length === 0) { %>
-                    <div class="center mb-5">
-                        <a href="/workouts/new" class="btn btn-outline-secondary btn-lg">Click here to get started</a>
-                    </div>
-                    <% return; %>
-                <% } %>
+    <div class="container-fluid">
+        <%- include('../partials/nav'); %>
+        <div class="container">
+            <h2>Workout Index</h2>
+            <ul class="index">
+                <% displayWorkout(0); %>
+                <% function displayWorkout (workoutIndex) { %>
+                    <% if (workouts.length === 0) { %>
+                        <div class="center mb-5">
+                            <a href="/workouts/new" class="btn btn-outline-secondary btn-lg">Click here to get started</a>
+                        </div>
+                        <% return; %>
+                    <% } %>
                     
-                <% if (workoutIndex === workouts.length) { %>
-                    <% return; %>
-                <% } %>
-                        
-                <% const workout = workouts[workoutIndex] %>
+                    <% if (workoutIndex === workouts.length) return; %>
+                    <% const workout = workouts[workoutIndex]; %>
 
-                <div class="card m-3">
-                    <a href="workouts/<%= workout._id %>">
-                        <h4><%= workout.day %></h4>
-                    </a>
-                    <li class="card-body center">
-                        <% for (i = 0; i < workout.exercise.length; i++) { %>
-                            <%= workout.exercise[i].movement.name %>
-                            <br>
-                        <% } %>
-                    </li>
-                    <div class="card-footer">
-                        <p>
-                            <a href="/workouts/<%=workout._id %>/edit" class="btn btn-outline-warning btn-sm">Edit
-                                workout</a>
-                            <form action="/workouts/<%= workout._id %>?_method=DELETE" method="POST">
-                                <input type="submit" value="Delete Workout" class="btn btn-outline-danger btn-sm ">
-                            </form>
-                        </p>
+                    <div class="card m-4">
+                        <a href="workouts/<%= workout._id %>">
+                            <h4><%= workout.day %></h4>
+                        </a>
+                        <li class="card-body center">
+                            <% for (const exercise of workout.exercise) { %>
+                                <%= exercise.movement.name %>
+                                <br>
+                            <% } %>
+                        </li>
+                        <div class="card-footer">
+                            <p>
+                                <a href="/workouts/<%=workout._id %>/edit" class="btn btn-outline-warning btn-sm">Edit Workout</a>
+                                <form action="/workouts/<%= workout._id %>?_method=DELETE" method="POST">
+                                    <input type="submit" value="Delete Workout" class="btn btn-outline-danger btn-sm ">
+                                </form>
+                            </p>
+                        </div>
                     </div>
-                </div>
-                <% displayWorkout(workoutIndex + 1) %>
-            <% } %>
-        </ul>
-        <div class="right mb-5">
-            <a href="/workouts/new" class="btn btn-outline-secondary btn-lg mb-5">Add a New Workout</a>
+                    <% displayWorkout(workoutIndex + 1) %>
+                <% } %>
+            </ul>
+            <div class="right mt-4">
+                <a href="/workouts/new" class="btn btn-outline-secondary btn-lg mb-5">Add a New Workout</a>
+            </div>
         </div>
     </div>
-
     <%- include('../partials/footer'); %>
-
 </body>
 
 </html>

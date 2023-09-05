@@ -2,46 +2,47 @@
 <html lang="en">
 
 <%- include('./partials/head'); %>
-<%- include('./partials/nav'); %>
 
 <body>
-    <div class="container index welcome-index">
-        <div class="jumbotron">
-            <h1 class="display-4">Hello, Welcome to the Weightlifting Training Log!</h1>
-            <p class="lead">
-                An app that allows you to plan and track your weightlifting workouts for the week
-            </p>
-            <hr class="my-4">
-            <p>
-                Use the default movements to add to your weightlifting workouts, or create your own!
-            </p>
-            <p class="lead">
-                <a class="btn btn-outline-success btn-sm" href="https://github.com/ambertav/workout-tracker"
-                    target="_blank" role="button">Learn more on GitHub</a>
-            </p>
-        </div>
-        <div class="index">
-            <h2>Please Login</h2>
-            <form action="/login" method="POST" autocomplete="off" class="welcome-form">
-                <div class="mb-3 form-floating">
-                    <input type="email" name="email" class="form-control" id="email" required>
-                    <label for="email">Email address</label>
-                </div>
-                <div class="mb-3 form-floating">
-                    <input type="password" name="password" class="form-control" id="password" required>
-                    <label for="password">Password</label>
-                </div>
-                <div class="mb-3 center">
-                    <input type="submit" value="Login" class="btn btn-outline-secondary btn-lg">
-                </div>
-            </form>
-            <p>Don't have an account?
-                <a href="/signup" class="btn btn-outline-secondary btn-sm">Sign up now</a>
-            </p>
+    <div class="container-lg">
+        <%- include('./partials/nav'); %>
+        <div class="container-fluid vert-index">
+            <div class="jumbotron w-100 my-5 px-5">
+                <h1 class="display-4">Hello, Welcome to the Weightlifting Training Log!</h1>
+                <p class="lead">
+                    An app that allows you to plan and track your weightlifting workouts for the week
+                </p>
+                <hr class="my-4">
+                <p>
+                    Use the default movements to add to your weightlifting workouts, or create your own!
+                </p>
+                <p class="lead">
+                    <a class="btn btn-outline-success btn-sm" href="https://github.com/ambertav/workout-tracker"
+                        target="_blank" role="button">Learn more on GitHub</a>
+                </p>
+            </div>
+            <div class="vert-index py-2 mb-3">
+                <h2>Please Login</h2>
+                <form action="/login" method="POST" autocomplete="off" class="welcome-form pt-2">
+                    <div class="mb-3 form-floating">
+                        <input type="email" name="email" class="form-control" id="email" required>
+                        <label for="email">Email address</label>
+                    </div>
+                    <div class="mb-3 form-floating">
+                        <input type="password" name="password" class="form-control" id="password" required>
+                        <label for="password">Password</label>
+                    </div>
+                    <div class="my-4 center">
+                        <input type="submit" value="Login" class="btn btn-outline-secondary btn-lg">
+                    </div>
+                </form>
+                <p class="text-center pt-2">
+                    Don't have an account?
+                    <a href="/signup" class="btn btn-outline-secondary btn-sm">Sign up now</a>
+                </p>
+            </div>
         </div>
     </div>
-
     <%- include('./partials/footer'); %>
-    
 </body>
 </html>

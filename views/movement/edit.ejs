@@ -2,53 +2,56 @@
 <html lang="en">
 
 <%- include('../partials/head'); %>
-<%- include('../partials/nav'); %>
 
 <body>
-    <h2>Edit <%= movement.name %></h2>
-    <div class="container-fluid center">
-        <form action="/movements/<%= movement._id %>?_method=PUT" method="POST" class="form">
-            <div class="mb-3 form-floating">
-                <input type="text" name="name" class="form-control" id="name" required value="<%= movement.name %>">
-                <label for="name">Name</label>
+    <div class="container-fluid">
+        <%- include('../partials/nav'); %>
+        <div class="container">
+            <h2 class="text-capitalize">Edit <%= movement.name %></h2>
+            <div class="center">
+                <form action="/movements/<%= movement._id %>?_method=PUT" method="POST" class="form">
+                    <h4 class="mt-2 mb-3">Movement Details</h4>
+                    <div class="mb-4 form-floating">
+                        <input type="text" name="name" class="form-control" id="name" required maxlength="30" value="<%= movement.name %>">
+                        <label for="name">Name</label>
+                    </div>
+                    <div class="mb-5 form-floating">
+                        <textarea rows="4" name="description" class="form-control" id="description" maxlength="150" style="height:100%"><%= movement.description %></textarea>
+                        <label for="description">Description</label>
+                    </div>
+                    <h4 class="mt-5 mb-3">Muscles Worked</h4>
+                    <div class="check-grid mb-5 mx-3">
+                        <% for (const muscle of muscleGroups) { %>
+                            <div class="form-check">
+                                <input type="checkbox" name="musclesWorked[<%= muscle %>]" class="form-check-input"
+                                    <%= movement.musclesWorked.includes(muscle) ? 'checked' : '' %>>
+                                <label for="<%= muscle %>"><%= muscle %></label>
+                            </div>
+                        <% } %>
+                    </div>
+                    <h4 class="mt-5 mb-3">Cardio or Weighted?</h4>
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input type="checkbox" name="isCardio" class="form-check-input"
+                                <%= movement.isCardio ? 'checked' : '' %>>
+                            <label for="isCardio">Cardio</label>
+                        </div>
+                        <div class="form-check">
+                            <input type="checkbox" name="isWeighted" class="form-check-input"
+                                <%= movement.isWeighted ? 'checked' : '' %>>
+                            <label for="isWeighted">Weighted</label>
+                        </div>
+                    </div>
+                    <br>
+                    <br>
+                    <div class="right">
+                        <input type="submit" value="Update Movement" class="btn btn-outline-secondary btn-lg mb-5">
+                    </div>
+                </form>
             </div>
-            <div class="mb-3 form-floating">
-                <textarea name="description" class="form-control"
-                    id="description"><%= movement.description %></textarea>
-                <label for="description">Description</label>
-            </div>
-            <p>Muscles Worked:</p>
-            <div class="check-grid mb-5">
-                <% muscleGroups.forEach(function (muscle) { %>
-                <div class="form-check">
-                    <input type="checkbox" name="musclesWorked[<%= muscle %>]" class="form-check-input"
-                        <% movement.musclesWorked.forEach(function (m) { %> <% if (m === muscle) { %> checked <% } %>
-                        <% }); %>>
-                    <label for="<%= muscle %>"><%= muscle %></label>
-                </div>
-                <% }); %>
-            </div>
-            <p>Cardio and/or Weighted?</p>
-            <div class="mb-3">
-                <div class="form-check">
-                    <input type="checkbox" name="isCardio" class="form-check-input"
-                    <%= movement.isCardio ? 'checked' : '' %>>
-                    <label for="isCardio">Cardio</label>
-                </div>
-                <div class="form-check">
-                    <input type="checkbox" name="isWeighted" class="form-check-input"
-                    <%= movement.isWeighted ? 'checked' : '' %>>
-                    <label for="isWeighted">Weighted</label>
-                </div>
-            </div>
-            <br>
-            <br>
-            <input type="submit" value="Submit Changes" class="btn btn-outline-secondary btn-lg mb-5 center">
-        </form>
+        </div>
     </div>
-
     <%- include('../partials/footer'); %>
-
 </body>
 
 </html>
