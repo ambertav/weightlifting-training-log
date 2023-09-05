@@ -5,6 +5,7 @@ const favoriteSchema = new Schema({
     name: {
         type: String,
         required: true,
+        maxLength: 30,
         trim: true
     },
     exercise: [{
