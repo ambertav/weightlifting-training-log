@@ -27,7 +27,21 @@ $(document).ready(function () {
     $inputParent.on('click', $delete, deleteExercise);
     $add.on('click', addExercise);
     $complete.on('change', updateProgress);
-    $('#addFavorite, #copy, #share, #editProfile').on('click', handleShowForm);
+    $('#addFavorite, #copy, #share, #editProfile').on('click', function (evt) {
+        evt.preventDefault();
+
+        let selectors;
+
+        if ($(this).is('#addFavorite')) selectors = ['.favorite'];
+        else if ($(this).is('#copy')) selectors = ['.copy'];
+        else if ($(this).is('#share')) selectors = ['.share'];
+        else if ($(this).is('#editProfile')) selectors = [$('.userBioForm'), $('.userPhoto'), $('.userBio')];
+
+        toggleForms(selectors);
+    });
+
+    // $('#addFavorite, #copy, #share').on('click', handleShowForm);
+    // $('#editProfile').on('click', handleProfileForm);
     $('#profilePhoto').on('change', enableSubmit);
 
 
@@ -40,7 +54,7 @@ $(document).ready(function () {
         const match = passwordVal === confirmVal;
 
         $('#signupSubmit').prop('disabled', !match);
-        if (confirmVal.length > 0) $('#message').text(match ? '' : 'Passwords do not match').css('color', 'red');
+        if (confirmVal.length > 0) $('#message').text(match ? '' : 'Passwords do not match');
     }
 
     function addExercise(evt) {
@@ -70,17 +84,16 @@ $(document).ready(function () {
             completeWorkout(`${evt.target.id}`);
             $complete.off('change', updateProgress);
             $complete.attr('disabled', true);
-            $('.progress').after($('<br><div>Congratulations, workout completed!</div>').addClass('center'));
+            $('.progress').after($('<div>Congratulations, workout completed!</div>').addClass('center mt-4 fw-bold'));
         }
     }
 
-    // for displaying hidden forms for adding, sharing favorites and copying to workouts
-    function handleShowForm(evt) {
-        evt.preventDefault();
-        let $form = null;
-        if (evt.target.id === 'editProfile') $form = $(evt.target).siblings('#profileDiv');
-        else $form = $(evt.target).siblings('form');
-        $form.hasClass('d-none') ? $form.removeClass('d-none') : $form.addClass('d-none');
+    // toggles hidden forms for editing profile, adding favorites, sharing favorites and copying favorites to workouts
+    function toggleForms (selectors) {
+        for (const selector of selectors) {
+            const $element = $(selector);
+            $element.hasClass('d-none') ? $element.removeClass('d-none') : $element.addClass('d-none');
+        }
     }
 
     // for profile photo submit button

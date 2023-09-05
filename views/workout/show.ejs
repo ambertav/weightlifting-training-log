@@ -10,7 +10,7 @@
             <h2><%= workout.day %></h2>
             <div class="right favorite index my-5">
                 <button id="addFavorite" class="btn btn-outline-warning">Add to Favorites</button>
-                <form action="/workouts/<%= workout._id %>/favorite" method="POST" autocomplete="off" class="d-none">
+                <form action="/workouts/<%= workout._id %>/favorite" method="POST" autocomplete="off" class="d-none favorite">
                     <input type="hidden" name="id" value="<%= workout._id %>">
                     <div class="my-3 form-floating">
                         <input type="text" name="name" class="form-control" maxlength="30" required>
