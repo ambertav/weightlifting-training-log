@@ -25,7 +25,7 @@
                         <a href="workouts/<%= workout._id %>">
                             <h4><%= workout.day %></h4>
                         </a>
-                        <li class="card-body center">
+                        <li class="card-body center text-capitalize">
                             <% for (const exercise of workout.exercise) { %>
                                 <%= exercise.movement.name %>
                                 <br>

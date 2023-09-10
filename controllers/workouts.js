@@ -63,12 +63,20 @@ router.put('/workouts/:id', async function (req, res) {
         const formattedExerciseArray = formatExercise(req.body.exercise);
         req.body.exercise = formattedExerciseArray;
 
-        const updatedWorkout = await Workout.findOneAndUpdate({
-            createdBy: req.session.userId,
-            _id: req.params.id
-        }, req.body, {
-            new: true
-        });
+        const updatedWorkout = await Workout.findOneAndUpdate(
+            { createdBy: req.session.userId, _id: req.params.id },
+            req.body,
+            { new: true }
+        ).populate('exercise.movement');
+
+        // // Validate exercise fields
+        for (const exercise of updatedWorkout.exercise) {
+            const validationError = validateExerciseFields(exercise);
+            if (validationError) {
+                return res.status(400).send(validationError);
+            }
+        }
+
         res.redirect('/workouts');
     } catch (error) {
         console.error(error);
@@ -80,15 +88,28 @@ router.put('/workouts/:id', async function (req, res) {
 router.post('/workouts', async function (req, res) {
     try {
         const formattedExerciseArray = formatExercise(req.body.exercise);
-
         req.body.exercise = formattedExerciseArray;
         req.body.createdBy = req.session.userId;
 
-        const createdWorkout = await Workout.create(req.body);
+        const newWorkout = await Workout.create(req.body);
+        await newWorkout.populate('exercise.movement');
+
+        // // Validate exercise fields
+        for (const exercise of newWorkout.exercise) {
+            const validationError = validateExerciseFields(exercise);
+            if (validationError) {
+                await newWorkout.remove();
+                return res.status(400).send(validationError);
+            }
+        }
+
+        const createdWorkout = await newWorkout.save();
+
         res.redirect('/workouts');
     } catch (error) {
         console.error(error);
-        res.status(500).send('An error occurred while creating the workout.');
+        const message = 'An error occurred while creating the workout.'
+        handleValidationErrors(error, res, message);
     }
 });
 
@@ -177,6 +198,31 @@ function formatExercise(exercise) {
         exerciseObjects.push(exerciseObject); // adding each formatted exercise to array
     }
     return exerciseObjects;
+}
+
+// validate that the movement type's corresponding exercise fields are filled in before saving to database
+function validateExerciseFields(exercise) {
+    if (exercise.movement.type === 'weighted') {
+        if (!exercise.weight || !exercise.sets || !exercise.reps) {
+            return 'Weight, sets, and reps are required for weighted movements.';
+        }
+    } else if (exercise.movement.type === 'cardio') {
+        if (!exercise.minutes || !exercise.caloriesBurned) {
+            return 'Minutes and calories burned are required for cardio movements.';
+        }
+    }
+    return null; // No validation issues
+}
+
+// organizes the possible errors for the create and update route 
+function handleValidationErrors(error, res, message) {
+    console.error(error);
+    if (error.errors) {
+        const validationErrors = Object.values(error.errors).map((err) => err.message);
+        res.status(400).send(validationErrors);
+    } else {
+        res.status(500).send(message);
+    }
 }
 
 

@@ -10,6 +10,7 @@ const workoutSchema = new Schema({
         movement: {
             type: Schema.Types.ObjectId,
             ref: 'Movement',
+            required: true,
         },
         weight: {
             type: Number,
@@ -44,5 +45,6 @@ const workoutSchema = new Schema({
 }, {
     timestamps: true
 });
+
 
 module.exports = mongoose.model('Workout', workoutSchema);
