@@ -25,7 +25,7 @@
                     <div class="check-grid mb-5 mx-3">
                         <% for (const muscle of muscleGroups) { %>
                             <div class="form-check">
-                                <input type="checkbox" name="musclesWorked[<%= muscle %>]" class="form-check-input">
+                                <input type="checkbox" name="musclesWorked[<%= muscle %>]" class="form-check-input muscleCheckbox">
                                 <label for="<%= muscle %>"><%= muscle %></label>
                             </div>
                         <% } %>
@@ -33,18 +33,18 @@
                     <h4 class="mt-5 mb-3">Cardio or Weighted?</h4>
                     <div class="mb-3">
                         <div class="form-check">
-                            <input type="checkbox" name="isCardio" class="form-check-input">
+                            <input type="checkbox" name="isCardio" class="form-check-input movementTypeCheckbox">
                             <label for="isCardio">Cardio</label>
                         </div>
                         <div class="form-check">
-                            <input type="checkbox" name="isWeighted" class="form-check-input">
+                            <input type="checkbox" name="isWeighted" class="form-check-input movementTypeCheckbox">
                             <label for="isWeighted">Weighted</label>
                         </div>
                     </div>
                     <br>
                     <br>
                     <div class="right">
-                        <input type="submit" value="Add Movement" class="btn btn-outline-secondary btn-lg mb-5">
+                        <input type="submit" value="Add Movement" class="btn btn-outline-secondary btn-lg mb-5 movementSubmit" disabled>
                     </div>
                 </form>
             </div>

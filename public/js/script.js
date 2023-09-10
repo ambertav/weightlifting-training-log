@@ -17,6 +17,11 @@ $(document).ready(function () {
     const $complete = $('.complete');
     const $progress = $('.progress-bar');
 
+    // to access elements for movement form (new and edit) validation
+    const $muscles = $('.muscleCheckbox');
+    const $movementType = $('.movementTypeCheckbox');
+    const $movementSubmit = $('.movementSubmit');
+
     let completedWorkouts = 0;
     let workoutsTotal = $complete.length;
 
@@ -29,7 +34,6 @@ $(document).ready(function () {
     $complete.on('change', updateProgress);
     $('#addFavorite, #copy, #share, #editProfile').on('click', function (evt) {
         evt.preventDefault();
-
         let selectors;
 
         if ($(this).is('#addFavorite')) selectors = ['.favorite'];
@@ -39,11 +43,8 @@ $(document).ready(function () {
 
         toggleForms(selectors);
     });
-
-    // $('#addFavorite, #copy, #share').on('click', handleShowForm);
-    // $('#editProfile').on('click', handleProfileForm);
     $('#profilePhoto').on('change', enableSubmit);
-
+    $muscles.add($movementType).on('change', validateMovementForm);
 
     // Event Handlers
     function confirmPassword() {
@@ -98,9 +99,14 @@ $(document).ready(function () {
 
     // for profile photo submit button
     function enableSubmit(evt) {
-        if ($(evt.target).val() !== '') {
-            $(evt.target).siblings().removeAttr('disabled');
-        }
+        if ($(evt.target).val() !== '') $(evt.target).siblings().removeAttr('disabled');
+    }
+
+    // validate that at least 1 muscle is selected, and the type of movement is determined before submitting
+    function validateMovementForm () {
+        const validateMuscle = $muscles.is(':checked');
+        const validateType = $movementType.is(':checked');
+        $movementSubmit.prop('disabled', !(validateMuscle && validateType));
     }
 
     // updates workout completion status
