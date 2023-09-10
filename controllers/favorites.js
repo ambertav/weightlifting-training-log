@@ -97,7 +97,8 @@ router.post('/favorites/:id/copy', async function (req, res) {
 // create
 router.post('/workouts/:id/favorite', async function (req, res) {
     try {
-        const workout = await Workout.findById(req.params.id);
+        const workout = await Workout.findById(req.params.id)
+            .populate('exercise.movement');
         if (!workout) return res.status(404).send('Workout not found.');
 
         const { exercise, createdBy } = workout;

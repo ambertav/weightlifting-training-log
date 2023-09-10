@@ -18,12 +18,8 @@ const movementSchema = new Schema({
         type: Array,
         required: true
     },
-    isCardio: {
-        type: Boolean,
-        required: true
-    },
-    isWeighted: {
-        type: Boolean,
+    type: {
+        type: String,
         required: true
     },
     createdBy: {

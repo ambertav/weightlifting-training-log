@@ -14,12 +14,12 @@
                 <% for (const exercise of favorite.exercise) { %>
                     <div class="exercise m-4">
                         <h3><%= exercise.movement.name %></h3>
-                        <% if (exercise.movement.isWeighted) { %>
+                        <% if (exercise.movement.type === 'weighted') { %>
                             <p>Weight: <%= exercise.weight %></p>
                             <p>Sets: <%= exercise.sets %></p>
                             <p>Repetitions per Set: <%= exercise.reps %></p>
                         <% } %>
-                        <% if (exercise.movement.isCardio) { %>
+                        <% if (exercise.movement.type === 'cardio') { %>
                             <p>Duration: <%= exercise.minutes %> minutes</p>
                             <p>Calories Burned: <%= exercise.caloriesBurned %></p>
                         <% } %>

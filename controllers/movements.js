@@ -126,15 +126,13 @@ function formatMovementData(movementData, userId) {
     });
     const musclesWorked = [...selectedMuscles];
 
-    const isCardio = movementData.isCardio === 'on' ? true : false;
-    const isWeighted = movementData.isWeighted === 'on' ? true : false;
+    const type = movementData.type
     const createdBy = userId;
 
     return {
         ...movementData,
         musclesWorked,
-        isCardio,
-        isWeighted,
+        type,
         createdBy,
     };
 }

@@ -32,14 +32,14 @@
                     <h4 class="mt-5 mb-3">Cardio or Weighted?</h4>
                     <div class="mb-3">
                         <div class="form-check">
-                            <input type="checkbox" name="isCardio" class="form-check-input movementTypeCheckbox"
-                                <%= movement.isCardio ? 'checked' : '' %>>
-                            <label for="isCardio">Cardio</label>
+                            <input type="radio" name="type" value="cardio" class="form-check-input movementTypeCheckbox"
+                                <%= movement.type === 'cardio' ? 'checked' : '' %>>
+                            <label for="cardio">Cardio</label>
                         </div>
                         <div class="form-check">
-                            <input type="checkbox" name="isWeighted" class="form-check-input movementTypeCheckbox"
-                                <%= movement.isWeighted ? 'checked' : '' %>>
-                            <label for="isWeighted">Weighted</label>
+                            <input type="radio" name="type" value="weighted" class="form-check-input movementTypeCheckbox"
+                                <%= movement.type === 'weighted' ? 'checked' : '' %>>
+                            <label for="weighted">Weighted</label>
                         </div>
                     </div>
                     <br>

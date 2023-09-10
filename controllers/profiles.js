@@ -174,7 +174,7 @@ async function getVolume (userId) {
                     volume: {
                         $sum: {
                             $cond: [ // if not cardio, sum volume (sets x reps) per movement id
-                                { $eq: ['$exercise.movement.isCardio', false] },
+                                { $eq: ['$exercise.movement.type', 'weighted'] },
                                 { $multiply: ['$exercise.sets', '$exercise.reps'] }, 
                                 0
                             ]
@@ -183,7 +183,7 @@ async function getVolume (userId) {
                     minutes: {
                         $sum: {
                             $cond: [ // if cardio, sum minutes per movement id
-                                { $eq: ['$exercise.movement.isCardio', true] }, 
+                                { $eq: ['$exercise.movement.type', 'cardio'] }, 
                                 '$exercise.minutes',
                                 0
                             ]
@@ -192,7 +192,7 @@ async function getVolume (userId) {
                     calories: {
                         $sum: {
                             $cond: [ // if cardio, sum caloried burned per movement id
-                                { $eq: ['$exercise.movement.isCardio', true] }, 
+                                { $eq: ['$exercise.movement.type', 'cardio'] }, 
                                 '$exercise.caloriesBurned',
                                 0
                             ]
