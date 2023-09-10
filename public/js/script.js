@@ -47,6 +47,7 @@ $(document).ready(function () {
     $muscles.add($movementType).on('change', validateMovementForm);
     $('.movementSelect').each(handleWorkoutFormChange);
     $inputParent.on('change', '.movementSelect', handleWorkoutFormChange);
+    $inputParent.on('change', enableWorkoutSubmit);
 
 
 
@@ -70,6 +71,7 @@ $(document).ready(function () {
         $clone.find('.form-control').val('');
         $clone.find('.form-select').val('');
         $clone.appendTo($inputParent);
+        enableWorkoutSubmit();
     }
 
     // deletes a specific set of exercise inputs
@@ -139,6 +141,14 @@ $(document).ready(function () {
             weighted.hide();
             weighted.find('input[type="number"]').val('');
         }
+    }
+
+    function enableWorkoutSubmit () {
+        const $inputs = $('.workoutInputChild input[type="number"]:visible');
+        const allFilled = $inputs.toArray().every(function (input) {
+            return $(input).val().trim() !== '';
+        });
+        $('.workoutSubmit').prop('disabled', !allFilled);
     }
 
     // updates workout completion status
