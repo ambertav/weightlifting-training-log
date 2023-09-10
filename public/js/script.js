@@ -45,6 +45,10 @@ $(document).ready(function () {
     });
     $('#profilePhoto').on('change', enableSubmit);
     $muscles.add($movementType).on('change', validateMovementForm);
+    $('.movementSelect').each(handleWorkoutFormChange);
+    $inputParent.on('change', '.movementSelect', handleWorkoutFormChange);
+
+
 
     // Event Handlers
     function confirmPassword() {
@@ -58,14 +62,17 @@ $(document).ready(function () {
         if (confirmVal.length > 0) $('#message').text(match ? '' : 'Passwords do not match');
     }
 
+    // adds a new set of exercise inputs
     function addExercise(evt) {
         if (evt.target.tagName !== 'P') return;
         let $clone = $($inputChild.eq($inputChild.length - 1).clone());
+        $clone.find('.weightedSection, .cardioSection').show();
         $clone.find('.form-control').val('');
         $clone.find('.form-select').val('');
         $clone.appendTo($inputParent);
     }
 
+    // deletes a specific set of exercise inputs
     function deleteExercise(evt) {
         if (evt.target.tagName !== 'P') return;
         $(evt.target).closest($('.workoutInputChild')).remove();
@@ -107,6 +114,31 @@ $(document).ready(function () {
         const validateMuscle = $muscles.is(':checked');
         const validateType = $movementType.is(':checked');
         $movementSubmit.prop('disabled', !(validateMuscle && validateType));
+    }
+
+    // determines movement type and weighted / cardio section for each set of exercise inputs
+    function handleWorkoutFormChange () {
+        const $exerciseSection = $(this).closest('.workoutInputChild');
+        const selectedOption = $(this).find(':selected');
+        const type = selectedOption.data('type');
+
+        const $weightedSection = $exerciseSection.find('.weightedSection');
+        const $cardioSection = $exerciseSection.find('.cardioSection');
+
+        validateWorkoutForm(type, $weightedSection, $cardioSection);
+    }
+
+    // hides and shows corresponding inputs based on movement type (weighted or cardio)
+    function validateWorkoutForm (type, weighted, cardio) {
+        if (type === 'weighted') {
+            weighted.show();
+            cardio.hide();
+            cardio.find('input[type="number"]').val('');
+        } else if (type === 'cardio') {
+            cardio.show();
+            weighted.hide();
+            weighted.find('input[type="number"]').val('');
+        }
     }
 
     // updates workout completion status
