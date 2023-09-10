@@ -36,3 +36,15 @@
         </ul>
     </div>
 </nav>
+
+
+<script>
+    $(document).ready(function() {
+        const $navbarButton = $('.navbar-toggler');
+        const $navbarContent = $('#navbarNav');
+        $navbarButton.on('click', function() {
+            $navbarContent.toggleClass('show');
+        });
+    });
+</script>
+
