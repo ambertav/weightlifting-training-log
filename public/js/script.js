@@ -1,5 +1,5 @@
 $(document).ready(function () {
-    const URL = 'http://localhost:3000/'
+    const URL = 'https://weightlifting-log.herokuapp.com/'
 
     // password and confirmation field inputs
     const $password = $('#password');
