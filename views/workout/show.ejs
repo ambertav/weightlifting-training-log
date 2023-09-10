@@ -18,6 +18,7 @@
                     </div>
                     <input type="submit" value="Create Favorite" class="btn btn-outline-success">
                 </form>
+                <% if (message) %> <div class="right mt-4 fw-bold"><%= message %></div>
             </div>
             <div class="index">
                 <% for (const exercise of workout.exercise) { %>

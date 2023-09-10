@@ -151,7 +151,8 @@ router.get('/workouts/:id', async function (req, res) {
             .exec();
 
         res.render('workout/show.ejs', {
-            workout: foundWorkout
+            workout: foundWorkout,
+            message: null
         });
     } catch (error) {
         console.error(error)

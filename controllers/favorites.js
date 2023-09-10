@@ -108,7 +108,12 @@ router.post('/workouts/:id/favorite', async function (req, res) {
         };
 
         const createdFavorite = await Favorite.create(newFavorite);
-        res.redirect(`/workouts/${workout._id}`);
+
+        res.render('workout/show.ejs', {
+            workout,
+            message: 'Favorite added!'
+        });
+
     } catch (error) {
         console.error(error);
         res.status(500).send('An error occurred while creating the favorite.');
