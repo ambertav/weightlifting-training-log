@@ -203,11 +203,11 @@ function formatExercise(exercise) {
 // validate that the movement type's corresponding exercise fields are filled in before saving to database
 function validateExerciseFields(exercise) {
     if (exercise.movement.type === 'weighted') {
-        if (!exercise.weight || !exercise.sets || !exercise.reps) {
+        if (exercise.weight === null || exercise.sets === null || exercise.reps === null) {
             return 'Weight, sets, and reps are required for weighted movements.';
         }
     } else if (exercise.movement.type === 'cardio') {
-        if (!exercise.minutes || !exercise.caloriesBurned) {
+        if (exercise.minutes === null || exercise.caloriesBurned === null) {
             return 'Minutes and calories burned are required for cardio movements.';
         }
     }
