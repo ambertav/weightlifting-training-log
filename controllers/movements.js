@@ -35,7 +35,8 @@ router.get('/movements', async function (req, res) {
             ]
         })
         .skip((page - 1) * pageSize)
-        .limit(pageSize);
+        .limit(pageSize)
+        .lean();
 
         res.render('movement/index.ejs', {
             movements,
@@ -108,7 +109,8 @@ router.post('/movements', async function (req, res) {
 // edit
 router.get('/movements/:id/edit', async function (req, res) {
     try {
-        const foundMovement = await Movement.findById(req.params.id);
+        const foundMovement = await Movement.findById(req.params.id)
+            .lean();
         res.render('movement/edit.ejs', {
             movement: foundMovement,
             muscleGroups

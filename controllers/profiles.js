@@ -9,7 +9,9 @@ const { s3Client, s3BaseUrl, PutObjectCommand } = require('../aws');
 // user profile
 router.get('/users/me', async function (req, res) {
     try {
-        const user = await User.findById(req.session.userId);
+        const user = await User.findById(req.session.userId)
+            .select('-email -password')
+            .lean();
 
         const volumePerMovement = await getVolume(req.session.userId);
         const exerciseStats = volumePerMovement.length > 0 ? formatExerciseStats(volumePerMovement) : null;
@@ -22,11 +24,11 @@ router.get('/users/me', async function (req, res) {
         }).populate({
             path: 'to from',
             select: '_id username'
-        });
+        })
+        .lean();
 
         const awaiting = filterRequests(requests, 'pending');
         const friendships = filterRequests(requests, 'accepted');
-
 
         res.render('profile.ejs', {
             user,
@@ -108,7 +110,8 @@ router.post('/users/search', async function (req, res) {
                 $regex: `${req.body.searchTerm.toLowerCase()}`
             }
         })
-        .select('username profilePhoto');
+        .select('username profilePhoto')
+        .lean();
 
         if (searchResults.length === 0) errorMessage = 'No users found, please try again';
 
@@ -126,7 +129,9 @@ router.post('/users/search', async function (req, res) {
 // view other profiles
 router.get('/users/profile/:username', async function (req, res) {
     try {
-        const user = await User.findOne({ username: req.params.username });
+        const user = await User.findOne({ username: req.params.username })
+            .select('-email, -password')
+            .lean();
         if (!user) return res.status(404).send('User not found');
 
         if (user._id.toHexString() === req.session.userId) return res.redirect('/users/me');
@@ -137,7 +142,12 @@ router.get('/users/profile/:username', async function (req, res) {
         const existingRequest = await Request.findOne({
             from: { $in: [req.session.userId, user._id] },
             to: { $in: [req.session.userId, user._id] }
-        });
+        })
+        .populate({
+            path: 'to from',
+            select: '_id username'
+        })
+        .lean();
 
         res.render('profile.ejs', {
             user,

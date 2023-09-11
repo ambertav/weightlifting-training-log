@@ -10,7 +10,7 @@ router.get('/workouts', async function (req, res) {
                 createdBy: req.session.userId
             })
             .populate('exercise.movement')
-            .exec();
+            .lean();
 
         res.render('workout/index.ejs', {
             workouts: allWorkouts
@@ -30,8 +30,7 @@ router.get('/workouts/new', async function (req, res) {
                 }
             })
             .select('_id name type')
-            .lean()
-            .exec();
+            .lean();
 
         res.render('workout/new.ejs', {
             movements: availableMovements
@@ -67,7 +66,8 @@ router.put('/workouts/:id', async function (req, res) {
             { createdBy: req.session.userId, _id: req.params.id },
             req.body,
             { new: true }
-        ).populate('exercise.movement');
+        )
+        .populate('exercise.movement');
 
         // // Validate exercise fields
         for (const exercise of updatedWorkout.exercise) {
@@ -121,7 +121,7 @@ router.get('/workouts/:id/edit', async function (req, res) {
                 _id: req.params.id
             })
             .populate('exercise.movement')
-            .exec();
+            .lean();
 
         const availableMovements = await Movement.find({
                 createdBy: {
@@ -129,8 +129,7 @@ router.get('/workouts/:id/edit', async function (req, res) {
                 }
             })
             .select('_id name type')
-            .lean()
-            .exec();
+            .lean();
 
         if (foundWorkout) res.render('workout/edit.ejs', {
             workout: foundWorkout,
@@ -149,7 +148,8 @@ router.put('/workouts/:id/complete', async function (req, res) {
         const workout = await Workout.findOne({
             createdBy: req.session.userId,
             _id: req.body.id
-        });
+        })
+        .lean();
 
         if (workout) {
             workout.isComplete = !workout.isComplete;
@@ -169,7 +169,7 @@ router.get('/workouts/:id', async function (req, res) {
     try {
         const foundWorkout = await Workout.findById(req.params.id)
             .populate('exercise.movement')
-            .exec();
+            .lean();
 
         res.render('workout/show.ejs', {
             workout: foundWorkout,

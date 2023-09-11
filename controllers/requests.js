@@ -11,7 +11,7 @@ router.post('/users/request', async function (req, res) {
             from: {$in: [req.body.from, req.body.to]},
             to: {$in: [req.body.from, req.body.to]}
         })
-        .exec();
+        .lean();
         
         // creates a request if none exists
         if (!request) await Request.create(req.body);
@@ -26,7 +26,7 @@ router.post('/users/request', async function (req, res) {
 // update request
 router.put('/users/request/edit', async function (req, res) {
     try {
-        const foundRequest = await Request.findById(req.body.requestId);
+        const foundRequest = await Request.findById(req.body.requestId)
         if (!foundRequest) return res.status(404).send('Friend request not found.');
 
         // if user accepts, update status and save

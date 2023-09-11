@@ -11,7 +11,7 @@ router.get('/favorites', async function (req, res) {
                 accessibleBy: req.session.userId
             })
             .populate('exercise.movement')
-            .exec();
+            .lean();
 
         res.render('favorite/index.ejs', {
             favorites
@@ -57,7 +57,7 @@ router.put('/favorites/:id/remove', async function (req, res) {
             }
         }, {
             new: true
-        }).exec();
+        });
 
         if (!updatedFavorite) return res.status(404).send('Favorite not found or user does not have access.');
 
@@ -98,7 +98,8 @@ router.post('/favorites/:id/copy', async function (req, res) {
 router.post('/workouts/:id/favorite', async function (req, res) {
     try {
         const workout = await Workout.findById(req.params.id)
-            .populate('exercise.movement');
+            .populate('exercise.movement')
+            .lean();
         if (!workout) return res.status(404).send('Workout not found.');
 
         const { exercise, createdBy } = workout;
@@ -126,7 +127,7 @@ router.get('/favorites/:id', async function (req, res) {
     try {
         const favorite = await Favorite.findById(req.params.id)
             .populate('exercise.movement')
-            .exec();
+            .lean();
 
         const requests = await Request.find({
                 $or: [{
@@ -141,7 +142,7 @@ router.get('/favorites/:id', async function (req, res) {
                 path: 'to from',
                 select: '_id username'
             })
-            .exec();
+            .lean();
 
         const friends = [];
         for (const request of requests) {
