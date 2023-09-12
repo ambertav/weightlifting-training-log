@@ -10,8 +10,20 @@ const favoriteSchema = new Schema({
     },
     exercise: [{
         movement: {
-            type: Schema.Types.ObjectId,
-            ref: 'Movement',
+            name: {
+                type: String,
+                required: true,
+                maxLength: 30,
+                trim: true
+            },
+            musclesWorked: {
+                type: Array,
+                required: true
+            },
+            type: {
+                type: String,
+                required: true
+            },
         },
         weight: {
             type: Number,
@@ -34,7 +46,7 @@ const favoriteSchema = new Schema({
             min: 1
         },
     }],
-    accessibleBy: [{
+    createdBy: [{
         type: Schema.Types.ObjectId,
         ref: 'User'
     }]
