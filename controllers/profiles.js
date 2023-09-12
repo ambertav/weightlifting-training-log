@@ -65,6 +65,8 @@ router.put('/users/me/photo/edit', async function (req, res) {
             user.profilePhoto = s3ProfilePhotoUrl;
             await user.save();
 
+            // prevents caching of previous photo, removes confusion for user
+            res.setHeader('Cache-Control', 'no-cache');
             res.redirect('/users/me');
 
         } catch (userError) {
