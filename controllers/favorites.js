@@ -22,6 +22,23 @@ router.get('/favorites', async function (req, res) {
     }
 });
 
+// delete
+router.delete('/favorites/:id', async function (req, res) {
+    try {
+        const deletedFavorite = await Favorite.findOneAndDelete({
+            createdBy: req.session.userId,
+            _id: req.params.id
+        });
+
+        if (deletedFavorite) res.redirect('/favorites');
+        else res.status(404).send('Favorite not found, could not delete.');
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).send('An error occurred while deleteing the favorite.');
+    }
+});
+
 // update -- share favorites
 router.put('/favorites/:id/share', async function (req, res) {
     try {
@@ -40,35 +57,6 @@ router.put('/favorites/:id/share', async function (req, res) {
     } catch (error) {
         console.error(error);
         res.status(500).send('An error occurred while updating the favorite.');
-    }
-});
-
-// update -- remove from favorites
-router.put('/favorites/:id/remove', async function (req, res) {
-    const removedUser = req.session.userId;
-
-    try {
-        const updatedFavorite = await Favorite.findOneAndUpdate({
-            _id: req.params.id,
-            accessibleBy: removedUser
-        }, {
-            $pull: {
-                accessibleBy: removedUser // removes the user from the accessibleBy array
-            }
-        }, {
-            new: true
-        });
-
-        if (!updatedFavorite) return res.status(404).send('Favorite not found or user does not have access.');
-
-        // delete favorite instance if all users have removed themselves to prevent ghost records
-        if (updatedFavorite.accessibleBy.length === 0) await Favorite.findByIdAndDelete(updatedFavorite._id);
-
-        res.redirect('/favorites');
-
-    } catch (error) {
-        console.error(error);
-        res.status(500).send('An error occurred while removing access from the favorite.');
     }
 });
 
@@ -153,7 +141,6 @@ router.post('/workouts/:id/favorite', async function (req, res) {
 router.get('/favorites/:id', async function (req, res) {
     try {
         const favorite = await Favorite.findById(req.params.id)
-            .populate('exercise.movement')
             .lean();
 
         const requests = await Request.find({
