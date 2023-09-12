@@ -8,9 +8,8 @@ const Request = require('../models/request');
 router.get('/favorites', async function (req, res) {
     try {
         const favorites = await Favorite.find({
-                accessibleBy: req.session.userId
+                createdBy: req.session.userId
             })
-            .populate('exercise.movement')
             .lean();
 
         res.render('favorite/index.ejs', {
@@ -102,12 +101,25 @@ router.post('/workouts/:id/favorite', async function (req, res) {
             .lean();
         if (!workout) return res.status(404).send('Workout not found.');
 
-        const { exercise, createdBy } = workout;
+        const { createdBy } = workout;
+
+        const exerciseInfo = workout.exercise.map(function (exercise) {
+            const { movement, ...remaining } = exercise;
+            return {
+                movement: {
+                    name: movement.name,
+                    musclesWorked: movement.musclesWorked,
+                    type: movement.type,
+                },
+                ...remaining,
+            };
+        });
+
         const newFavorite = {
             name: req.body.name,
-            exercise,
-            accessibleBy: [createdBy]
-        };
+            exercise: exerciseInfo,
+            createdBy
+        }
 
         const createdFavorite = await Favorite.create(newFavorite);
 
