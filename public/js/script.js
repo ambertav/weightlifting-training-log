@@ -48,8 +48,6 @@ $(document).ready(function () {
             else if ($button.text() === 'Cancel') $button.text('Delete').toggleClass('btn-outline-warning btn-outline-dark');
         }
 
-        console.log(selectors);
-
         toggleForms(selectors);
     });
     $('#profilePhoto').on('change', enableSubmit);

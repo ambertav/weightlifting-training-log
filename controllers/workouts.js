@@ -148,8 +148,7 @@ router.put('/workouts/:id/complete', async function (req, res) {
         const workout = await Workout.findOne({
             createdBy: req.session.userId,
             _id: req.body.id
-        })
-        .lean();
+        });
 
         if (workout) {
             workout.isComplete = !workout.isComplete;
