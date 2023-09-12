@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const Workout = require('../models/workout');
 const Favorite = require('../models/favorite');
+const Movement = require('../models/movement');
 const Request = require('../models/request');
 
 // index
@@ -78,9 +79,23 @@ router.post('/favorites/:id/copy', async function (req, res) {
         if (!favorite) return res.status(404).send('Favorite not found.');
 
         const { exercise } = favorite;
+        const createdBy = req.session.userId;
+
+        const newWorkoutExercise = [];
+
+        for (const ex of exercise) {
+            try {
+                const movement = await createOrRetrieveMovement(ex, createdBy);
+                const exerciseObj = formatExercise(ex, movement);
+                newWorkoutExercise.push(exerciseObj);
+            } catch (error) {
+                console.error(error);
+            }
+        }
+
         const newWorkout = {
             day: req.body.day,
-            exercise,
+            exercise: newWorkoutExercise,
             createdBy: req.session.userId
         }
 
@@ -172,6 +187,41 @@ router.get('/favorites/:id', async function (req, res) {
     }
 });
 
+async function createOrRetrieveMovement(exercise, createdBy) {
+    let movement = await Movement.findOne({
+        name: exercise.movement.name,
+        createdBy: { $in: [createdBy, null] }
+    });
 
+    if (!movement) {
+        movement = await Movement.create({
+            name: exercise.movement.name,
+            musclesWorked: exercise.movement.musclesWorked,
+            type: exercise.movement.type,
+            createdBy
+        });
+    }
+
+    return movement;
+}
+
+function formatExercise(exercise, movement) {
+    const exerciseObj = {
+        movement: movement._id
+    }
+
+    const keysByType = {
+        weighted: ['weight', 'sets', 'reps'],
+        cardio: ['minutes', 'caloriesBurned']
+    }
+
+    const keys = keysByType[movement.type]
+
+    for (const key of keys) {
+        if (exercise[key] !== undefined) exerciseObj[key] = exercise[key];
+    }
+
+    return exerciseObj;
+}
 
 module.exports = router;
