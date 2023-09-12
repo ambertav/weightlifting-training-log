@@ -66,6 +66,10 @@ router.delete('/movements/:id', async function (req, res) {
             _id: req.params.id
         });
 
+        if (!deletedMovement) return res.status(404).send('Movement not found.');
+
+        await deletedMovement.remove();
+
         res.redirect('/movements');
     } catch (error) {
         console.error(error);
