@@ -32,11 +32,13 @@
                                 <h5 class="text-capitalize"><%= movement.name %></h5>
                                 <p class="description px-3 py-2"><%= movement.description %></p>
                                 <% if (movement.createdBy !== null) { %>
-                                    <div class="center">
+                                    <div class="index">
                                         <a href="/movements/<%= movement._id %>/edit"
-                                            class="btn btn-outline-warning btn-sm mx-2">Edit</a>
-                                        <form action="/movements/<%= movement._id %>?_method=DELETE" method="POST">
-                                            <input type="submit" value="Delete" class="btn btn-outline-danger btn-sm">
+                                            class="btn btn-outline-warning btn-sm confirmDelete">Edit</a>
+                                            <span class="text-danger fw-bold d-none mb-4 confirmDelete" style="font-size: 12px;">Deleting this movement would delete any associated exercises from your current workouts. Do you want to continue to delete?</span>
+                                        <button class="btn btn-outline-danger btn-sm movementDelete">Delete</button>
+                                        <form action="/movements/<%= movement._id %>?_method=DELETE" method="POST" class="d-none confirmDelete">
+                                            <input type="submit" value="Confirm Delete" class="btn btn-outline-danger btn-sm mx-2">
                                         </form>
                                     </div>
                                 <% } %>

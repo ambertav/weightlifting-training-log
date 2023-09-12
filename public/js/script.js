@@ -1,5 +1,5 @@
 $(document).ready(function () {
-    const URL = 'https://weightlifting-log.herokuapp.com/'
+    const URL = 'http://localhost:3000/'
 
     // password and confirmation field inputs
     const $password = $('#password');
@@ -32,7 +32,7 @@ $(document).ready(function () {
     $inputParent.on('click', $delete, deleteExercise);
     $add.on('click', addExercise);
     $complete.on('change', updateProgress);
-    $('#addFavorite, #copy, #share, #editProfile').on('click', function (evt) {
+    $('#addFavorite, #copy, #share, #editProfile, .movementDelete').on('click', function (evt) {
         evt.preventDefault();
         let selectors;
 
@@ -40,6 +40,15 @@ $(document).ready(function () {
         else if ($(this).is('#copy')) selectors = ['.copy'];
         else if ($(this).is('#share')) selectors = ['.share'];
         else if ($(this).is('#editProfile')) selectors = [$('.userBioForm'), $('.userPhoto'), $('.userBio')];
+        else if ($(this).is('.movementDelete')) { 
+            const $button = $(this);
+            $div = $($button.closest('div'));
+            selectors = [$($div.find('.confirmDelete'))];
+            if ($button.text() === 'Delete') $button.text('Cancel').toggleClass('btn-outline-dark btn-outline-warning');
+            else if ($button.text() === 'Cancel') $button.text('Delete').toggleClass('btn-outline-warning btn-outline-dark');
+        }
+
+        console.log(selectors);
 
         toggleForms(selectors);
     });
@@ -48,7 +57,6 @@ $(document).ready(function () {
     $('.movementSelect').each(handleWorkoutFormChange);
     $inputParent.on('change', '.movementSelect', handleWorkoutFormChange);
     $inputParent.on('change', enableWorkoutSubmit);
-
 
 
     // Event Handlers
@@ -102,7 +110,7 @@ $(document).ready(function () {
     function toggleForms (selectors) {
         for (const selector of selectors) {
             const $element = $(selector);
-            $element.hasClass('d-none') ? $element.removeClass('d-none') : $element.addClass('d-none');
+            $element.toggleClass('d-none');
         }
     }
 

@@ -118,7 +118,7 @@
                             <form action="/users/request" method="POST">
                                 <input type="hidden" name="from" value="<%= viewer %>">
                                 <input type="hidden" name="to" value="<%= user._id %>">
-                                <input type="submit" value="Request Friend">
+                                <input type="submit" value="Request Friend" class="btn btn-outline-warning btn-lg">
                             </form>
                         <% } else if (existingRequest.status === 'pending') { %>
                             <h5>Request Pending</h5>
