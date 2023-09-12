@@ -39,24 +39,30 @@ router.delete('/favorites/:id', async function (req, res) {
     }
 });
 
-// update -- share favorites
-router.put('/favorites/:id/share', async function (req, res) {
+// share favorirtes
+router.post('/favorites/:id/share', async function (req, res) {
     try {
-        const updatedFavorite = await Favorite.findOneAndUpdate({
-            accessibleBy: req.session.userId,
+        const originalFavorite = await Favorite.findOne({
+            createdBy: req.session.userId,
             _id: req.params.id
-        }, {
-            $addToSet: {
-                accessibleBy: req.body.friend // adds friend Id if not already present
-            }
-        }, {
-            new: true
+        })
+        .lean();
+
+        if (!originalFavorite) return res.status(404).send('Favorite not found.');
+
+        // New instance of favorite, now createdBy the friend with whom the user selects to share with
+        const favoriteToShare = new Favorite({
+            name: originalFavorite.name,
+            exercise: originalFavorite.exercise,
+            createdBy: req.body.friend
         });
+
+        const sharedFavorite = await favoriteToShare.save();
 
         res.redirect('/favorites');
     } catch (error) {
         console.error(error);
-        res.status(500).send('An error occurred while updating the favorite.');
+        res.status(500).send('An error occurred while sharing the favorite.');
     }
 });
 
@@ -174,6 +180,7 @@ router.get('/favorites/:id', async function (req, res) {
     }
 });
 
+// sees if the movement within the favorite exists in reference to user, creates the movement if not
 async function createOrRetrieveMovement(exercise, createdBy) {
     let movement = await Movement.findOne({
         name: exercise.movement.name,
@@ -202,6 +209,7 @@ function formatExercise(exercise, movement) {
         cardio: ['minutes', 'caloriesBurned']
     }
 
+    // determines what keys the object will have based on type of movement
     const keys = keysByType[movement.type]
 
     for (const key of keys) {

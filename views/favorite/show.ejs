@@ -30,7 +30,7 @@
             <br>
             <div class="mb-2">
                 <button class="btn btn-outline-info btn-sm mb-3" id="share">Share Favorite</button>
-                <form class="d-none share" action="/favorites/<%= favorite._id %>/share?_method=PUT" method="POST">
+                <form class="d-none share" action="/favorites/<%= favorite._id %>/share" method="POST">
                     <input type="hidden" name="id" value="<%= favorite._id %>">
                     <p class="fs-6 fst-italic">Select a Friend:</p>
                     <select id="friends" name="friend" class="form-select" size="4" required>
