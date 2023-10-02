@@ -3,7 +3,7 @@ const router = express.Router();
 const Movement = require('../models/movement');
 
 const muscleGroups = ['Deltoids', 'Triceps', 'Biceps', 'Forearms', 'Chest', 'Abdominals', 'Upper Back', 'Lower Back', 'Glutes', 'Quadriceps', 'Hamstrings', 'Calves'];
-const pageSize = 15;
+const pageSize = 12;
 
 // index
 router.get('/movements', async function (req, res) {

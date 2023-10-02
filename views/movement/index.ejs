@@ -25,7 +25,7 @@
                 <br>
                 <h5 class="center my-5 fw-bold text-danger">No movements found</h5>
             <% } else { %>
-                <ul class="row mt-5">
+                <ul class="row mt-5 mb-4">
                     <% for (const movement of movements) { %>
                         <div class="col-md-4">
                             <li class="m-3 p-2">
@@ -46,16 +46,16 @@
                         </div>
                         <% } %>
                 </ul>
-                <div class="center mb-5">
+                <div class="center mb-2 mt-5">
                     <% if (currentPage > 1) { %>
-                        <a href="/movements?page=<%= currentPage - 1 %>" class="btn btn-outline-secondary">Previous</a>
+                        <a href="/movements?page=<%= Number(currentPage) - 1 %>" class="btn btn-outline-secondary">Previous</a>
                     <% } %>
                     <% if (currentPage < totalPages) { %>
-                        <a href="/movements?page=<%= currentPage + 1 %>" class="btn btn-outline-secondary">Next</a>
+                        <a href="/movements?page=<%= Number(currentPage) + 1 %>" class="btn btn-outline-secondary">Next</a>
                     <% } %>
                 </div>
             <% } %>
-            <div class="right mb-5">
+            <div class="right mb-4">
                 <a href="/movements/new" class="btn btn-outline-secondary btn-lg mb-3">Add a New Movement</a>
             </div>
         </div>
