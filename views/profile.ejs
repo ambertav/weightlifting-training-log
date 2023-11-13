@@ -8,7 +8,7 @@
         <%- include('./partials/nav'); %>
         <div class="container-md">
             <div class="row justify-content-between">
-                <div class="col-md-6">
+                <div class="col-md-5">
                     <% if (viewer) { %>
                         <h1 class="text-capitalize"><%= user.username %></h1>
                     <% } else { %>
@@ -16,39 +16,39 @@
                     <% } %>
                     <br>
                     <% const date = new Date(user.createdAt) %>
-                    <p class="fs-6 fst-italic">Member Since:
+                    <p class="fs-7 fst-italic">Member Since:
                         <%= new Intl.DateTimeFormat('en-US', { month: 'long', year: 'numeric'}).format(date) %></p>
                     <br>
                     <br>
                     <div class="center">
-                        <img src="<%= user.profilePhoto %>" alt="<%= user.username %>'s profile photo" class="rounded my-5 w-40 h-40">
+                        <img src="<%= user.profilePhoto %>" alt="<%= user.username %>'s profile photo" class="rounded" style="height:40%; width:40%;">
                     </div>
 
                     <form action="/users/me/photo/edit/?_method=PUT" method="POST" enctype="multipart/form-data"
-                        class="d-none userPhoto">
+                        class="d-none userPhoto mt-4">
                         <div class="form-group">
-                            <input type="file" name="profilePhoto" id="profilePhoto" class="form-control-file">
-                            <input type="submit" value="Update Photo" class="btn btn-outline-dark btn-sm mt-3" disabled>
+                            <input type="file" name="profilePhoto" id="profilePhoto" class="form-control-file small-text">
+                            <input type="submit" value="Update Photo" class="btn btn-outline-dark btn-xs mt-1" disabled>
                         </div>
                     </form>
 
                     <br>
-                    <% if (user.bio) %> <p class="fst-italic userBio my-5"><%= user.bio %></p>
+                    <% if (user.bio) %> <p class="fst-italic userBio my-4"><%= user.bio %></p>
                     <form action="/users/me/bio/edit/?_method=PUT" method="POST" class="d-none userBioForm">
                         <div class="form-floating">
-                            <textarea name="bio" class="form-control" rows="4" maxlength="100" style="height:100%"><%= user.bio %></textarea>
-                            <label for="bio">Bio</label>
+                            <textarea name="bio" class="form-control select-text" rows="3" maxlength="100" style="height:50%"><%= user.bio %></textarea>
+                            <label class="small-text" for="bio">Bio</label>
                         </div>
-                        <input type="submit" value="Update Bio" class="btn btn-outline-dark btn-sm mt-3">
+                        <input type="submit" value="Update Bio" class="btn btn-outline-dark btn-xs mt-2">
                     </form>
                 </div>
                 
                 <% if (exerciseStats) { %>
-                    <div class="col-md-8">
+                    <div class="col-md-5">
                         <br>
-                        <h5 class="mt-4">Muscle Distribution</h5>
+                        <h5>Muscle Distribution</h5>
                         <br>
-                        <div class="h-50 center my-2">
+                        <div class="h-50 center">
                             <canvas id="muscleDoughnut" width="100%" height="80%"></canvas>
                         </div>
 
@@ -87,19 +87,19 @@
                             });
                         </script>
 
-                        <div class="right my-5">
-                            <h5 class="my-3">Cardiovascular Stats</h5>
-                            <table class="table w-50 text-center mt-3">
+                        <div class="right mt-5">
+                            <h5 class="my-2">Cardiovascular Stats</h5>
+                            <table class="table w-100 text-center">
                                 <thead>
                                     <tr>
-                                        <th>Minutes</th>
-                                        <th>Calories Burned</th>
+                                        <th class="small-text">Minutes</th>
+                                        <th class="small-text">Calories Burned</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <tr>
-                                        <td><%= exerciseStats.cardioStats.totalMinutes %></td>
-                                        <td><%= exerciseStats.cardioStats.totalCalories %></td>
+                                        <td class="small-text"><%= exerciseStats.cardioStats.totalMinutes %></td>
+                                        <td class="small-text"><%= exerciseStats.cardioStats.totalCalories %></td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -109,16 +109,15 @@
             </div>
 
             <br>
-            <br>
             
             <div class="row justify-content-between">
                 <% if (viewer) { %>
-                    <div class="col-md-6 mb-5">
+                    <div class="col-md-5 mb-4">
                         <% if (existingRequest === null) { %>
                             <form action="/users/request" method="POST">
                                 <input type="hidden" name="from" value="<%= viewer %>">
                                 <input type="hidden" name="to" value="<%= user._id %>">
-                                <input type="submit" value="Request Friend" class="btn btn-outline-warning btn-lg">
+                                <input type="submit" value="Request Friend" class="btn btn-outline-warning btn">
                             </form>
                         <% } else if (existingRequest.status === 'pending') { %>
                             <h5>Request Pending</h5>
@@ -128,7 +127,7 @@
                         <% } %>
                     </div>
                 <% } else { %>
-                    <div class="col-md-6 mb-5">
+                    <div class="col-md-5 mb-3">
                         <h5>Pending Requests</h5>
                         <ul>
                             <% if (awaiting.length > 0) { %>
@@ -139,8 +138,8 @@
                                             <a href="/users/profile/<%= pending.username %>"><%= pending.username %></a>
                                             <form action="/users/request/edit/?_method=PUT" method="POST">
                                                 <input type="hidden" name="requestId" value="<%= request._id %>">
-                                                <input type="submit" name="decision" value="Accept" class="btn btn-outline-success btn-sm">
-                                                <input type="submit" name="decision" value="Decline" class="btn btn-outline-danger btn-sm">
+                                                <input type="submit" name="decision" value="Accept" class="btn btn-outline-success btn-xs">
+                                                <input type="submit" name="decision" value="Decline" class="btn btn-outline-danger btn-xs">
                                             </form>
                                         </li>
                                     <% } else if (pending === request.to) { %>
@@ -155,7 +154,7 @@
                         </ul>
                     </div>
 
-                    <div class="col-md-6 mb-5">
+                    <div class="col-md-5 mb-3">
                         <h5>Friends List</h5>
                         <ul>
                             <% if (friendships.length > 0) { %>
@@ -175,7 +174,7 @@
             </div>
 
             <% if (!viewer) { %>
-                <div class="right mb-5">
+                <div class="right mb-4">
                     <button class="btn btn-outline-warning mt-1 btn-sm" id="editProfile">Edit Profile</button>
                 </div>
             <% } %>
