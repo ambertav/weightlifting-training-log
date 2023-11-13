@@ -128,53 +128,58 @@
                     </div>
                 <% } else { %>
                     <div class="col-md-5 mb-3">
-                        <h5>Pending Requests</h5>
-                        <ul>
-                            <% if (awaiting.length > 0) { %>
-                                <% for (const request of awaiting) { %>
-                                    <% const pending = request.to._id.toHexString() === user._id.toHexString() ? request.from : request.to %>
-                                    <% if (pending === request.from) { %>
+                        <h5 id="pendingCollapse" class="btn btn-outline-secondary btn-sm">Pending Requests</h5>
+                        <div id="pendingList" style="display: none;">
+                            <ul>
+                                <% if (awaiting.length > 0) { %>
+                                    <% for (const request of awaiting) { %>
+                                        <% const pending = request.to._id.toHexString() === user._id.toHexString() ? request.from : request.to %>
+                                        <% if (pending === request.from) { %>
+                                            <li class="py-1 px-3">
+                                                <a href="/users/profile/<%= pending.username %>"><%= pending.username %></a>
+                                                <form action="/users/request/edit/?_method=PUT" method="POST">
+                                                    <input type="hidden" name="requestId" value="<%= request._id %>">
+                                                    <input type="submit" name="decision" value="Accept" class="btn btn-outline-success btn-xs">
+                                                    <input type="submit" name="decision" value="Decline" class="btn btn-outline-danger btn-xs">
+                                                </form>
+                                            </li>
+                                        <% } else if (pending === request.to) { %>
                                         <li class="py-1 px-3">
-                                            <a href="/users/profile/<%= pending.username %>"><%= pending.username %></a>
-                                            <form action="/users/request/edit/?_method=PUT" method="POST">
-                                                <input type="hidden" name="requestId" value="<%= request._id %>">
-                                                <input type="submit" name="decision" value="Accept" class="btn btn-outline-success btn-xs">
-                                                <input type="submit" name="decision" value="Decline" class="btn btn-outline-danger btn-xs">
-                                            </form>
+                                            <a class="text-capitalize" href="/users/profile/<%= pending.username %>"><p><%= pending.username %></p></a>
                                         </li>
-                                    <% } else if (pending === request.to) { %>
-                                    <li class="py-1 px-3">
-                                        <a class="text-capitalize" href="/users/profile/<%= pending.username %>"><p><%= pending.username %></p></a>
-                                    </li>
+                                        <% } %>
                                     <% } %>
+                                <% } else { %>
+                                    <li class="py-1 px-3">No Pending Requests</li>
                                 <% } %>
-                            <% } else { %>
-                                <li class="py-1 px-3">No Pending Requests</li>
-                            <% } %>
-                        </ul>
+                            </ul>
+                        </div>
                     </div>
 
                     <div class="col-md-5 mb-3">
-                        <h5>Friends List</h5>
-                        <ul>
-                            <% if (friendships.length > 0) { %>
-                                <!-- friendships is array of object hosting the friendship, need access to user's other half of friendship -->
-                                <% for (const friendship of friendships) { %>
-                                    <% const friend = friendship.to._id.toHexString() === user._id.toHexString() ? friendship.from : friendship.to %>
-                                    <li class="py-1 px-3">
-                                        <a class="text-capitalize" href="/users/profile/<%= friend.username %>"><%= friend.username %></a>
-                                    </li>
+                        <h5 id="friendsCollapse" class="btn btn-outline-secondary btn-sm">Friends List
+                        </h5>
+                        <div id="friendsList" style="display: none;">
+                            <ul>
+                                <% if (friendships.length > 0) { %>
+                                    <!-- friendships is array of object hosting the friendship, need access to user's other half of friendship -->
+                                    <% for (const friendship of friendships) { %>
+                                        <% const friend = friendship.to._id.toHexString() === user._id.toHexString() ? friendship.from : friendship.to %>
+                                        <li class="py-1 px-3">
+                                            <a class="text-capitalize" href="/users/profile/<%= friend.username %>"><p><%= friend.username %></p></a>
+                                        </li>
+                                    <% } %>
+                                <% } else { %>
+                                    <li><p>No Friends</p></li>
                                 <% } %>
-                            <% } else { %>
-                                <li><p>No Friends</p></li>
-                            <% } %>
-                        </ul>
+                            </ul>
+                        </div>
                     </div>
                 <% } %>
             </div>
 
             <% if (!viewer) { %>
-                <div class="right mb-4">
+                <div class="right mb-5">
                     <button class="btn btn-outline-warning mt-1 btn-sm" id="editProfile">Edit Profile</button>
                 </div>
             <% } %>

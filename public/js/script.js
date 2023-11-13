@@ -22,6 +22,10 @@ $(document).ready(function () {
     const $movementType = $('.movementTypeCheckbox');
     const $movementSubmit = $('.movementSubmit');
 
+    // for collapsable requests and friendship lists on profile page
+    const $pending = $('#pendingList');
+    const $friend = $('#friendsList');
+
     let completedWorkouts = 0;
     let workoutsTotal = $complete.length;
 
@@ -39,7 +43,6 @@ $(document).ready(function () {
         if ($(this).is('#addFavorite')) selectors = ['.favorite'];
         else if ($(this).is('#copy')) selectors = ['.copy'];
         else if ($(this).is('#share')) selectors = ['.share'];
-        else if ($(this).is('#editProfile')) selectors = [$('.userBioForm'), $('.userPhoto'), $('.userBio')];
         else if ($(this).is('.movementDelete')) { 
             const $button = $(this);
             $div = $($button.closest('div'));
@@ -47,7 +50,10 @@ $(document).ready(function () {
             if ($button.text() === 'Delete') $button.text('Cancel').toggleClass('btn-outline-dark btn-outline-warning');
             else if ($button.text() === 'Cancel') $button.text('Delete').toggleClass('btn-outline-warning btn-outline-dark');
         }
-
+        else if ($(this).is('#editProfile')) {
+            selectors = [$('.userBioForm'), $('.userPhoto'), $('.userBio')];
+            $('html, body').animate({ scrollTop: 0 }, 100); // scrolls to top to see form
+        }
         toggleForms(selectors);
     });
     $('#profilePhoto').on('change', enableSubmit);
@@ -55,6 +61,7 @@ $(document).ready(function () {
     $('.movementSelect').each(handleWorkoutFormChange);
     $inputParent.on('change', '.movementSelect', handleWorkoutFormChange);
     $inputParent.on('change', enableWorkoutSubmit);
+    $('#pendingCollapse, #friendsCollapse').on('click', toggleCollapse);
 
 
     // Event Handlers
@@ -155,6 +162,11 @@ $(document).ready(function () {
             return $(input).val().trim() !== '';
         });
         $('.workoutSubmit').prop('disabled', !allFilled);
+    }
+
+    function toggleCollapse (evt) {
+        if (evt.target.id === 'pendingCollapse') $pending.slideToggle();
+        if (evt.target.id === 'friendsCollapse') $friend.slideToggle();
     }
 
     // updates workout completion status
