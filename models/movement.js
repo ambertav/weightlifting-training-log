@@ -1,9 +1,9 @@
 const mongoose = require('mongoose');
-const Schema = mongoose.Schema;
 
 const Workout = require('./workout'); 
 
-const movementSchema = new Schema({
+
+const movementSchema = new mongoose.Schema({
     name: {
         type: String,
         required: true,
@@ -25,7 +25,7 @@ const movementSchema = new Schema({
         required: true
     },
     createdBy: {
-        type: Schema.Types.ObjectId,
+        type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
     }
 }, {
