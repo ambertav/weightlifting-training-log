@@ -1,16 +1,17 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const methodOverride = require('method-override');
-const session = require('express-session');
 const bodyParser = require('body-parser');
+const mongoSanitize = require('express-mongo-sanitize');
 const fileUpload = require('express-fileupload');
+const session = require('express-session');
 
-const movementsRouter = require('./controllers/movements');
-const usersRouter = require('./controllers/users');
-const workoutsRouter = require('./controllers/workouts');
-const profilesRouter = require('./controllers/profiles');
-const requestRouter = require('./controllers/requests');
-const favoriteRouter = require('./controllers/favorites');
+const movementsRouter = require('./routes/movements');
+const usersRouter = require('./routes/users');
+const workoutsRouter = require('./routes/workouts');
+const profilesRouter = require('./routes/profiles');
+const requestRouter = require('./routes/requests');
+const favoriteRouter = require('./routes/favorites');
 
 const app = express();
 
@@ -32,18 +33,16 @@ db.on('error', function (error) {
 });
 
 app.use(express.static('public'));
-app.use(express.urlencoded({
-    extended: true
-}));
+app.use(express.urlencoded({ extended: true }));
 app.use(methodOverride('_method'));
 app.use(bodyParser.json());
+app.use(mongoSanitize());
+app.use(fileUpload());
 app.use(session({
     secret: process.env.SECRET,
     resave: false,
     saveUninitialized: false
 }));
-app.use(fileUpload());
-
 app.use(function (req, res, next) {
     if (req.session.userId) {
         res.locals.user = req.session.userId;
