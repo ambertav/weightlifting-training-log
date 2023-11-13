@@ -1,12 +1,11 @@
-const express = require('express');
-const router = express.Router();
-const Workout = require('../models/workout');
 const Favorite = require('../models/favorite');
+const Workout = require('../models/workout');
 const Movement = require('../models/movement');
 const Request = require('../models/request');
 
+
 // index
-router.get('/favorites', async function (req, res) {
+async function getFavorites (req, res) {
     try {
         const favorites = await Favorite.find({
                 createdBy: req.session.userId
@@ -20,10 +19,10 @@ router.get('/favorites', async function (req, res) {
         console.error(error);
         res.status(500).send('An error occurred while fetching favorites.');
     }
-});
+}
 
 // delete
-router.delete('/favorites/:id', async function (req, res) {
+async function deleteFavorite (req, res) {
     try {
         const deletedFavorite = await Favorite.findOneAndDelete({
             createdBy: req.session.userId,
@@ -37,10 +36,10 @@ router.delete('/favorites/:id', async function (req, res) {
         console.error(error);
         res.status(500).send('An error occurred while deleteing the favorite.');
     }
-});
+}
 
 // share favorirtes
-router.post('/favorites/:id/share', async function (req, res) {
+async function shareFavorites (req, res) {
     try {
         const originalFavorite = await Favorite.findOne({
             createdBy: req.session.userId,
@@ -64,10 +63,10 @@ router.post('/favorites/:id/share', async function (req, res) {
         console.error(error);
         res.status(500).send('An error occurred while sharing the favorite.');
     }
-});
+}
 
 // copy to workouts
-router.post('/favorites/:id/copy', async function (req, res) {
+async function copyFavorite (req, res) {
     try {
         const favorite = await Favorite.findById(req.params.id);
         if (!favorite) return res.status(404).send('Favorite not found.');
@@ -100,10 +99,10 @@ router.post('/favorites/:id/copy', async function (req, res) {
         console.error(error);
         res.status(500).send('An error occurred while copying the favorite and creating the workout.');
     }
-});
+}
 
 // create
-router.post('/workouts/:id/favorite', async function (req, res) {
+async function createFavorite (req, res) {
     try {
         const workout = await Workout.findById(req.params.id)
             .populate('exercise.movement')
@@ -141,10 +140,10 @@ router.post('/workouts/:id/favorite', async function (req, res) {
         console.error(error);
         res.status(500).send('An error occurred while creating the favorite.');
     }
-});
+}
 
 // show
-router.get('/favorites/:id', async function (req, res) {
+async function showFavorite (req, res) {
     try {
         const favorite = await Favorite.findById(req.params.id)
             .lean();
@@ -178,7 +177,7 @@ router.get('/favorites/:id', async function (req, res) {
         console.error(error);
         res.status(500).send('An error occurred while fetching the favorite.');
     }
-});
+}
 
 // sees if the movement within the favorite exists in reference to user, creates the movement if not
 async function createOrRetrieveMovement(exercise, createdBy) {
@@ -219,4 +218,11 @@ function formatExercise(exercise, movement) {
     return exerciseObj;
 }
 
-module.exports = router;
+module.exports = {
+    getFavorites,
+    deleteFavorite,
+    shareFavorites,
+    copyFavorite,
+    createFavorite,
+    showFavorite,
+}

@@ -1,13 +1,12 @@
-const express = require('express');
 const mongoose = require('mongoose');
-const router = express.Router();
 const User = require('../models/user');
 const Request = require('../models/request');
 const Workout = require('../models/workout');
 const { s3Client, s3BaseUrl, PutObjectCommand } = require('../aws');
 
+
 // user profile
-router.get('/users/me', async function (req, res) {
+async function getOwnProfile (req, res) {
     try {
         const user = await User.findById(req.session.userId)
             .select('-email -password')
@@ -41,10 +40,10 @@ router.get('/users/me', async function (req, res) {
         console.error(error);
         res.status(500).send('Internal Server Error');
     }
-});
+}
 
 // user profile photo upload
-router.put('/users/me/photo/edit', async function (req, res) {
+async function uploadPhoto (req, res) {
     const file = req.files.profilePhoto;
     const fileInput = file.name.split('.');
     const fileType = fileInput[1];
@@ -78,10 +77,10 @@ router.put('/users/me/photo/edit', async function (req, res) {
         console.error('Error uploading profile photo to AWS S3:', s3Error);
         res.status(500).send('Error uploading profile photo to AWS S3');
     }
-});
+}
 
 // user profile update bio
-router.put('/users/me/bio/edit', async function (req, res) {
+async function updateProfile (req, res) {
     try {
         const user = await User.findById(req.session.userId);
 
@@ -93,18 +92,18 @@ router.put('/users/me/bio/edit', async function (req, res) {
         console.error(error);
         res.status(500).send('Error updating user bio');
     }
-});
+}
 
 // search for other users
-router.get('/users/search', function (req, res) {
+function searchView (req, res) {
     res.render('search.ejs', {
         error: null,
         searchResults: null
     });
-});
+}
 
 // handle search submission
-router.post('/users/search', async function (req, res) {
+async function handleSearch (req, res) {
     try {
         let errorMessage = '';
         const searchResults = await User.find({
@@ -126,10 +125,10 @@ router.post('/users/search', async function (req, res) {
         console.error(error);
         res.status(500).send('Internal Server Error');
     }
-});
+}
 
 // view other profiles
-router.get('/users/profile/:username', async function (req, res) {
+async function viewOtherProfile (req, res) {
     try {
         const user = await User.findOne({ username: req.params.username })
             .select('-email, -password')
@@ -162,7 +161,7 @@ router.get('/users/profile/:username', async function (req, res) {
         console.error(error);
         res.status(500).send('Internal Server Error');
     }
-});
+}
 
 async function getVolume (userId) {
     try {
@@ -274,4 +273,6 @@ function formatExerciseStats (volumePerMovement) {
 }
 
 
-module.exports = router;
+module.exports = {
+    getOwnProfile, uploadPhoto, updateProfile, searchView, handleSearch, viewOtherProfile
+}

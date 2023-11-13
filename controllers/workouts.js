@@ -1,10 +1,9 @@
-const express = require('express');
-const router = express.Router();
 const Workout = require('../models/workout');
 const Movement = require('../models/movement');
 
+
 // index
-router.get('/workouts', async function (req, res) {
+async function getWorkouts (req, res) {
     try {
         const allWorkouts = await Workout.find({
                 createdBy: req.session.userId
@@ -19,10 +18,10 @@ router.get('/workouts', async function (req, res) {
         console.error(error);
         res.status(500).send('An error occurred while fetching workouts.');
     }
-});
+}
 
 // new
-router.get('/workouts/new', async function (req, res) {
+async function newWorkoutView (req, res) {
     try {
         const availableMovements = await Movement.find({
                 createdBy: {
@@ -39,10 +38,10 @@ router.get('/workouts/new', async function (req, res) {
         console.error(error);
         res.status(500).send('An error occurred while fetching movements.');
     }
-});
+}
 
 // delete
-router.delete('/workouts/:id', async function (req, res) {
+async function deleteWorkout (req, res) {
     try {
         const deletedWorkout = await Workout.findOneAndDelete({
             createdBy: req.session.userId,
@@ -54,10 +53,10 @@ router.delete('/workouts/:id', async function (req, res) {
         console.error(error);
         res.status(500).send('An error occurred while deleteing the workout.');
     }
-});
+}
 
 // update
-router.put('/workouts/:id', async function (req, res) {
+async function updateWorkout (req, res) {
     try {
         const formattedExerciseArray = formatExercise(req.body.exercise);
         req.body.exercise = formattedExerciseArray;
@@ -82,10 +81,10 @@ router.put('/workouts/:id', async function (req, res) {
         console.error(error);
         res.status(500).send('An error occurred while updating the workout.');
     }
-});
+}
 
 // create
-router.post('/workouts', async function (req, res) {
+async function createWorkout (req, res) {
     try {
         const formattedExerciseArray = formatExercise(req.body.exercise);
         req.body.exercise = formattedExerciseArray;
@@ -111,10 +110,10 @@ router.post('/workouts', async function (req, res) {
         const message = 'An error occurred while creating the workout.'
         handleValidationErrors(error, res, message);
     }
-});
+}
 
 // edit
-router.get('/workouts/:id/edit', async function (req, res) {
+async function editWorkoutView (req, res) {
     try {
         const foundWorkout = await Workout.findById({
                 createdBy: req.session.userId,
@@ -140,10 +139,10 @@ router.get('/workouts/:id/edit', async function (req, res) {
         console.error(error)
         res.status(500).send('An error occurred while fetching the workout.');
     }
-});
+}
 
 // toggle complete
-router.put('/workouts/:id/complete', async function (req, res) {
+async function toggleWorkoutCompletion (req, res) {
     try {
         const workout = await Workout.findOne({
             createdBy: req.session.userId,
@@ -161,10 +160,10 @@ router.put('/workouts/:id/complete', async function (req, res) {
         console.error(error)
         res.status(500).send('An error occurred while updating workout status.');
     }
-});
+}
 
 // show
-router.get('/workouts/:id', async function (req, res) {
+async function showWorkout (req, res) {
     try {
         const foundWorkout = await Workout.findById(req.params.id)
             .populate('exercise.movement')
@@ -178,7 +177,7 @@ router.get('/workouts/:id', async function (req, res) {
         console.error(error)
         res.status(500).send('An error occurred while fetching the workout.');
     }
-});
+}
 
 
 // formatting the exercise array for create and update routes
@@ -225,4 +224,13 @@ function handleValidationErrors(error, res, message) {
 }
 
 
-module.exports = router;
+module.exports = {
+    getWorkouts,
+    newWorkoutView,
+    deleteWorkout,
+    updateWorkout,
+    createWorkout,
+    editWorkoutView,
+    toggleWorkoutCompletion,
+    showWorkout,
+};

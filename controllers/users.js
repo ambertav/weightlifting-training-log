@@ -1,17 +1,16 @@
-const express = require('express');
-const router = express.Router();
 const User = require('../models/user');
 const bcrypt = require('bcrypt');
 
+
 // sign up form
-router.get('/signup', function (req, res) {
+function signupView (req, res) {
     res.render('signup.ejs', {
         error: null
     });
-});
+}
 
 // handle form submission
-router.post('/signup', async function (req, res) {
+async function signupUser (req, res) {
     try {
         // validate if passwords match
         if (req.body.password !== req.body.passwordConfirmation) {
@@ -47,17 +46,17 @@ router.post('/signup', async function (req, res) {
             error: errorMessage
         });
     }
-});
+}
 
 // login form
-router.get('/login', function (req, res) {
+function loginView (req, res) {
     res.render('login.ejs', {
         error: null
     });
-});
+}
 
 // handle form submission
-router.post('/login', async function (req, res) {
+async function loginUser (req, res) {
     try {
         const foundUser = await User.findOne({
             email: req.body.email
@@ -86,14 +85,14 @@ router.post('/login', async function (req, res) {
             error: 'An error occurred during login.'
         });
     }
-});
+}
 
 // logout
-router.get('/logout', function (req, res) {
+function logoutUser (req, res) {
     req.session.destroy(function (error) {
         res.redirect('/');
     });
-});
+}
 
 
-module.exports = router;
+module.exports = { signupView, signupUser, loginView, loginUser, logoutUser }

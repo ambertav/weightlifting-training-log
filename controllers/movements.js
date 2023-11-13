@@ -1,12 +1,11 @@
-const express = require('express');
-const router = express.Router();
 const Movement = require('../models/movement');
+
 
 const muscleGroups = ['Deltoids', 'Triceps', 'Biceps', 'Forearms', 'Chest', 'Abdominals', 'Upper Back', 'Lower Back', 'Glutes', 'Quadriceps', 'Hamstrings', 'Calves'];
 const pageSize = 12;
 
 // index
-router.get('/movements', async function (req, res) {
+async function getMovements (req, res) {
     try {
         const page = req.query.page || 1;
 
@@ -49,17 +48,17 @@ router.get('/movements', async function (req, res) {
         console.error(error);
         res.status(500).send('An error occurred while fetching movements.');
     }
-});
+}
 
 // new
-router.get('/movements/new', function (req, res) {
+function newMovementView (req, res) {
     res.render('movement/new.ejs', {
         muscleGroups,
     });
-});
+}
 
 // delete
-router.delete('/movements/:id', async function (req, res) {
+async function deleteMovement (req, res) {
     try {
         const deletedMovement = await Movement.findOneAndDelete({
             createdBy: req.session.userId,
@@ -75,10 +74,10 @@ router.delete('/movements/:id', async function (req, res) {
         console.error(error);
         res.status(500).send('An error occurred while deleting the movement.');
     }
-});
+}
 
 // update
-router.put('/movements/:id', async function (req, res) {
+async function updateMovement (req, res) {
     try {
         const editMovement = formatMovementData(req.body, req.session.userId); // format req.body per schema
 
@@ -94,10 +93,10 @@ router.put('/movements/:id', async function (req, res) {
         console.error(error);
         res.status(500).send('An error occurred while updating the movement.');
     }
-});
+}
 
 // create
-router.post('/movements', async function (req, res) {
+async function createMovement (req, res) {
     try {
         const newMovement = formatMovementData(req.body, req.session.userId); // format req.body per schema
 
@@ -108,10 +107,10 @@ router.post('/movements', async function (req, res) {
         console.error(error);
         res.status(500).send('An error occurred while creating the movement.');
     }
-});
+}
 
 // edit
-router.get('/movements/:id/edit', async function (req, res) {
+async function editMovementView (req, res) {
     try {
         const foundMovement = await Movement.findById(req.params.id)
             .lean();
@@ -123,7 +122,7 @@ router.get('/movements/:id/edit', async function (req, res) {
         console.error(error);
         res.status(500).send('An error occurred while fetching the movement.');
     }
-});
+}
 
 // format the movement data from req.body
 function formatMovementData(movementData, userId) {
@@ -144,4 +143,6 @@ function formatMovementData(movementData, userId) {
 }
 
 
-module.exports = router;
+module.exports = {
+    getMovements, newMovementView, deleteMovement, updateMovement, createMovement, editMovementView
+}
