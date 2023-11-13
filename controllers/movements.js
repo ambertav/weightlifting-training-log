@@ -1,14 +1,14 @@
 const Movement = require('../models/movement');
 
-
-const muscleGroups = ['Deltoids', 'Triceps', 'Biceps', 'Forearms', 'Chest', 'Abdominals', 'Upper Back', 'Lower Back', 'Glutes', 'Quadriceps', 'Hamstrings', 'Calves'];
-const pageSize = 12;
-
 const formatHelpers = require('../utilities/formatHelpers');
+const constants = require('../utilities/constants');
+
+const muscleGroups = constants.muscleGroups;
 
 // index
 async function getMovements (req, res) {
     try {
+        const pageSize = 9;
         const page = req.query.page || 1;
 
         // creates filtering parameters

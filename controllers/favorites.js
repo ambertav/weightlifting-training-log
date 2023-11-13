@@ -3,6 +3,7 @@ const Workout = require('../models/workout');
 const Movement = require('../models/movement');
 const Request = require('../models/request');
 
+const formatHelpers = require('../utilities/formatHelpers');
 
 // index
 async function getFavorites (req, res) {
@@ -79,7 +80,7 @@ async function copyFavorite (req, res) {
         for (const ex of exercise) {
             try {
                 const movement = await createOrRetrieveMovement(ex, createdBy);
-                const exerciseObj = formatExercise(ex, movement);
+                const exerciseObj = formatHelpers.formatFavoriteExercise(ex, movement);
                 newWorkoutExercise.push(exerciseObj);
             } catch (error) {
                 console.error(error);

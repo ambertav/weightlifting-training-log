@@ -1,3 +1,6 @@
+const constants = require('./constants');
+const muscleGroups = constants.muscleGroups;
+
 // formatting the exercise array for create and update routes
 function formatWorkoutExercise(exercise) {
     const exerciseObjects = [];
@@ -91,4 +94,6 @@ function formatExerciseStats (volumePerMovement) {
 }
 
 
-module.exports = { formatWorkoutExercise, formatMovementData, formatFavoriteExercise, formatExerciseStats }
+module.exports = { 
+    formatWorkoutExercise, formatMovementData, formatFavoriteExercise, formatExerciseStats,
+}

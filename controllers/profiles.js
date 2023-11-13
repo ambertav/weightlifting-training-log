@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const User = require('../models/user');
 const Request = require('../models/request');
 const Workout = require('../models/workout');
-const { s3Client, s3BaseUrl, PutObjectCommand } = require('../aws');
+const { s3Client, s3BaseUrl, PutObjectCommand } = require('../config/awsConfig');
 
 const formatHelpers = require('../utilities/formatHelpers');
 
@@ -239,5 +239,5 @@ function filterRequests (requests, status) {
 
 
 module.exports = {
-    getOwnProfile, uploadPhoto, updateProfile, searchView, handleSearch, viewOtherProfile
+    getOwnProfile, uploadPhoto, updateProfile, searchView, handleSearch, viewOtherProfile,
 }
