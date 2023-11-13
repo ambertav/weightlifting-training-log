@@ -4,9 +4,9 @@
 <%- include('../partials/head'); %>
 
 <body>
-    <div class="container-fluid">
+    <div class="container">
         <%- include('../partials/nav'); %>
-        <div class="container">
+        <div class="container-md">
             <h2 class="text-capitalize">Edit <%= movement.name %></h2>
             <div class="center">
                 <form action="/movements/<%= movement._id %>?_method=PUT" method="POST" class="form">
@@ -45,7 +45,7 @@
                     <br>
                     <br>
                     <div class="right">
-                        <input type="submit" value="Update Movement" class="btn btn-outline-secondary btn-lg mb-5 movementSubmit">
+                        <input type="submit" value="Update Movement" class="btn btn-outline-secondary mb-5 movementSubmit">
                     </div>
                 </form>
             </div>

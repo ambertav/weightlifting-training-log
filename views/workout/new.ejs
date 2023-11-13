@@ -6,71 +6,71 @@
 <% const daysOfTheWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']; %>
 
 <body>
-    <div class="container-fluid">
+    <div class="container">
         <%- include('../partials/nav'); %>
-        <div class="container">
+        <div class="container-md">
             <h2>Create Workout</h2>
             <form action="/workouts" method="POST">
-                <div class="row mb-3">
-                    <div>
-                        <p class="fs-6 fst-italic">Select Day:</p>
-                        <select name="day" class="form-select form-select-lg" size="4" required>
+                <div class="row mb-3 center">
+                    <div class="w-50">
+                        <p class="fs-7 fst-italic">Select Day:</p>
+                        <select name="day" class="form-select" size="4" required>
                             <% for (const day of daysOfTheWeek) { %>
-                                <option value="<%= day %>"><%= day %></option>
+                                <option class="select-text" value="<%= day %>"><%= day %></option>
                             <% } %>
                         </select>
                     </div>
                 </div>
-                <h4 class="mt-4">Exercise Details</h4>
+                <h4 class="mt-4 px-5">Exercise Details</h4>
                 <div class="workoutInputParent">
                     <div class="workoutInputChild">
                         <div class="index">
                             <div class="p-3">
-                                <p class="fs-6 fst-italic">Select Movement:</p>
+                                <p class="fs-7 fst-italic">Select Movement:</p>
                                 <select name="exercise[movement][]" class="form-select mb-3 movementSelect" size="7" required>
                                     <% for (const movement of movements) { %>
-                                        <option class="text-capitalize" value="<%= movement._id %>" data-type="<%= movement.type %>"><%= movement.name %></option>
+                                        <option class="text-capitalize select-text" value="<%= movement._id %>" data-type="<%= movement.type %>"><%= movement.name %></option>
                                     <% } %>
                                 </select>
                             </div>
                             <div class="right mt-5">
                                 <div class="form-floating weightedSection">
                                     <div class="form-floating">
-                                        <input type="number" name="exercise[weight][]" min="0" class="form-control mb-1" id="weight">
-                                        <label for="weight">Weight</label>
+                                        <input type="number" name="exercise[weight][]" min="0" class="form-control form-control-sm mb-1 h-25" id="weight">
+                                        <label class="small-text" for="weight">Weight</label>
                                     </div>
                                     <div class="form-floating">
-                                        <input type="number" name="exercise[sets][]" min="1" class="form-control mb-1" id="sets">
-                                        <label for="sets">Sets</label>
+                                        <input type="number" name="exercise[sets][]" min="1" class="form-control form-control-sm mb-1 h-25" id="sets">
+                                        <label class="small-text" for="sets">Sets</label>
                                     </div>
                                     <div class="form-floating">
-                                        <input type="number" name="exercise[reps][]" min="1" class="form-control mb-1" id="reps">
-                                        <label for="reps">Repetitions per Set</label>
+                                        <input type="number" name="exercise[reps][]" min="1" class="form-control form-control-sm mb-1 h-25" id="reps">
+                                        <label class="small-text" for="reps">Repetitions per Set</label>
                                     </div>
                                 </div>
                                 <div class="form-floating cardioSection">
                                     <div class="form-floating">
-                                        <input type="number" name="exercise[minutes][]" min="1" class="form-control mb-1" id="minutes">
-                                        <label for="reps">Minutes</label>
+                                        <input type="number" name="exercise[minutes][]" min="1" class="form-control form-control-sm mb-1 h-25" id="minutes">
+                                        <label class="small-text" for="reps">Minutes</label>
                                     </div>
                                     <div class="form-floating">
-                                        <input type="number" name="exercise[caloriesBurned][]" min="1" class="form-control" id="calories">
-                                        <label for="reps">Calories Burned</label>
+                                        <input type="number" name="exercise[caloriesBurned][]" min="1" class="form-control form-control-sm h-25" id="calories">
+                                        <label class="small-text" for="reps">Calories Burned</label>
                                     </div>
                                 </div>
                                 <br>
-                                <p class="btn btn-outline-danger btn-sm delete">Delete Exercise</p>
+                                <p class="btn btn-outline-danger btn-xs delete">Delete Exercise</p>
                             </div>
                         </div>
                         <br>
                     </div>
                 </div>
-                <div class="mb-2 right">
-                    <p class="btn btn-outline-success btn-sm add">Add Another Exercise</p>
+                <div class="right">
+                    <p class="btn btn-outline-success btn-xs add">Add Another Exercise</p>
                 </div>
                 <br>
                 <div class="center mb-5">
-                    <input type="submit" value="Add Workout" class="btn btn-outline-secondary btn-lg mb-5 workoutSubmit" disabled>
+                    <input type="submit" value="Add Workout" class="btn btn-outline-secondary workoutSubmit" disabled>
                 </div>
             </form>
         </div>

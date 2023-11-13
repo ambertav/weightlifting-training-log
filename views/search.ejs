@@ -4,16 +4,16 @@
 <%- include('./partials/head'); %>
 
 <body>
-    <div class="container-lg">
+    <div class="container">
         <%- include('./partials/nav'); %>
-        <div class="container">
+        <div class="container-md">
             <div class="center mb-5">
                 <div class="w-75 vert-index">
                     <h2>Search for Users</h2>
                     <form action="/users/search" method="POST" autocomplete="off" class="form">
-                        <div class="mb-3 form-floating">
-                            <input type="text" name="searchTerm" class="form-control" id="searchTerm" required>
-                            <label for="searchTerm">Search by Username</label>
+                        <div class="mb-2 form-floating">
+                            <input type="text" name="searchTerm" class="form-control form-control-sm h-25" id="searchTerm" required>
+                            <label class="small-text" for="searchTerm">Search by Username</label>
                         </div>
                         <div class="center">
                             <% if (error) { %>
@@ -22,20 +22,20 @@
                         </div>
                         <br>
                         <div class="mb-3 center">
-                            <input type="submit" value="Search" class="btn btn-outline-secondary btn-lg">
+                            <input type="submit" value="Search" class="btn btn-outline-secondary btn-sm">
                         </div>
                     </form>
                 </div>
             </div>
                 <% if (searchResults) { %>
-                    <div class="mb-5">
-                        <ul class="index-grid">
+                    <div class="mb-5 center">
+                        <ul class="index-grid w-75 mx-3">
                             <% for (const user of searchResults) { %>
-                                <li class="m-2 text-center">
+                                <li class="text-center">
                                     <a href="/users/profile/<%= user.username %>" class="text-capitalize">
-                                        <img src="<%= user.profilePhoto %>" alt="<%= user.username %>'s profile photo" class="rounded" width="70px" height="70px">
+                                        <img src="<%= user.profilePhoto %>" alt="<%= user.username %>'s profile photo" class="rounded" width="60px" height="60px">
                                         <br>
-                                        <%= user.username %>
+                                        <p><%= user.username %></p>
                                     </a>
                                 </li>
                             <% } %>

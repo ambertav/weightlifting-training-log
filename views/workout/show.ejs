@@ -4,26 +4,26 @@
 <%- include('../partials/head'); %>
 
 <body>
-    <div class="container-fluid">
+    <div class="container">
         <%- include('../partials/nav'); %>
-        <div class="container">
+        <div class="container-md">
             <h2><%= workout.day %></h2>
-            <div class="right index my-5">
-                <button id="addFavorite" class="btn btn-outline-warning">Add to Favorites</button>
+            <div class="right index my-1">
+                <button id="addFavorite" class="btn btn-outline-warning btn-sm">Add to Favorites</button>
                 <form action="/workouts/<%= workout._id %>/favorite" method="POST" autocomplete="off" class="d-none favorite">
                     <input type="hidden" name="id" value="<%= workout._id %>">
                     <div class="my-3 form-floating">
-                        <input type="text" name="name" class="form-control" maxlength="30" required>
-                        <label for="name">Name of Workout</label>
+                        <input type="text" name="name" class="form-control form-control-sm h-25" maxlength="30" required>
+                        <label class="small-text" for="name">Name of Workout</label>
                     </div>
-                    <input type="submit" value="Create Favorite" class="btn btn-outline-success">
+                    <input type="submit" value="Create Favorite" class="btn btn-outline-success btn-xs">
                 </form>
                 <% if (message) %> <div class="right mt-4 fw-bold"><%= message %></div>
             </div>
             <div class="index">
                 <% for (const exercise of workout.exercise) { %>
-                    <div class="exercise m-4">
-                        <h3><%= exercise.movement.name %></h3>
+                    <div class="exercise m-3">
+                        <h4><%= exercise.movement.name %></h4>
                         <% if (exercise.movement.type === 'weighted') { %>
                             <p>Weight: <%= exercise.weight %></p>
                             <p>Sets: <%= exercise.sets %></p>
@@ -36,7 +36,7 @@
                         <div class="form-check form-switch">
                             <input type="checkbox" name="complete" role="switch" class="form-check-input complete" id="<%= workout._id %>"
                             <%= workout.isComplete ? 'disabled checked' : '' %>>
-                            <label for="switch" class="form-check-label">Complete</label>
+                            <label class="select-text" for="switch" class="form-check-label">Complete</label>
                         </div>
                     </div>
                 <% } %>
@@ -54,7 +54,7 @@
             <br>
             <br>
             <div class="center">
-                <a href="/workouts" class="btn btn-outline-secondary btn-lg mb-5">Back to Workouts</a>
+                <a href="/workouts" class="btn btn-outline-secondary mb-5 btn-sm">Back to Workouts</a>
             </div>
         </div>
     </div>

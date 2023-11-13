@@ -4,11 +4,11 @@
 <%- include('./partials/head'); %>
 
 <body>
-    <div class="container-fluid">
+    <div class="container">
         <%- include('./partials/nav'); %>
-        <div class="container-lg">
+        <div class="container-md">
             <div class="row justify-content-between">
-                <div class="col-lg-4">
+                <div class="col-md-6">
                     <% if (viewer) { %>
                         <h1 class="text-capitalize"><%= user.username %></h1>
                     <% } else { %>
@@ -21,7 +21,7 @@
                     <br>
                     <br>
                     <div class="center">
-                        <img src="<%= user.profilePhoto %>" alt="<%= user.username %>'s profile photo" class="rounded my-5 w-50 h-40">
+                        <img src="<%= user.profilePhoto %>" alt="<%= user.username %>'s profile photo" class="rounded my-5 w-40 h-40">
                     </div>
 
                     <form action="/users/me/photo/edit/?_method=PUT" method="POST" enctype="multipart/form-data"
@@ -44,7 +44,7 @@
                 </div>
                 
                 <% if (exerciseStats) { %>
-                    <div class="col-lg-6">
+                    <div class="col-md-8">
                         <br>
                         <h5 class="mt-4">Muscle Distribution</h5>
                         <br>
@@ -113,7 +113,7 @@
             
             <div class="row justify-content-between">
                 <% if (viewer) { %>
-                    <div class="col-lg-4 mb-5">
+                    <div class="col-md-6 mb-5">
                         <% if (existingRequest === null) { %>
                             <form action="/users/request" method="POST">
                                 <input type="hidden" name="from" value="<%= viewer %>">
@@ -128,7 +128,7 @@
                         <% } %>
                     </div>
                 <% } else { %>
-                    <div class="col-lg-4 mb-5">
+                    <div class="col-md-6 mb-5">
                         <h5>Pending Requests</h5>
                         <ul>
                             <% if (awaiting.length > 0) { %>
@@ -145,7 +145,7 @@
                                         </li>
                                     <% } else if (pending === request.to) { %>
                                     <li class="py-1 px-3">
-                                        <a class="text-capitalize" href="/users/profile/<%= pending.username %>"><%= pending.username %></a>
+                                        <a class="text-capitalize" href="/users/profile/<%= pending.username %>"><p><%= pending.username %></p></a>
                                     </li>
                                     <% } %>
                                 <% } %>
@@ -155,7 +155,7 @@
                         </ul>
                     </div>
 
-                    <div class="col-lg-4 mb-5">
+                    <div class="col-md-6 mb-5">
                         <h5>Friends List</h5>
                         <ul>
                             <% if (friendships.length > 0) { %>
@@ -167,7 +167,7 @@
                                     </li>
                                 <% } %>
                             <% } else { %>
-                                <li>No friends</li>
+                                <li><p>No Friends</p></li>
                             <% } %>
                         </ul>
                     </div>
@@ -176,7 +176,7 @@
 
             <% if (!viewer) { %>
                 <div class="right mb-5">
-                    <button class="btn btn-outline-warning mt-1" id="editProfile">Edit Profile</button>
+                    <button class="btn btn-outline-warning mt-1 btn-sm" id="editProfile">Edit Profile</button>
                 </div>
             <% } %>
         </div>

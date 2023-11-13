@@ -4,16 +4,16 @@
 <%- include('../partials/head'); %>
 
 <body>
-    <div class="container-fluid">
+    <div class="container-lg">
         <%- include('../partials/nav'); %>
-        <div class="container">
+        <div class="container-md">
             <h2>Workout Index</h2>
             <ul class="index">
                 <% displayWorkout(0); %>
                 <% function displayWorkout (workoutIndex) { %>
                     <% if (workouts.length === 0) { %>
                         <div class="center mb-5">
-                            <a href="/workouts/new" class="btn btn-outline-secondary btn-lg">Click here to get started</a>
+                            <a href="/workouts/new" class="btn btn-outline-secondary btn">Click here to get started</a>
                         </div>
                         <% return; %>
                     <% } %>
@@ -44,7 +44,7 @@
                 <% } %>
             </ul>
             <div class="right mt-4">
-                <a href="/workouts/new" class="btn btn-outline-secondary btn-lg mb-5">Add a New Workout</a>
+                <a href="/workouts/new" class="btn btn-outline-secondary btn-sm mb-5">Add a New Workout</a>
             </div>
         </div>
     </div>

@@ -4,20 +4,20 @@
 <%- include('../partials/head'); %>
 
 <body>
-    <div class="container-fluid">
+    <div class="container">
         <%- include('../partials/nav'); %>
-        <div class="container">
+        <div class="container-md">
             <h2>Movements</h2>
             <div class="index center">
                 <form action="/movements" method="GET" class="form">
-                    <select multiple name="muscle" class="form-select form-select-sm" size="4">
+                    <select multiple name="muscle" class="form-select" size="4">
                         <% for (const muscle of muscleGroups) { %>
-                            <option name="<%= muscle %>" value="<%= muscle %>">
+                            <option class="select-text" name="<%= muscle %>" value="<%= muscle %>">
                             <label for="<%= muscle %>"><%= muscle %></label>
                         <% } %>
                     </select>
-                    <input type="submit" value="Add Filter" class="btn btn-outline-info btn-sm mx-5 mt-3">
-                    <a href="/movements" class="btn btn-outline-dark btn-sm mx-5 mt-3">Clear Filter</a>
+                    <input type="submit" value="Add Filter" class="btn btn-outline-info btn-xs mx-5 mt-3">
+                    <a href="/movements" class="btn btn-outline-dark btn-xs mx-5 mt-3">Clear Filter</a>
                 </form>
             </div>
             <% if (movements.length === 0) { %>
@@ -27,16 +27,16 @@
             <% } else { %>
                 <ul class="row mt-5 mb-4">
                     <% for (const movement of movements) { %>
-                        <div class="col-md-4">
-                            <li class="m-3 p-2">
+                        <div class="col-md-3">
+                            <li class="m-2">
                                 <h5 class="text-capitalize"><%= movement.name %></h5>
-                                <p class="description px-3 py-2"><%= movement.description %></p>
+                                <p class="description px-2 py-2"><%= movement.description %></p>
                                 <% if (movement.createdBy !== null) { %>
                                     <div class="index">
                                         <a href="/movements/<%= movement._id %>/edit"
-                                            class="btn btn-outline-warning btn-sm confirmDelete">Edit</a>
-                                            <span class="text-danger fw-bold d-none mb-4 confirmDelete" style="font-size: 12px;">Deleting this movement would delete any associated exercises from your current workouts. Do you want to continue to delete?</span>
-                                        <button class="btn btn-outline-danger btn-sm movementDelete">Delete</button>
+                                            class="btn btn-outline-warning btn-xs confirmDelete">Edit</a>
+                                            <span class="text-danger fw-bold d-none mb-4 confirmDelete" style="font-size: 10px;">Deleting this movement would delete any associated exercises from your workouts. Do you want to delete?</span>
+                                        <button class="btn btn-outline-danger btn-xs movementDelete">Delete</button>
                                         <form action="/movements/<%= movement._id %>?_method=DELETE" method="POST" class="d-none confirmDelete">
                                             <input type="submit" value="Confirm Delete" class="btn btn-outline-danger btn-sm mx-2">
                                         </form>
@@ -46,17 +46,17 @@
                         </div>
                         <% } %>
                 </ul>
-                <div class="center mb-2 mt-5">
+                <div class="center mb-4">
                     <% if (currentPage > 1) { %>
-                        <a href="/movements?page=<%= Number(currentPage) - 1 %>" class="btn btn-outline-secondary">Previous</a>
+                        <a href="/movements?page=<%= Number(currentPage) - 1 %>" class="btn btn-outline-secondary btn-xs">Previous</a>
                     <% } %>
                     <% if (currentPage < totalPages) { %>
-                        <a href="/movements?page=<%= Number(currentPage) + 1 %>" class="btn btn-outline-secondary">Next</a>
+                        <a href="/movements?page=<%= Number(currentPage) + 1 %>" class="btn btn-outline-secondary btn-xs">Next</a>
                     <% } %>
                 </div>
             <% } %>
-            <div class="right mb-4">
-                <a href="/movements/new" class="btn btn-outline-secondary btn-lg mb-3">Add a New Movement</a>
+            <div class="right mb-2">
+                <a href="/movements/new" class="btn btn-outline-secondary mb-3 btn-sm">Add a New Movement</a>
             </div>
         </div>
     </div>

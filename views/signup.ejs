@@ -4,40 +4,44 @@
 <%- include('./partials/head'); %>
 
 <body>
-    <div class="container-lg mb-5">
+    <div class="container">
         <%- include('./partials/nav'); %>
-        <div class="container vert-index mt-5">
-            <h2 class="mt-5">Sign Up</h2>
-            <form class="form" action="/signup" method="POST" autocomplete="off">
-                <div class="mb-3 form-floating">
-                    <input type="text" name="firstName" class="form-control" id="firstName" required>
-                    <label for="firstName">First Name</label>
+        <div class="container-md mt-4">
+            <h2 class="mx-5">Sign Up</h2>
+            <div class="center">
+                <div class="w-75 center">
+                    <form class="form" action="/signup" method="POST" autocomplete="off">
+                        <div class="mb-1 form-floating">
+                            <input type="text" name="firstName" class="form-control" id="firstName" required>
+                            <label class="small-text" for="firstName">First Name</label>
+                        </div>
+                        <div class="mb-1 form-floating">
+                            <input type="text" name="username" class="form-control" id="username" required>
+                            <label class="small-text" for="username">Username</label>
+                        </div>
+                        <div class="mb-1 form-floating">
+                            <input type="email" name="email" class="form-control" id="email" required>
+                            <label class="small-text" for="email">Email address</label>
+                        </div>
+                        <div class="mb-1 form-floating">
+                            <input type="password" name="password" class="form-control" id="password" required>
+                            <label class="small-text" for="signupPassword">Password</label>
+                        </div>
+                        <div class="mb-1 form-floating">
+                            <input type="password" name="passwordConfirmation" class="form-control" id="confirmation" required>
+                            <label class="small-text" for="confirmation">Confirm Password</label>
+                        </div>
+                        <span class="center text-danger fw-bold" id="message"></span>
+                        <% if (error) { %>
+                            <span class="center text-danger fw-bold"><%= error %></span>
+                        <% } %>
+                        <br>
+                        <div class="mb-2 center">
+                            <input type="submit" value="Sign Up" id="signupSubmit" class="btn btn-outline-secondary" disabled>
+                        </div>
+                    </form>
                 </div>
-                <div class="mb-3 form-floating">
-                    <input type="text" name="username" class="form-control" id="username" required>
-                    <label for="username">Username</label>
-                </div>
-                <div class="mb-3 form-floating">
-                    <input type="email" name="email" class="form-control" id="email" required>
-                    <label for="email">Email address</label>
-                </div>
-                <div class="mb-3 form-floating">
-                    <input type="password" name="password" class="form-control" id="password" required>
-                    <label for="signupPassword">Password</label>
-                </div>
-                <div class="mb-3 form-floating">
-                    <input type="password" name="passwordConfirmation" class="form-control red" id="confirmation" required>
-                    <label for="confirmation">Confirm Password</label>
-                </div>
-                <span class="center text-danger fw-bold" id="message"></span>
-                <% if (error) { %>
-                    <span class="center text-danger fw-bold"><%= error %></span>
-                <% } %>
-                <br>
-                <div class="mb-3 center">
-                    <input type="submit" value="Sign Up" id="signupSubmit" class="btn btn-outline-secondary btn-lg" disabled>
-                </div>
-            </form>
+            </div>
         </div>
     </div>
     <%- include('./partials/footer'); %>

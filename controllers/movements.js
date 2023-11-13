@@ -8,7 +8,7 @@ const muscleGroups = constants.muscleGroups;
 // index
 async function getMovements (req, res) {
     try {
-        const pageSize = 9;
+        const pageSize = 8;
         const page = req.query.page || 1;
 
         // creates filtering parameters

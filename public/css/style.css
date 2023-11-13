@@ -17,8 +17,16 @@ ul {
 }
 
 h2 {
-    margin-bottom: 50px;
-    font-size: 40px;
+    margin-bottom: 2rem;
+    font-size: 28px;
+}
+
+h4 {
+    font-size: 20px;
+}
+
+h5 {
+    font-size: 16px;
 }
 
 select {
@@ -32,7 +40,7 @@ a {
 }
 
 p {
-    font-size: 18px;
+    font-size: 14px;
 }
 
 footer {
@@ -43,11 +51,15 @@ footer {
     padding: 15px;
     color: white;
     font-weight: 400;
-    font-size: 20px;
+    font-size: 13px;
 }
 
 .form {
     width: 75%
+}
+
+.form-control {
+    height: 1rem;
 }
 
 .welcome-form {
@@ -75,6 +87,13 @@ footer {
     flex-wrap: wrap;
 }
 
+.search-index {
+    display: flex;
+    justify-content: space-between;
+    text-align: center;
+    flex-wrap: wrap;
+}
+
 .index-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -91,17 +110,20 @@ footer {
     justify-content: center;
 }
 
-.container-fluid {
-    min-height: 100vh;
+.container {
     overflow-x: hidden;
 }
 
 .card-title {
-    font-size: 30px;
+    font-size: 22px;
 }
 
 .card {
-    padding: 2rem 2rem 1rem 2rem;
+    padding: 1rem 1rem 0.5rem 1rem;
+}
+
+.card-body {
+    font-size: 14px;
 }
 
 .card-footer {
@@ -115,11 +137,11 @@ footer {
 }
 
 .add {
-    margin-right: 15px;
+    margin-right: 12px;
 }
 
 .description {
-    font-size: 14px;
+    font-size: 12px;
     font-style: italic;
 }
 
@@ -128,5 +150,22 @@ footer {
 }
 
 .nav-item {
-    padding: 0.5rem;
+    padding: 0.1rem;
+    font-size: 14px;
+}
+
+.navbar-brand {
+    font-size: 16px;
+}
+
+.btn-xs {
+    font-size: 12px;
+}
+
+.small-text {
+    font-size: 12px;
+}
+
+.select-text {
+    font-size: 13px;
 }
