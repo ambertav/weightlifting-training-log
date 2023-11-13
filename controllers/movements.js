@@ -4,6 +4,8 @@ const Movement = require('../models/movement');
 const muscleGroups = ['Deltoids', 'Triceps', 'Biceps', 'Forearms', 'Chest', 'Abdominals', 'Upper Back', 'Lower Back', 'Glutes', 'Quadriceps', 'Hamstrings', 'Calves'];
 const pageSize = 12;
 
+const formatHelpers = require('../utilities/formatHelpers');
+
 // index
 async function getMovements (req, res) {
     try {
@@ -79,7 +81,7 @@ async function deleteMovement (req, res) {
 // update
 async function updateMovement (req, res) {
     try {
-        const editMovement = formatMovementData(req.body, req.session.userId); // format req.body per schema
+        const editMovement = formatHelpers.formatMovementData(req.body, req.session.userId); // format req.body per schema
 
         const updatedMovement = await Movement.findOneAndUpdate({
             createdBy: req.session.userId,
@@ -98,7 +100,7 @@ async function updateMovement (req, res) {
 // create
 async function createMovement (req, res) {
     try {
-        const newMovement = formatMovementData(req.body, req.session.userId); // format req.body per schema
+        const newMovement = formatHelpers.formatMovementData(req.body, req.session.userId); // format req.body per schema
 
         const createdMovement = await Movement.create(newMovement);
 
@@ -124,25 +126,7 @@ async function editMovementView (req, res) {
     }
 }
 
-// format the movement data from req.body
-function formatMovementData(movementData, userId) {
-    const selectedMuscles = Object.keys(movementData.musclesWorked).filter(function (key) {
-        return muscleGroups.includes(key);
-    });
-    const musclesWorked = [...selectedMuscles];
-
-    const type = movementData.type
-    const createdBy = userId;
-
-    return {
-        ...movementData,
-        musclesWorked,
-        type,
-        createdBy,
-    };
-}
-
 
 module.exports = {
-    getMovements, newMovementView, deleteMovement, updateMovement, createMovement, editMovementView
+    getMovements, newMovementView, deleteMovement, updateMovement, createMovement, editMovementView,
 }

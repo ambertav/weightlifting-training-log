@@ -198,31 +198,7 @@ async function createOrRetrieveMovement(exercise, createdBy) {
     return movement;
 }
 
-function formatExercise(exercise, movement) {
-    const exerciseObj = {
-        movement: movement._id
-    }
-
-    const keysByType = {
-        weighted: ['weight', 'sets', 'reps'],
-        cardio: ['minutes', 'caloriesBurned']
-    }
-
-    // determines what keys the object will have based on type of movement
-    const keys = keysByType[movement.type]
-
-    for (const key of keys) {
-        if (exercise[key] !== undefined) exerciseObj[key] = exercise[key];
-    }
-
-    return exerciseObj;
-}
 
 module.exports = {
-    getFavorites,
-    deleteFavorite,
-    shareFavorites,
-    copyFavorite,
-    createFavorite,
-    showFavorite,
+    getFavorites, deleteFavorite, shareFavorites, copyFavorite, createFavorite, showFavorite,
 }

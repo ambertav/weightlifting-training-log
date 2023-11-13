@@ -4,6 +4,7 @@ const Request = require('../models/request');
 const Workout = require('../models/workout');
 const { s3Client, s3BaseUrl, PutObjectCommand } = require('../aws');
 
+const formatHelpers = require('../utilities/formatHelpers');
 
 // user profile
 async function getOwnProfile (req, res) {
@@ -13,7 +14,7 @@ async function getOwnProfile (req, res) {
             .lean();
 
         const volumePerMovement = await getVolume(req.session.userId);
-        const exerciseStats = volumePerMovement.length > 0 ? formatExerciseStats(volumePerMovement) : null;
+        const exerciseStats = volumePerMovement.length > 0 ? formatHelpers.formatExerciseStats(volumePerMovement) : null;
 
         const requests = await Request.find({
             $or: [
@@ -138,7 +139,7 @@ async function viewOtherProfile (req, res) {
         if (user._id.toHexString() === req.session.userId) return res.redirect('/users/me');
 
         const volumePerMovement = await getVolume(user._id);
-        const exerciseStats = volumePerMovement.length > 0 ? formatExerciseStats(volumePerMovement) : null;
+        const exerciseStats = volumePerMovement.length > 0 ? formatHelpers.formatExerciseStats(volumePerMovement) : null;
 
         const existingRequest = await Request.findOne({
             from: { $in: [req.session.userId, user._id] },
@@ -234,42 +235,6 @@ function filterRequests (requests, status) {
     return requests.filter(function (req) {
         return req.status === status;
     });
-}
-
-function formatExerciseStats (volumePerMovement) {
-    const musclePercent = {};
-
-    let totalVolume = 0;
-    let totalMinutes = 0;
-    let totalCalories = 0;
-  
-    for (const movement of volumePerMovement) {
-        totalVolume += movement.volume;
-        totalMinutes += movement.minutes;
-        totalCalories += movement.calories;
-
-        // assuming that each muscle worked within a movement is worked equally:
-        // divide movement volume by amount of muscles to get volume per muscle in each movement
-        for (const muscle of movement.musclesWorked) {
-            musclePercent[muscle] = (musclePercent[muscle] || 0) + (movement.volume / movement.musclesWorked.length);
-        }
-    }
-  
-    // convert volume per muscle in each movement to percentage per muscle of total volume
-    for (const muscle in musclePercent) {
-        musclePercent[muscle] = +(musclePercent[muscle] / totalVolume * 100).toFixed(1);
-    }
-
-    // store total minutes and calories burned
-    const cardioStats = {
-        totalMinutes,
-        totalCalories
-    }
-  
-    return {
-        musclePercent,
-        cardioStats
-    };
 }
 
 

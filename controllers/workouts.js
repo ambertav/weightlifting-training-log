@@ -1,6 +1,8 @@
 const Workout = require('../models/workout');
 const Movement = require('../models/movement');
 
+const validationHelpers = require('../utilities/validationHelpers');
+const formatHelpers = require('../utilities/formatHelpers');
 
 // index
 async function getWorkouts (req, res) {
@@ -58,7 +60,7 @@ async function deleteWorkout (req, res) {
 // update
 async function updateWorkout (req, res) {
     try {
-        const formattedExerciseArray = formatExercise(req.body.exercise);
+        const formattedExerciseArray = formatHelpers.formatWorkoutExercise(req.body.exercise);
         req.body.exercise = formattedExerciseArray;
 
         const updatedWorkout = await Workout.findOneAndUpdate(
@@ -70,7 +72,7 @@ async function updateWorkout (req, res) {
 
         // // Validate exercise fields
         for (const exercise of updatedWorkout.exercise) {
-            const validationError = validateExerciseFields(exercise);
+            const validationError = validationHelpers.validateExerciseFields(exercise);
             if (validationError) {
                 return res.status(400).send(validationError);
             }
@@ -80,13 +82,14 @@ async function updateWorkout (req, res) {
     } catch (error) {
         console.error(error);
         res.status(500).send('An error occurred while updating the workout.');
+        validationHelpers.handleValidationErrors(error, res, message);
     }
 }
 
 // create
 async function createWorkout (req, res) {
     try {
-        const formattedExerciseArray = formatExercise(req.body.exercise);
+        const formattedExerciseArray = formatHelpers.formatWorkoutExercise(req.body.exercise);
         req.body.exercise = formattedExerciseArray;
         req.body.createdBy = req.session.userId;
 
@@ -95,7 +98,7 @@ async function createWorkout (req, res) {
 
         // // Validate exercise fields
         for (const exercise of newWorkout.exercise) {
-            const validationError = validateExerciseFields(exercise);
+            const validationError = validationHelpers.validateExerciseFields(exercise);
             if (validationError) {
                 await newWorkout.remove();
                 return res.status(400).send(validationError);
@@ -108,7 +111,7 @@ async function createWorkout (req, res) {
     } catch (error) {
         console.error(error);
         const message = 'An error occurred while creating the workout.'
-        handleValidationErrors(error, res, message);
+        validationHelpers.handleValidationErrors(error, res, message);
     }
 }
 
@@ -180,57 +183,6 @@ async function showWorkout (req, res) {
 }
 
 
-// formatting the exercise array for create and update routes
-function formatExercise(exercise) {
-    const exerciseObjects = [];
-    const properties = ['movement', 'weight', 'sets', 'reps', 'minutes', 'caloriesBurned']; // all possible properties
-
-    // iterating through indices of 'movement' array to get access to indices of values in each key
-    for (let i = 0; i < exercise.movement.length; i++) {
-        const exerciseObject = {};
-        // iterating through properties to process values
-        for (const prop of properties) {
-            const value = exercise[prop][i];
-            if (value !== '') exerciseObject[prop] = value; // only saving values if not empty string as to not have null keys in database
-        }
-        exerciseObjects.push(exerciseObject); // adding each formatted exercise to array
-    }
-    return exerciseObjects;
-}
-
-// validate that the movement type's corresponding exercise fields are filled in before saving to database
-function validateExerciseFields(exercise) {
-    if (exercise.movement.type === 'weighted') {
-        if (exercise.weight === null || exercise.sets === null || exercise.reps === null) {
-            return 'Weight, sets, and reps are required for weighted movements.';
-        }
-    } else if (exercise.movement.type === 'cardio') {
-        if (exercise.minutes === null || exercise.caloriesBurned === null) {
-            return 'Minutes and calories burned are required for cardio movements.';
-        }
-    }
-    return null; // No validation issues
-}
-
-// organizes the possible errors for the create and update route 
-function handleValidationErrors(error, res, message) {
-    console.error(error);
-    if (error.errors) {
-        const validationErrors = Object.values(error.errors).map((err) => err.message);
-        res.status(400).send(validationErrors);
-    } else {
-        res.status(500).send(message);
-    }
-}
-
-
 module.exports = {
-    getWorkouts,
-    newWorkoutView,
-    deleteWorkout,
-    updateWorkout,
-    createWorkout,
-    editWorkoutView,
-    toggleWorkoutCompletion,
-    showWorkout,
-};
+    getWorkouts, newWorkoutView, deleteWorkout, updateWorkout, createWorkout, editWorkoutView, toggleWorkoutCompletion, showWorkout,
+}

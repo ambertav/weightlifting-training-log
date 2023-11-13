@@ -44,4 +44,6 @@ async function handleRequest (req, res) {
 }
 
 
-module.exports = { createRequest, handleRequest }
+module.exports = { 
+    createRequest, handleRequest,
+}

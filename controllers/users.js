@@ -95,4 +95,6 @@ function logoutUser (req, res) {
 }
 
 
-module.exports = { signupView, signupUser, loginView, loginUser, logoutUser }
+module.exports = { 
+    signupView, signupUser, loginView, loginUser, logoutUser,
+}
