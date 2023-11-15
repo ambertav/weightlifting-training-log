@@ -58,6 +58,9 @@ describe('User Model', () => {
         expect(error.errors.username).toBeDefined();
         expect(error.errors.email).toBeDefined();
         expect(error.errors.password).toBeDefined();
+
+        // final assurance that the error message confirms failure
+        expect(error._message).toEqual('User validation failed');
     });
 
     test('should throw mongoose validation error for violation of maxLength', async () => {
@@ -75,6 +78,9 @@ describe('User Model', () => {
         expect(error.errors.firstName).toBeDefined();
         expect(error.errors.username).toBeDefined();
         expect(error.errors.bio).toBeDefined();
+
+        // final assurance that the error message confirms failure
+        expect(error._message).toEqual('User validation failed');
         
     });
 
