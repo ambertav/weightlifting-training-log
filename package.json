@@ -29,5 +29,9 @@
     "express-session": "^1.17.3",
     "method-override": "^3.0.0",
     "mongoose": "^6.9.0"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "supertest": "^6.3.3"
   }
 }
