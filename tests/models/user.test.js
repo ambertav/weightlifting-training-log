@@ -50,8 +50,8 @@ describe('User Model', () => {
     });
 
     test('should throw mongoose validation error when required fields are missing', async () => {
-        const data = {};
-        const error = await expectValidationError(User, data);
+        const userWithMissingFields = {};
+        const error = await expectValidationError(User, userWithMissingFields);
 
         // ensuring that errors for each required field violation is included
         expect(error.errors.firstName).toBeDefined();

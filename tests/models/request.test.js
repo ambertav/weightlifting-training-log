@@ -54,7 +54,7 @@ describe('Request Model', () => {
         expect(request.status).toEqual('pending');
     });
 
-    test('should throw mongoose error for invalid field type', async () => {
+    test('should throw mongoose error for invalid user', async () => {
         const userJane = await User.findOne({ username: 'jane_doe' });
         const invalidUserId = 'invalidID';
 
