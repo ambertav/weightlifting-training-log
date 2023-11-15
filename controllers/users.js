@@ -20,10 +20,6 @@ async function signupUser (req, res) {
             });
         }
 
-        // hash password with bcrypt, save to req.body
-        const hashedPassword = await bcrypt.hashSync(req.body.password, 10);
-        req.body.password = hashedPassword;
-
         const newUser = await User.create(req.body);
 
         // set user session
