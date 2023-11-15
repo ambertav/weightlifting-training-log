@@ -18,10 +18,12 @@ const movementSchema = new mongoose.Schema({
     },
     musclesWorked: {
         type: Array,
-        required: true
+        required: true,
+        default: undefined,
     },
     type: {
         type: String,
+        enum: ['cardio', 'weighted'],
         required: true
     },
     createdBy: {
