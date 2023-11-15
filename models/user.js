@@ -38,7 +38,12 @@ const userSchema = new mongoose.Schema({
         trim: true
     },
 }, {
-    timestamps: true
+    timestamps: true,
+    toJSON: {
+        transform: function (doc, ret) {
+            delete ret.password;
+        }
+    }
 });
 
 userSchema.pre('save', async function (next) {
@@ -46,7 +51,7 @@ userSchema.pre('save', async function (next) {
         try {
             const hashedPassword = await bcrypt.hash(this.password, 10);
             this.password = hashedPassword;
-            
+
         } catch (error) {
             next(error);
         }
