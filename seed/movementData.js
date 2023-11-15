@@ -69,4 +69,11 @@ module.exports = [
         type: 'weighted',
         createdBy: null,
     },
+    {
+        name: 'Running',
+        description: 'a classic run',
+        musclesWorked: ['Quadriceps', 'Hamstrings', 'Glutes', 'Calves', 'Abdominals'],
+        type: 'cardio',
+        createdBy: null,
+    },
 ];
