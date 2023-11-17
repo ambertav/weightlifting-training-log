@@ -6,6 +6,8 @@ const { expectValidationError } = require('../testUtilities');
 
 require('dotenv').config();
 
+let janeId = '';
+let johnId = '';
 
 beforeAll(async () => {
     await mongoose.connect(process.env.MONGO_URL);
@@ -18,6 +20,7 @@ beforeAll(async () => {
         email: 'jane@example.com',
         password: 'password'
     });
+    janeId = userJane._id;
 
     const userJohn = await User.create({
         firstName: 'John',
@@ -25,6 +28,8 @@ beforeAll(async () => {
         email: 'john@example.com',
         password: 'password'
     });
+    johnId = userJohn._id;
+
 });
 
 afterAll(async () => {
@@ -33,33 +38,29 @@ afterAll(async () => {
 
 describe('Request Model', () => {
     test('should successfully create a request with valid data', async () => {
-        const userJane = await User.findOne({ username: 'jane_doe' });
-        const userJohn = await User.findOne({ username: 'john_doe' });
 
         const request = await Request.create({
-            from: userJane._id,
-            to: userJohn._id,
+            from: janeId,
+            to: johnId,
         });
 
         expect(request).toBeDefined();
-        expect(request.from._id).toEqual(userJane._id);
-        expect(request.to._id).toEqual(userJohn._id);
+        expect(request.from._id).toEqual(janeId);
+        expect(request.to._id).toEqual(johnId);
     });
 
     test('should default request to a status of pending', async () => {
-        const userJane = await User.findOne({ username: 'jane_doe' });
-        const request = await Request.findOne({ from: userJane._id });
+        const request = await Request.findOne({ from: janeId });
 
         expect(request.status).toBeDefined();
         expect(request.status).toEqual('pending');
     });
 
     test('should throw mongoose error for invalid user', async () => {
-        const userJane = await User.findOne({ username: 'jane_doe' });
         const invalidUserId = 'invalidID';
 
         const error = await expectValidationError(Request, {
-            from: userJane._id,
+            from: janeId,
             to: invalidUserId,
         });
 
@@ -68,12 +69,10 @@ describe('Request Model', () => {
     });
 
     test('should throw mongoose error for invalid enum value', async () => {
-        const userJane = await User.findOne({ username: 'jane_doe' });
-        const userJohn = await User.findOne({ username: 'john_doe' });
 
         const invalidRequestStatus = {
-            from: userJane._id,
-            to: userJohn._id,
+            from: janeId,
+            to: johnId,
             status: 'invalid'
         }
     
@@ -84,8 +83,7 @@ describe('Request Model', () => {
     });
 
     test('should allow population of referenced model instances', async () => {
-        const userJane = await User.findOne({ username: 'jane_doe' });
-        const request = await Request.findOne({ from: userJane._id })
+        const request = await Request.findOne({ from: janeId })
             .populate('to from');
 
         expect(request.from.username).toBeDefined();

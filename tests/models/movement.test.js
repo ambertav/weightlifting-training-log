@@ -8,17 +8,20 @@ const movementData = require('../../seed/movementData');
 
 require('dotenv').config();
 
+let userId = '';
+
 beforeAll(async () => {
     await mongoose.connect(process.env.MONGO_URL);
     await User.deleteMany({});
     await Movement.deleteMany({});
 
-    await User.create({
+    const user = await User.create({
         firstName: 'Jane',
         username: 'jane_doe',
         email: 'jane@example.com',
         password: 'password'
     });
+    userId = user._id;
 });
 
 afterAll(async () => {
@@ -27,14 +30,13 @@ afterAll(async () => {
 
 describe('Movement model', () => {
     test('should successfully create a movement with valid data', async () => {
-        const user = await User.findOne({ username: 'jane_doe' });
 
         const validMovementData = {
             name: 'Back Squat',
             description: 'a barbell squat',
             musclesWorked: ['Quadriceps', 'Hamstrings', 'Glutes', 'Lower Back'],
             type: 'weighted',
-            createdBy: user._id,
+            createdBy: userId,
         }
 
         const movement = await Movement.create(validMovementData);
@@ -43,12 +45,7 @@ describe('Movement model', () => {
         expect(movement).toBeDefined();
 
         // ensures that created movement has the input's data
-        expect(movement.name).toEqual(validMovementData.name);
-        expect(movement.description).toEqual(validMovementData.description);
-        expect(movement.musclesWorked).toEqual(validMovementData.musclesWorked);
-        expect(movement.type).toEqual(validMovementData.type);
-        expect(movement.createdBy).toEqual(validMovementData.createdBy);
-
+        expect(movement).toMatchObject(validMovementData);
     });
 
     test('should throw mongoose validation error when required fields are missing', async () => {
@@ -56,13 +53,12 @@ describe('Movement model', () => {
         const error = await expectValidationError(Movement, movementWithMissingFields);
 
         // ensures that errors for each required field violation is included
-        expect(error.errors.name).toBeDefined();
-        expect(error.errors.musclesWorked).toBeDefined();
-        expect(error.errors.type).toBeDefined();
+        ['name', 'musclesWorked', 'type'].forEach(field => {
+            expect(error.errors[field]).toBeDefined();
+        });
 
         // final assurance that the error message confirms failure
         expect(error._message).toEqual('Movement validation failed');
-
     });
 
     test('should throw mongoose validation error for violation of maxLength', async () => {
@@ -104,12 +100,10 @@ describe('Movement model', () => {
 
 describe('Movement model\'s remove middleware', () => {
     test('should correctly remove associated exercises within workouts upon deletion', async () => {
-        const user = await User.findOne({ username: 'jane_doe '});
         const squat = await Movement.findOne({ name: 'Back Squat' });
         const deadlift = await Movement.create(movementData[4]);
 
         // ensuring that necessary instances are created successfully
-        expect(user).toBeDefined();
         expect(squat).toBeDefined();
         expect(deadlift).toBeDefined();
 
@@ -130,7 +124,7 @@ describe('Movement model\'s remove middleware', () => {
                     reps: 1,
                 }
             ],
-            createdBy: user._id,
+            createdBy: userId,
         });
 
         // creates a workout with only one exercise, containing the movement that will be deleted
@@ -144,7 +138,7 @@ describe('Movement model\'s remove middleware', () => {
                     reps: 1,
                 }
             ],
-            createdBy: user._id,
+            createdBy: userId,
         });
 
         // ensures that the workouts were created successfully

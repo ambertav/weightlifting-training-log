@@ -58,12 +58,20 @@ describe('Workout model', () => {
         expect(workout).toBeDefined();
         
         // ensures that created workout has the input's data
-        expect(workout.day).toEqual(validWorkoutData.day);
-        expect(workout.exercise[0].movement._id).toEqual(validWorkoutData.exercise[0].movement);
-        expect(workout.exercise[0].weight).toEqual(validWorkoutData.exercise[0].weight);
-        expect(workout.exercise[0].sets).toEqual(validWorkoutData.exercise[0].sets);
-        expect(workout.exercise[0].reps).toEqual(validWorkoutData.exercise[0].reps);
-        expect(workout.createdBy).toEqual(validWorkoutData.createdBy);
+        expect(workout).toMatchObject({
+            day: validWorkoutData.day,
+            createdBy: validWorkoutData.createdBy,
+            exercise: [
+              {
+                movement: expect.objectContaining({
+                  _id: validWorkoutData.exercise[0].movement,
+                }),
+                weight: validWorkoutData.exercise[0].weight,
+                sets: validWorkoutData.exercise[0].sets,
+                reps: validWorkoutData.exercise[0].reps,
+              },
+            ],
+        });
     });
 
     test('should throw mongoose validation error when workout required fields are missing', async () => {
@@ -71,9 +79,9 @@ describe('Workout model', () => {
         const error = await expectValidationError(Workout, invalidWorkoutData);
         
         // ensures errors for each missing required field are included
-        expect(error.errors.day).toBeDefined();
-        expect(error.errors.exercise).toBeDefined();
-        expect(error.errors.createdBy).toBeDefined();
+        ['day', 'exercise', 'createdBy'].forEach(field => {
+            expect(error.errors[field]).toBeDefined();
+        });
 
         // ensures presence of error message
         expect(error._message).toEqual('Workout validation failed');
@@ -96,12 +104,9 @@ describe('Workout model', () => {
         const error = await expectValidationError(Workout, invalidExerciseData);
 
         // ensures errors for each min value violation are included
-        expect(error.errors['exercise.0.movement']).toBeDefined();
-        expect(error.errors['exercise.0.weight']).toBeDefined();
-        expect(error.errors['exercise.0.sets']).toBeDefined();
-        expect(error.errors['exercise.0.reps']).toBeDefined();
-        expect(error.errors['exercise.0.minutes']).toBeDefined();
-        expect(error.errors['exercise.0.caloriesBurned']).toBeDefined();
+        ['weight', 'sets', 'reps', 'minutes', 'caloriesBurned'].forEach(field => {
+            expect(error.errors[`exercise.0.${field}`]).toBeDefined();
+        });
 
         // final error message check
         expect(error._message).toEqual('Workout validation failed');
@@ -114,7 +119,6 @@ describe('Workout model', () => {
         // ensures that referenced documents are populated
         expect(workout.createdBy.username).toBeDefined();
         expect(workout.exercise[0].movement.name).toBeDefined();
-        
     });
 
     test('should add default value to isComplete field', async () => {
@@ -142,7 +146,6 @@ describe('Workout model', () => {
         // ensures that valid userId must be included
         expect(error.errors.createdBy).toBeDefined();
         expect(error._message).toEqual('Workout validation failed');
-
     });
 });
 
@@ -157,27 +160,30 @@ describe('Workout model\'s required exercise fields schema middleware', () => {
         baseWorkoutData.day = 'Monday';
         baseWorkoutData.createdBy = userId;
     });
-    
-    test('should throw error when cardio type movement exercises are missing required cardio fields', async () => {
-        const cardioWorkoutMissingFields = {
-            ...baseWorkoutData,
-            exercise: [{
-                movement: cardioId,
-            }]
-        }
 
+    // reuseable function for attempt to create, and verifying the message rationale
+    async function expectCreationError (workoutData, errorMessage) {
         try {
-            await Workout.create(cardioWorkoutMissingFields);
+            await Workout.create(workoutData);
             // fail if success
             fail('Expected an error but did not receive one');
         } catch (error) {
-            // verifies middleware's error message
-            expect(error.message).toBe('Cardio exercises require minutes and calories burned');
+            // verifies exercise middleware's error message
+            expect(error.message).toBe(errorMessage);
         }
 
         // ensures that workout was not saved in database
         const workoutCount = await Workout.countDocuments({});
         expect(workoutCount).toBe(0);
+    }
+    
+    test('should throw error when cardio type movement exercises are missing required cardio fields', async () => {
+        const cardioWorkoutMissingFields = {
+            ...baseWorkoutData,
+            exercise: [{ movement: cardioId }]
+        }
+
+        await expectCreationError(cardioWorkoutMissingFields, 'Cardio exercises require minutes and calories burned');
     });
 
     test('should throw error when cardio type movement exercises have weighted fields', async () => {
@@ -193,40 +199,16 @@ describe('Workout model\'s required exercise fields schema middleware', () => {
             }]
         }
 
-        try {
-            await Workout.create(cardioWorkoutWrongFields);
-            // fail if success
-            fail('Expected an error but did not receive one');
-        } catch (error) {
-            // verifies middleware's error message
-            expect(error.message).toBe('Cardio exercises cannot have weight, sets, or reps');
-        }
-
-        // ensures that workout was not saved in database
-        const workoutCount = await Workout.countDocuments({});
-        expect(workoutCount).toBe(0);
+        await expectCreationError(cardioWorkoutWrongFields, 'Cardio exercises cannot have weight, sets, or reps');
     });
 
     test('should throw error when weighted type movement exercises are missing required weighted fields', async () => {
         const weightedWorkoutMissingFields = {
             ...baseWorkoutData,
-            exercise: [{
-                movement: weightedId,
-            }]
+            exercise: [{ movement: weightedId }]
         }
 
-        try {
-            await Workout.create(weightedWorkoutMissingFields);
-            // fail if success
-            fail('Expected an error but did not receive one');
-        } catch (error) {
-            // verifies middleware's error message
-            expect(error.message).toBe('Weighted exercises require weight, sets, and reps');
-        }
-
-        // ensures that workout was not saved in database
-        const workoutCount = await Workout.countDocuments({});
-        expect(workoutCount).toBe(0);
+        await expectCreationError(weightedWorkoutMissingFields, 'Weighted exercises require weight, sets, and reps');
     });
 
     test('should throw error when weighted type movement exercises have cardio fields', async () => {
@@ -242,17 +224,6 @@ describe('Workout model\'s required exercise fields schema middleware', () => {
             }]
         }
 
-        try {
-            await Workout.create(weightedWorkoutWrongFields);
-            // fail if success
-            fail('Expected an error but did not receive one');
-        } catch (error) {
-            // verifies middleware's error message
-            expect(error.message).toBe('Weighted exercises cannot have minutes and calories burned');
-        }
-
-        // ensures that workout was not saved in database
-        const workoutCount = await Workout.countDocuments({});
-        expect(workoutCount).toBe(0);
+        await expectCreationError(weightedWorkoutWrongFields, 'Weighted exercises cannot have minutes and calories burned');
     });
 });

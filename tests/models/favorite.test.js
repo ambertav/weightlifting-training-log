@@ -4,6 +4,7 @@ const User = require('../../models/user');
 const Favorite = require('../../models/favorite');
 const { expectValidationError } = require('../testUtilities');
 const movementData = require('../../seed/movementData');
+const user = require('../../models/user');
 
 require('dotenv').config();
 
@@ -25,8 +26,11 @@ beforeAll(async () => {
     });
     userId = user._id;
 
+    // assign a weighted and cardio movement for repeated use (imported from seed/movementData.js for ease)
     weightedMovement = movementData[0];
     cardioMovement = movementData[movementData.length - 1];
+
+    // delete fields that are not present on favorite.movement
     delete weightedMovement.createdBy;
     delete weightedMovement.description;
     delete cardioMovement.createdBy;
@@ -52,10 +56,10 @@ describe('Favorite model', () => {
         }
         const favorite = await Favorite.create(validFavoriteData);
 
+        // checks that favorite was created and contains the input's data
         expect(favorite).toBeDefined();
-        expect(favorite.name).toEqual(validFavoriteData.name)
+        expect(favorite).toMatchObject(validFavoriteData);
         expect(favorite.exercise[0].movement).toMatchObject(validFavoriteData.exercise[0].movement);
-        expect(favorite.createdBy).toEqual(validFavoriteData.createdBy);
     });
 
 
@@ -63,9 +67,10 @@ describe('Favorite model', () => {
         const invalidFavoriteData = {}
         const error = await expectValidationError(Favorite, invalidFavoriteData);
 
-        expect(error.errors.name).toBeDefined();
-        expect(error.errors.exercise).toBeDefined();
-        expect(error.errors.createdBy).toBeDefined();
+        // verifies that error for each missing required field is present
+        ['name', 'exercise', 'createdBy'].forEach(field => {
+            expect(error.errors[field]).toBeDefined();
+        });
 
         expect(error._message).toEqual('Favorite validation failed');
     });
@@ -87,11 +92,10 @@ describe('Favorite model', () => {
 
         const error = await expectValidationError(Favorite, favoriteMinViolation);
 
-        expect(error.errors['exercise.0.weight']).toBeDefined();
-        expect(error.errors['exercise.0.sets']).toBeDefined();
-        expect(error.errors['exercise.0.reps']).toBeDefined();
-        expect(error.errors['exercise.0.minutes']).toBeDefined();
-        expect(error.errors['exercise.0.caloriesBurned']).toBeDefined();
+        // ensures that error for each minimum value violation is present
+        ['weight', 'sets', 'reps', 'minutes', 'caloriesBurned'].forEach(field => {
+            expect(error.errors[`exercise.0.${field}`]).toBeDefined();
+        });
 
         expect(error._message).toEqual('Favorite validation failed');
     });
@@ -114,6 +118,7 @@ describe('Favorite model', () => {
 
         const error = await expectValidationError(Favorite, favoriteWithTooLongData);
 
+        // ensures that error for each max length violation is present
         expect(error.errors.name).toBeDefined();
         expect(error.errors['exercise.0.movement.name']).toBeDefined();
 
@@ -124,6 +129,7 @@ describe('Favorite model', () => {
         const favorite = await Favorite.findOne()
             .populate('createdBy')
 
+        // checks that the field populated and exists
         expect(favorite.createdBy.username).toBeDefined();
     });
 
@@ -145,6 +151,7 @@ describe('Favorite model', () => {
 
         const error = await expectValidationError(Favorite, favoriteWithInvalidMovementType);
 
+        // verifies enum on movement type
         expect(error.errors['exercise.0.movement.type']).toBeDefined();
         expect(error._message).toEqual('Favorite validation failed');
     });
@@ -163,6 +170,7 @@ describe('Favorite model', () => {
 
         const error = await expectValidationError(Favorite, favoriteWithInvalidUser);
 
+        // ensures that favorite wasn't created with invalid user
         expect(error.errors.createdBy).toBeDefined();
         expect(error._message).toEqual('Favorite validation failed');
     });
@@ -170,7 +178,7 @@ describe('Favorite model', () => {
 
 
 describe('Favorite model\'s required exercise fields schema middleware', () => {
-    const baseFavoriteData = {};
+    const baseFavoriteData = {}
 
     beforeEach(async () => {
         await Favorite.deleteMany({});
@@ -179,23 +187,29 @@ describe('Favorite model\'s required exercise fields schema middleware', () => {
         baseFavoriteData.createdBy = userId;
     });
 
+    // reuseable function for attempt to create, and verifying the message rationale
+    async function expectCreationError (favoriteData, errorMessage) {
+        try {
+            await Favorite.create(favoriteData);
+            // fail if success
+            fail('Expected an error but did not receive one');
+        } catch (error) {
+            // verifies exercise middleware's error message
+            expect(error.message).toBe(errorMessage);
+        }
+
+        // ensures that favorite was not saved in database
+        const favoriteCount = await Favorite.countDocuments({});
+        expect(favoriteCount).toBe(0);
+    }
+
     test('should throw error when cardio type movement exercises are missing required cardio fields', async () => {
         const cardioFavoriteMissingFields = {
             ...baseFavoriteData,
-            exercise: [{
-                movement: cardioMovement,
-            }]
+            exercise: [{ movement: cardioMovement }]
         }
 
-        try {
-            await Favorite.create(cardioFavoriteMissingFields);
-            fail('Expected an error but did not receive one');
-        } catch (error) {
-            expect(error.message).toBe('Cardio exercises require minutes and calories burned');
-        }
-
-        const favoriteCount = await Favorite.countDocuments({});
-        expect(favoriteCount).toBe(0);
+        await expectCreationError(cardioFavoriteMissingFields, 'Cardio exercises require minutes and calories burned');
     });
 
     test('should throw error when cardio type movement exercises have weighted fields', async () => {
@@ -211,37 +225,16 @@ describe('Favorite model\'s required exercise fields schema middleware', () => {
             }]
         }
 
-        try {
-            await Favorite.create(cardioFavoriteWrongFields);
-            fail('Expected an error but did not receive one');
-        } catch (error) {
-            expect(error.message).toBe('Cardio exercises cannot have weight, sets, or reps');
-        }
-
-        const favoriteCount = await Favorite.countDocuments({});
-        expect(favoriteCount).toBe(0);
+        await expectCreationError(cardioFavoriteWrongFields, 'Cardio exercises cannot have weight, sets, or reps');
     });
 
     test('should throw error when weighted type movement exercises are missing required weighted fields', async () => {
         const weightedFavoriteMissingFields = {
             ...baseFavoriteData,
-            exercise: [{
-                movement: weightedMovement,
-            }]
+            exercise: [{ movement: weightedMovement }]
         }
 
-        try {
-            await Favorite.create(weightedFavoriteMissingFields);
-            // fail if success
-            fail('Expected an error but did not receive one');
-        } catch (error) {
-            // verifies middleware's error message
-            expect(error.message).toBe('Weighted exercises require weight, sets, and reps');
-        }
-
-
-        const favoriteCount = await Favorite.countDocuments({});
-        expect(favoriteCount).toBe(0);
+        await expectCreationError(weightedFavoriteMissingFields, 'Weighted exercises require weight, sets, and reps');
     });
 
     test('should throw error when weighted type movement exercises have cardio fields', async () => {
@@ -257,18 +250,6 @@ describe('Favorite model\'s required exercise fields schema middleware', () => {
             }]
         }
 
-        try {
-            await Favorite.create(weightedFavoriteWrongFields);
-            // fail if success
-            fail('Expected an error but did not receive one');
-        } catch (error) {
-            // verifies middleware's error message
-            expect(error.message).toBe('Weighted exercises cannot have minutes and calories burned');
-        }
-
-        const favoriteCount = await Favorite.countDocuments({});
-        expect(favoriteCount).toBe(0);
+        await expectCreationError(weightedFavoriteWrongFields, 'Weighted exercises cannot have minutes and calories burned');
     });
-
-
 });

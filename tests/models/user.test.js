@@ -54,10 +54,10 @@ describe('User Model', () => {
         const error = await expectValidationError(User, userWithMissingFields);
 
         // ensuring that errors for each required field violation is included
-        expect(error.errors.firstName).toBeDefined();
-        expect(error.errors.username).toBeDefined();
-        expect(error.errors.email).toBeDefined();
-        expect(error.errors.password).toBeDefined();
+
+        ['firstName', 'username', 'email', 'password'].forEach(field => {
+            expect(error.errors[field]).toBeDefined();
+        });
 
         // final assurance that the error message confirms failure
         expect(error._message).toEqual('User validation failed');
@@ -75,9 +75,9 @@ describe('User Model', () => {
         const error = await expectValidationError(User, userDataWithTooLongFields);
 
         // ensuring that errors for each maxLength violation is included
-        expect(error.errors.firstName).toBeDefined();
-        expect(error.errors.username).toBeDefined();
-        expect(error.errors.bio).toBeDefined();
+        ['firstName', 'username', 'bio'].forEach(field => {
+            expect(error.errors[field]).toBeDefined();
+        });
 
         // final assurance that the error message confirms failure
         expect(error._message).toEqual('User validation failed');
