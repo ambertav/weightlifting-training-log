@@ -24,6 +24,4 @@ function handleValidationErrors(error, res, message) {
     }
 }
 
-module.exports = {
-    validateExerciseFields, handleValidationErrors,
-}
+module.exports = { validateExerciseFields, handleValidationErrors }

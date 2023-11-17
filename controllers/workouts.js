@@ -1,8 +1,8 @@
 const Workout = require('../models/workout');
 const Movement = require('../models/movement');
 
-const validationHelpers = require('../utilities/validationHelpers');
-const formatHelpers = require('../utilities/formatHelpers');
+const { validateExerciseFields, handleValidationErrors } = require('../utilities/validationHelpers');
+const { formatWorkoutExercise } = require('../utilities/formatHelpers');
 
 // index
 async function getWorkouts (req, res) {
@@ -60,7 +60,7 @@ async function deleteWorkout (req, res) {
 // update
 async function updateWorkout (req, res) {
     try {
-        const formattedExerciseArray = formatHelpers.formatWorkoutExercise(req.body.exercise);
+        const formattedExerciseArray = formatWorkoutExercise(req.body.exercise);
         req.body.exercise = formattedExerciseArray;
 
         const updatedWorkout = await Workout.findOneAndUpdate(
@@ -72,7 +72,7 @@ async function updateWorkout (req, res) {
 
         // // Validate exercise fields
         for (const exercise of updatedWorkout.exercise) {
-            const validationError = validationHelpers.validateExerciseFields(exercise);
+            const validationError = validateExerciseFields(exercise);
             if (validationError) {
                 return res.status(400).send(validationError);
             }
@@ -82,14 +82,14 @@ async function updateWorkout (req, res) {
     } catch (error) {
         console.error(error);
         res.status(500).send('An error occurred while updating the workout.');
-        validationHelpers.handleValidationErrors(error, res, message);
+        handleValidationErrors(error, res, message);
     }
 }
 
 // create
 async function createWorkout (req, res) {
     try {
-        const formattedExerciseArray = formatHelpers.formatWorkoutExercise(req.body.exercise);
+        const formattedExerciseArray = formatWorkoutExercise(req.body.exercise);
         req.body.exercise = formattedExerciseArray;
         req.body.createdBy = req.session.userId;
 
@@ -98,7 +98,7 @@ async function createWorkout (req, res) {
 
         // // Validate exercise fields
         for (const exercise of newWorkout.exercise) {
-            const validationError = validationHelpers.validateExerciseFields(exercise);
+            const validationError = validateExerciseFields(exercise);
             if (validationError) {
                 await newWorkout.remove();
                 return res.status(400).send(validationError);
@@ -111,7 +111,7 @@ async function createWorkout (req, res) {
     } catch (error) {
         console.error(error);
         const message = 'An error occurred while creating the workout.'
-        validationHelpers.handleValidationErrors(error, res, message);
+        handleValidationErrors(error, res, message);
     }
 }
 

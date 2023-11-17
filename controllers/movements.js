@@ -1,9 +1,7 @@
 const Movement = require('../models/movement');
 
-const formatHelpers = require('../utilities/formatHelpers');
-const constants = require('../utilities/constants');
-
-const muscleGroups = constants.muscleGroups;
+const { formatMovementData } = require('../utilities/formatHelpers');
+const { muscleGroups } = require('../utilities/constants');
 
 // index
 async function getMovements (req, res) {
@@ -81,7 +79,7 @@ async function deleteMovement (req, res) {
 // update
 async function updateMovement (req, res) {
     try {
-        const editMovement = formatHelpers.formatMovementData(req.body, req.session.userId); // format req.body per schema
+        const editMovement = formatMovementData(req.body, req.session.userId); // format req.body per schema
 
         const updatedMovement = await Movement.findOneAndUpdate({
             createdBy: req.session.userId,
@@ -100,7 +98,7 @@ async function updateMovement (req, res) {
 // create
 async function createMovement (req, res) {
     try {
-        const newMovement = formatHelpers.formatMovementData(req.body, req.session.userId); // format req.body per schema
+        const newMovement = formatMovementData(req.body, req.session.userId); // format req.body per schema
 
         const createdMovement = await Movement.create(newMovement);
 

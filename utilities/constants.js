@@ -3,6 +3,4 @@ const muscleGroups = [
 ];
 
 
-module.exports = { 
-    muscleGroups,
-}
+module.exports = {  muscleGroups }

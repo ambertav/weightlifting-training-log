@@ -4,7 +4,7 @@ const Request = require('../models/request');
 const Workout = require('../models/workout');
 const { s3Client, s3BaseUrl, PutObjectCommand } = require('../config/awsConfig');
 
-const formatHelpers = require('../utilities/formatHelpers');
+const { formatExerciseStats } = require('../utilities/formatHelpers');
 
 // user profile
 async function getOwnProfile (req, res) {
@@ -14,7 +14,7 @@ async function getOwnProfile (req, res) {
             .lean();
 
         const volumePerMovement = await getVolume(req.session.userId);
-        const exerciseStats = volumePerMovement.length > 0 ? formatHelpers.formatExerciseStats(volumePerMovement) : null;
+        const exerciseStats = volumePerMovement.length > 0 ? formatExerciseStats(volumePerMovement) : null;
 
         const requests = await Request.find({
             $or: [
@@ -139,7 +139,7 @@ async function viewOtherProfile (req, res) {
         if (user._id.toHexString() === req.session.userId) return res.redirect('/users/me');
 
         const volumePerMovement = await getVolume(user._id);
-        const exerciseStats = volumePerMovement.length > 0 ? formatHelpers.formatExerciseStats(volumePerMovement) : null;
+        const exerciseStats = volumePerMovement.length > 0 ? formatExerciseStats(volumePerMovement) : null;
 
         const existingRequest = await Request.findOne({
             from: { $in: [req.session.userId, user._id] },
