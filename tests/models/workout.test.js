@@ -146,9 +146,9 @@ describe('Workout model', () => {
     });
 });
 
-describe('Workout model\'s required exercise fields middleware', () => {
+describe('Workout model\'s required exercise fields schema middleware', () => {
     // global variable with common workout data to be use accross schema middleware tests
-    const baseWorkoutData = {}
+    const baseWorkoutData = {};
 
     beforeEach(async () => {
         await Workout.deleteMany({}); // clears database to utilize count documents for each test
@@ -180,7 +180,7 @@ describe('Workout model\'s required exercise fields middleware', () => {
         expect(workoutCount).toBe(0);
     });
 
-    test('should throw error when cardio type movement exercises have weighted required fields', async () => {
+    test('should throw error when cardio type movement exercises have weighted fields', async () => {
         const cardioWorkoutWrongFields = {
             ...baseWorkoutData,
             exercise: [{
@@ -229,7 +229,7 @@ describe('Workout model\'s required exercise fields middleware', () => {
         expect(workoutCount).toBe(0);
     });
 
-    test('should throw error when weighted type movement exercises have cardio required fields', async () => {
+    test('should throw error when weighted type movement exercises have cardio fields', async () => {
         const weightedWorkoutWrongFields = {
             ...baseWorkoutData,
             exercise: [{
