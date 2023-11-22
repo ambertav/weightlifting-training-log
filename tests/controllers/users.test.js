@@ -24,6 +24,28 @@ afterAll(async () => {
     await mongoose.connection.close();
 });
 
+describe('GET /signup', () => {
+    test('should render the signup view', async () => {
+        const response = await request(app)
+            .get('/signup')
+            .expect(200)
+            .expect('Content-Type', /html/);
+
+        expect(response.text).toContain('Sign Up');
+    });
+});
+
+describe('GET /login', () => {
+    test('should render the login view', async () => {
+        const response = await request(app)
+            .get('/login')
+            .expect(200)
+            .expect('Content-Type', /html/);
+
+        expect(response.text).toContain('Login');
+    });
+});
+
 describe('POST /signup', () => {
     test('should successfully register a user', async () => {
         const userData = {
