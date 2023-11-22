@@ -15,7 +15,7 @@ async function signupUser (req, res) {
         // validate if passwords match
         if (req.body.password !== req.body.passwordConfirmation) {
             const errorMessage = 'Passwords do not match';
-            return res.render('signup.ejs', {
+            return res.status(400).render('signup.ejs', {
                 error: errorMessage
             });
         }
@@ -27,18 +27,17 @@ async function signupUser (req, res) {
 
         res.redirect('/workouts');
     } catch (error) {
-        console.error(error);
         if (error.code === 11000) {
             let errorMessage = ''
             if (error.keyPattern.email === 1) errorMessage = 'Email is already in use.';
             else if (error.keyPattern.username === 1) errorMessage = 'Username is already in use.';
-            return res.render('signup.ejs', {
+            return res.status(400).render('signup.ejs', {
                 error: errorMessage
             });
         }
 
         const errorMessage = 'An error occurred during signup.';
-        res.render('signup.ejs', {
+        res.status(500).render('signup.ejs', {
             error: errorMessage
         });
     }
@@ -59,14 +58,14 @@ async function loginUser (req, res) {
         });
 
         // if no user by email found, send back to login page with error
-        if (!foundUser) return res.render('login.ejs', {
+        if (!foundUser) return res.status(401).render('login.ejs', {
             error: 'Invalid email or password, please try again.'
         });
         else {
             const isMatched = await bcrypt.compareSync(req.body.password, foundUser.password);
 
             // if password provided doesn't match, send back to login page with error
-            if (!isMatched) return res.render('login.ejs', {
+            if (!isMatched) return res.status(401).render('login.ejs', {
                 error: 'Invalid email or password, please try again.'
             });
 
@@ -76,8 +75,7 @@ async function loginUser (req, res) {
             res.redirect('/workouts');
         }
     } catch (error) {
-        console.error(error);
-        res.render('login.ejs', {
+        res.status(500).render('login.ejs', {
             error: 'An error occurred during login.'
         });
     }
