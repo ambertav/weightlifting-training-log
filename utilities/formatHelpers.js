@@ -1,5 +1,4 @@
-const constants = require('./constants');
-const muscleGroups = constants.muscleGroups;
+const { muscleGroups } = require('./constants');
 
 // formatting the exercise array for create and update routes
 function formatWorkoutExercise(exercise) {

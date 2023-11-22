@@ -45,7 +45,6 @@ async function getMovements (req, res) {
         });
 
     } catch (error) {
-        console.error(error);
         res.status(500).send('An error occurred while fetching movements.');
     }
 }
@@ -65,13 +64,12 @@ async function deleteMovement (req, res) {
             _id: req.params.id
         });
 
-        if (!deletedMovement) return res.status(404).send('Movement not found.');
+        if (!deletedMovement) return res.status(404).json({ error: 'Movement not found', reload: true });
 
         await deletedMovement.remove();
 
         res.redirect('/movements');
     } catch (error) {
-        console.error(error);
         res.status(500).send('An error occurred while deleting the movement.');
     }
 }
@@ -79,18 +77,20 @@ async function deleteMovement (req, res) {
 // update
 async function updateMovement (req, res) {
     try {
+        if (!req.body.name || !req.body.musclesWorked || !req.body.type) {
+            return res.status(400).json({ error: 'Invalid input', reload: true });
+        }
+
+         // req.body in format of musclesWorked: { muscle: 'on', muscle: 'on' }, must reformat before creating instance
         const editMovement = formatMovementData(req.body, req.session.userId); // format req.body per schema
 
         const updatedMovement = await Movement.findOneAndUpdate({
             createdBy: req.session.userId,
             _id: req.params.id
-        }, editMovement, {
-            new: true
-        });
+        }, editMovement, { new: true });
 
         res.redirect('/movements');
     } catch (error) {
-        console.error(error);
         res.status(500).send('An error occurred while updating the movement.');
     }
 }
@@ -98,13 +98,17 @@ async function updateMovement (req, res) {
 // create
 async function createMovement (req, res) {
     try {
+        if (!req.body.name || !req.body.musclesWorked || !req.body.type) {
+            return res.status(400).json({ error: 'Invalid input', reload: true });
+        }
+
+        // req.body in format of musclesWorked: { muscle: 'on', muscle: 'on' }, must reformat before creating instance
         const newMovement = formatMovementData(req.body, req.session.userId); // format req.body per schema
 
         const createdMovement = await Movement.create(newMovement);
+        return res.redirect('/movements');
 
-        res.redirect('/movements');
     } catch (error) {
-        console.error(error);
         res.status(500).send('An error occurred while creating the movement.');
     }
 }
@@ -119,12 +123,9 @@ async function editMovementView (req, res) {
             muscleGroups
         });
     } catch (error) {
-        console.error(error);
         res.status(500).send('An error occurred while fetching the movement.');
     }
 }
 
 
-module.exports = {
-    getMovements, newMovementView, deleteMovement, updateMovement, createMovement, editMovementView,
-}
+module.exports = { getMovements, newMovementView, deleteMovement, updateMovement, createMovement, editMovementView }
