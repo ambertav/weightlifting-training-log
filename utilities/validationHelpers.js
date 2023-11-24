@@ -15,12 +15,11 @@ function validateExerciseFields(exercise) {
 
 // organizes the possible errors for the create and update route 
 function handleValidationErrors(error, res, message) {
-    console.error(error);
     if (error.errors) {
         const validationErrors = Object.values(error.errors).map((err) => err.message);
-        res.status(400).send(validationErrors);
+        res.status(400).json({ validationErrors });
     } else {
-        res.status(500).send(message);
+        res.status(500).json({ message });
     }
 }
 
