@@ -41,6 +41,8 @@ afterAll(async () => {
     await mongoose.connection.close();
 });
 
+
+// tests for GET views
 describe('GET /movements', () => {
     test('should render the movements view', async () => {
         const response = await testSession
@@ -86,6 +88,8 @@ describe('GET /movements/:id/edit', () => {
     });
 });
 
+
+// tests for non-GET methods
 describe('POST /movements', () => {
     test('should successfully create a movement', async () => {
         const testMovement = {
@@ -100,8 +104,10 @@ describe('POST /movements', () => {
             .send(testMovement)
             .expect(302)
         
+        // ensures correct redirect
         expect(response.header.location).toBe('/movements');
 
+        // checking new movement against input
         const createdMovement = await Movement.findOne({ name: testMovement.name });
         expect(createdMovement).toBeDefined();
         expect(createdMovement).toMatchObject({
@@ -130,24 +136,25 @@ describe('PUT /movements/:id', () => {
             musclesWorked: { Forearms: 'on' },
         }
 
-        console.log(movementUpdate)
-
         const response = await testSession
             .put(`/movements/${testMovement._id}`)
             .send(movementUpdate)
             .expect(302)
 
-            expect(response.header.location).toBe('/movements');
+        // redirect check
+        expect(response.header.location).toBe('/movements');
 
+
+        // checking updated movement against input
         const updatedMovement = await Movement.findById(testMovement._id);
 
-            expect(updatedMovement).toBeDefined();
-            expect(updatedMovement).toMatchObject({
-                name: testMovement.name,
-                description: testMovement.description,
-                musclesWorked: ['Forearms'],
-                type: testMovement.type,
-            });
+        expect(updatedMovement).toBeDefined();
+        expect(updatedMovement).toMatchObject({
+            name: testMovement.name,
+            description: testMovement.description,
+            musclesWorked: ['Forearms'],
+            type: testMovement.type,
+        });
     });
 
     test('should handle error if invalid input', async () => {
@@ -172,16 +179,18 @@ describe('DELETE /movements/:id', () => {
             .delete(`/movements/${testMovement._id}`)
             .expect(302);
 
-            expect(response.header.location).toBe('/movements');
+        // redirect check
+        expect(response.header.location).toBe('/movements');
 
-            const deletedMovement = await Movement.findById(testMovement._id);
-            expect(deletedMovement).toBeNull();
+        // verifying delete
+        const deletedMovement = await Movement.findById(testMovement._id);
+        expect(deletedMovement).toBeNull();
     });
 
     test('should handle error if invalid movement', async () => {
         const response = await testSession
-        .delete(`/movements/${testMovement._id}`)
-        .expect(404);
+            .delete(`/movements/${testMovement._id}`)
+            .expect(404);
 
         expect(response.body.error).toEqual('Movement not found');
     });
