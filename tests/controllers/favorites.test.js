@@ -253,10 +253,23 @@ describe('POST /favorites/:id/share', () => {
 
 describe('DELETE /favorites/:id', () => {
     test('should successfully delete a favorite', async () => {
+        const response = await testSession 
+            .delete(`/favorites/${favorite._id}`)
+            .expect(302)
 
+        expect(response.header.location).toBe('/favorites');
+
+        const deletedFavorite = await Favorite.findById(favorite._id);
+        expect(deletedFavorite).toBeNull();
     });
 
     test('should handle error if invalid input', async () => {
+        const id = new mongoose.Types.ObjectId();
 
+        const response = await testSession 
+            .delete(`/favorites/${id}`)
+            .expect(404)
+
+        expect(response.body.error).toEqual('Favorite not found, could not delete');
     });
 });
