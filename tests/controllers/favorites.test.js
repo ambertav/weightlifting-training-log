@@ -16,7 +16,7 @@ require('dotenv').config();
 const testSession = session(app);
 
 let janeId = '';
-let requestId = '';
+let friendId = '';
 let workout = {};
 let favorite = {};
 let movement = {};
@@ -47,7 +47,7 @@ beforeAll(async () => {
         from: janeId,
         to: john._id
     });
-    requestId = friendship._id;
+    friendId = friendship.to
 
     await Movement.create(movementData.slice(0, 5));
     movement = await Movement.findOne({}).lean();
@@ -211,15 +211,43 @@ describe('POST /favorites/:id/copy', () => {
 
 describe('POST /favorites/:id/share', () => {
     test('should successfully share a favorite', async () => {
+        const response = await testSession
+            .post(`/favorites/${favorite._id}/share`)
+            .send({ friend: friendId })
+            .expect(302)
 
+        expect(response.header.location).toBe('/favorites');
+
+        const sharedFavorite = await Favorite.findOne({ name: favorite.name, createdBy: friendId });
+        expect(sharedFavorite).toBeDefined();
+        expect(sharedFavorite.exercise[0]).toMatchObject({
+            movement: favorite.exercise[0].movement,
+            weight: favorite.exercise[0].weight,
+            sets: favorite.exercise[0].sets,
+            reps: favorite.exercise[0].reps,
+        });
     });
     
     test('should handle error if invalid favorite', async () => {
+        const id = new mongoose.Types.ObjectId();
 
+        const response = await testSession
+            .post(`/favorites/${id}/share`)
+            .send({ friend: friendId })
+            .expect(404)
+        
+        expect(response.body.error).toEqual('Favorite not found');
     });
 
     test('should handle error if invalid friendship', async () => {
+        const id = new mongoose.Types.ObjectId();
 
+        const response = await testSession
+            .post(`/favorites/${favorite._id}/share`)
+            .send({ friend: id })
+            .expect(403)
+    
+        expect(response.body.error).toEqual('Favorites can only be shared between friends');
     });
 });
 
