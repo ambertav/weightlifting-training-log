@@ -8,34 +8,34 @@ const { formatFavoriteExercise } = require('../utilities/formatHelpers');
 // index
 async function getFavorites (req, res) {
     try {
-        const favorites = await Favorite.find({
-                createdBy: req.session.userId
-            })
+        const favorites = await Favorite.find({ createdBy: req.session.userId })
             .lean();
 
         res.render('favorite/index.ejs', {
             favorites
         });
+
     } catch (error) {
-        console.error(error);
-        res.status(500).send('An error occurred while fetching favorites.');
+        res.status(500).json({ error: 'An error occurred while fetching favorites', reload: true });
     }
 }
 
 // delete
 async function deleteFavorite (req, res) {
     try {
-        const deletedFavorite = await Favorite.findOneAndDelete({
-            createdBy: req.session.userId,
-            _id: req.params.id
+        const favoriteToDelete = await Favorite.findOne({
+            createdBy: req.session.userId, _id: req.params.id
         });
 
-        if (deletedFavorite) res.redirect('/favorites');
-        else res.status(404).send('Favorite not found, could not delete.');
+        if (favoriteToDelete) {
+            await favoriteToDelete.deleteOne();
+            res.redirect('/favorites');
+        }
+        
+        else res.status(404).json({ error: 'Favorite not found, could not delete', reload: true });
 
     } catch (error) {
-        console.error(error);
-        res.status(500).send('An error occurred while deleteing the favorite.');
+        res.status(500).json({ error: 'An error occurred while deleteing the favorite', reload: true });
     }
 }
 
@@ -48,9 +48,21 @@ async function shareFavorites (req, res) {
         })
         .lean();
 
-        if (!originalFavorite) return res.status(404).send('Favorite not found.');
+        // send error if favorite not found
+        if (!originalFavorite) return res.status(404).json({ error: 'Favorite not found', reload: true });
 
-        // New instance of favorite, now createdBy the friend with whom the user selects to share with
+        // searching for valid accepted request between users
+        const friendship = await Request.findOne({
+            $or: [
+                { from: req.body.friend, to: req.session.userId },
+                { from: req.session.userId, to: req.body.friend }
+            ]
+        });
+
+        // send error if friendship is not found
+        if (!friendship) return res.status(403).json({ error: 'Favorites can only be shared between friends', reload: true });
+
+        // new instance of favorite, now createdBy = friend with whom the user selects to share with
         const favoriteToShare = new Favorite({
             name: originalFavorite.name,
             exercise: originalFavorite.exercise,
@@ -60,9 +72,9 @@ async function shareFavorites (req, res) {
         const sharedFavorite = await favoriteToShare.save();
 
         res.redirect('/favorites');
+
     } catch (error) {
-        console.error(error);
-        res.status(500).send('An error occurred while sharing the favorite.');
+        res.status(500).json({ error: 'An error occurred while sharing the favorite', reload: true });
     }
 }
 
@@ -70,35 +82,40 @@ async function shareFavorites (req, res) {
 async function copyFavorite (req, res) {
     try {
         const favorite = await Favorite.findById(req.params.id);
-        if (!favorite) return res.status(404).send('Favorite not found.');
+        // send error if favorite not found
+        if (!favorite) return res.status(404).json({ error: 'Favorite not found', reload: true });
 
-        const { exercise } = favorite;
         const createdBy = req.session.userId;
-
+        
         const newWorkoutExercise = [];
+        const { exercise } = favorite; // destructure to get access to exercise
 
+        // loop over favorite.exercise
         for (const ex of exercise) {
             try {
+                // retrieving movement id since favorites saved with movement name
                 const movement = await createOrRetrieveMovement(ex, createdBy);
+                // formats exercise object with required fields based on movement type
                 const exerciseObj = formatFavoriteExercise(ex, movement);
+                // acculumates exercise objects
                 newWorkoutExercise.push(exerciseObj);
             } catch (error) {
                 console.error(error);
             }
         }
 
-        const newWorkout = {
+        const newWorkout = { // constructs new workout
             day: req.body.day,
             exercise: newWorkoutExercise,
             createdBy: req.session.userId
         }
 
-        const createdWorkout = await Workout.create(newWorkout);
+        const createdWorkout = await Workout.create(newWorkout); // creates workout
 
         res.redirect('/workouts');
+
     } catch (error) {
-        console.error(error);
-        res.status(500).send('An error occurred while copying the favorite and creating the workout.');
+        res.status(500).json({ error: 'An error occurred while copying the favorite and creating the workout', reload: true });
     }
 }
 
@@ -108,14 +125,16 @@ async function createFavorite (req, res) {
         const workout = await Workout.findById(req.params.id)
             .populate('exercise.movement')
             .lean();
-        if (!workout) return res.status(404).send('Workout not found.');
+        
+        // send error if workout doesn't exist
+        if (!workout) return res.status(404).json({ error: 'Workout not found' });
 
         const { createdBy } = workout;
 
         const exerciseInfo = workout.exercise.map(function (exercise) {
-            const { movement, ...remaining } = exercise;
+            const { movement, ...remaining } = exercise; // destructures to access to movement
             return {
-                movement: {
+                movement: { // reformats movement to just save name, musclesWorked, type (will not save as an objectId for favorite)
                     name: movement.name,
                     musclesWorked: movement.musclesWorked,
                     type: movement.type,
@@ -124,22 +143,21 @@ async function createFavorite (req, res) {
             };
         });
 
-        const newFavorite = {
+        const newFavorite = { // constructs new favorite
             name: req.body.name,
             exercise: exerciseInfo,
             createdBy
         }
 
-        const createdFavorite = await Favorite.create(newFavorite);
+        const createdFavorite = await Favorite.create(newFavorite); // creates favorite
 
         res.render('workout/show.ejs', {
             workout,
-            message: 'Favorite added!'
+            message: 'Favorite added!' // confirmation message
         });
 
     } catch (error) {
-        console.error(error);
-        res.status(500).send('An error occurred while creating the favorite.');
+        res.status(500).json({ error: 'An error occurred while creating the favorite', reload: true });
     }
 }
 
@@ -149,22 +167,19 @@ async function showFavorite (req, res) {
         const favorite = await Favorite.findById(req.params.id)
             .lean();
 
+        // find all friendships user has
         const requests = await Request.find({
-                $or: [{
-                        to: req.session.userId
-                    },
-                    {
-                        from: req.session.userId
-                    },
+                $or: [
+                    { to: req.session.userId },
+                    { from: req.session.userId },
                 ]
             })
-            .populate({
-                path: 'to from',
-                select: '_id username'
-            })
+            // populating both to and from fields
+            .populate({ path: 'to from', select: '_id username' }) 
             .lean();
 
         const friends = [];
+        // formats list of friends to extract other user's username and id, removes req.session user from data
         for (const request of requests) {
             if (request.to._id.toHexString() === req.session.userId) friends.push(request.from);
             else if (request.from._id.toHexString() === req.session.userId) friends.push(request.to);
@@ -172,34 +187,34 @@ async function showFavorite (req, res) {
 
         res.render('favorite/show.ejs', {
             favorite,
-            friends
+            friends // passes array of friends to render for share favorite form
         });
+
     } catch (error) {
-        console.error(error);
-        res.status(500).send('An error occurred while fetching the favorite.');
+        res.status(500).json({ error: 'An error occurred while fetching the favorite', reload: true });
     }
 }
 
 // sees if the movement within the favorite exists in reference to user, creates the movement if not
 async function createOrRetrieveMovement(exercise, createdBy) {
+    // search for movement
     let movement = await Movement.findOne({
         name: exercise.movement.name,
         createdBy: { $in: [createdBy, null] }
     });
 
+    // if the movement doesn't exist...
     if (!movement) {
+        // create the movement
         movement = await Movement.create({
             name: exercise.movement.name,
             musclesWorked: exercise.movement.musclesWorked,
             type: exercise.movement.type,
-            createdBy
+            createdBy // assigned createdBy to req.session.userId
         });
     }
-
     return movement;
 }
 
 
-module.exports = {
-    getFavorites, deleteFavorite, shareFavorites, copyFavorite, createFavorite, showFavorite,
-}
+module.exports = { getFavorites, deleteFavorite, shareFavorites, copyFavorite, createFavorite, showFavorite }
