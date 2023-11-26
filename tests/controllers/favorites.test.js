@@ -19,6 +19,7 @@ let janeId = '';
 let requestId = '';
 let workout = {};
 let favorite = {};
+let movement = {};
 
 beforeAll(async () => {
     await mongoose.connection.close();
@@ -116,17 +117,118 @@ describe('GET /favorites/:id', () => {
 
 // tests for non-GET methods
 describe('POST /workouts/:id/favorite', () => {
+    test('should successfully create a favorite', async () => {
+        const response = await testSession
+            .post(`/workouts/${workout._id}/favorite`)
+            .send({ name: 'favorite workout' })
+            .expect(200)
+        
+        expect(response.text).toContain(`${workout.day}`);
+        expect(response.text).toContain('Favorite added!');
 
+        const createdFavorite = await Favorite.findOne({ name: 'favorite workout', createdBy: janeId });
+        expect(createdFavorite).toBeDefined();
+    });
+
+    test('should handle error if invalid workout input', async () => {
+        const id = new mongoose.Types.ObjectId();
+        const response = await testSession
+            .post(`/workouts/${id}/favorite`)
+            .send({ name: 'invalid favorite' })
+            .expect(404)
+
+        expect(response.body.error).toEqual('Workout not found');
+
+        const createdFavorite = await Favorite.findOne({ name: 'invalid favorite', createdBy: janeId });
+        expect(createdFavorite).toBeNull();
+    });
 });
 
 describe('POST /favorites/:id/copy', () => {
+    test('should copy a favorite to create a workout', async () => {
+        const response = await testSession
+            .post(`/favorites/${favorite._id}/copy`)
+            .send({ day: 'Saturday' })
+            .expect(302)
 
+        expect(response.header.location).toBe('/workouts');
+
+        const createdWorkout = await Workout.findOne({ day: 'Saturday', createdBy: janeId })
+            .populate('exercise.movement');
+        expect(createdWorkout).toBeDefined();
+
+        expect(createdWorkout).toMatchObject({
+            day: 'Saturday',
+            exercise: [{
+                movement: expect.objectContaining({
+                    name: favorite.exercise[0].movement.name,
+                    musclesWorked: favorite.exercise[0].movement.musclesWorked,
+                    type: favorite.exercise[0].movement.type
+                }),
+                weight: favorite.exercise[0].weight,
+                sets: favorite.exercise[0].sets,
+                reps: favorite.exercise[0].reps,
+            }],
+            createdBy: favorite.createdBy
+        });
+    });
+
+    test('should create the necessary movements within favorite for user', async () => {
+        await Movement.deleteOne({ _id: movement._id });
+
+        const response = await testSession
+            .post(`/favorites/${favorite._id}/copy`)
+            .send({ day: 'Tuesday' })
+            .expect(302);
+
+        expect(response.header.location).toBe('/workouts');
+
+        const createdWorkout = await Workout.findOne({ day: 'Tuesday', createdBy: janeId })
+            .populate('exercise.movement');
+        expect(createdWorkout).toBeDefined();
+
+        const createdMovement = await Movement.findById(createdWorkout.exercise[0].movement);
+        expect(createdMovement).toBeDefined();
+        expect(createdMovement).toMatchObject({
+            ...favorite.exercise[0].movement
+        });
+    });
+
+    test('should handle error if invalid favorite input', async () => {
+        const id = new mongoose.Types.ObjectId();
+
+        const response = await testSession
+            .post(`/favorites/${id}/copy`)
+            .send({ day: 'Sunday' })
+            .expect(404)
+
+        expect(response.body.error).toEqual('Favorite not found');
+        
+        const invalidWorkout = await Workout.findOne({ day: 'Sunday', createdBy: janeId });
+        expect(invalidWorkout).toBeNull();
+    });
 });
 
 describe('POST /favorites/:id/share', () => {
+    test('should successfully share a favorite', async () => {
 
+    });
+    
+    test('should handle error if invalid favorite', async () => {
+
+    });
+
+    test('should handle error if invalid friendship', async () => {
+
+    });
 });
 
 describe('DELETE /favorites/:id', () => {
+    test('should successfully delete a favorite', async () => {
 
+    });
+
+    test('should handle error if invalid input', async () => {
+
+    });
 });
