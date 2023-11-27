@@ -32,6 +32,7 @@
     "supertest-session": "^5.0.1"
   },
   "devDependencies": {
+    "cheerio": "^1.0.0-rc.12",
     "jest": "^29.7.0",
     "supertest": "^6.3.3"
   }
