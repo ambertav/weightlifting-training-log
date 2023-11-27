@@ -21,10 +21,8 @@ async function getOwnProfile (req, res) {
                 { to: req.session.userId },
                 { from: req.session.userId },
             ]
-        }).populate({
-            path: 'to from',
-            select: '_id username'
         })
+        .populate({ path: 'to from', select: '_id username' })
         .lean();
 
         const awaiting = filterRequests(requests, 'pending');
@@ -37,9 +35,9 @@ async function getOwnProfile (req, res) {
             exerciseStats,
             viewer: null // indicates that the profile belongs to current user
         });
+
     } catch (error) {
-        console.error(error);
-        res.status(500).send('Internal Server Error');
+        res.status(500).json({ error: 'Error occured while fetching profile', reload: true });
     }
 }
 
@@ -70,13 +68,13 @@ async function uploadPhoto (req, res) {
             res.redirect('/users/me');
 
         } catch (userError) {
-            console.error('Error updating user profile photo:', userError);
-            res.status(500).send('Error updating user profile photo');
+            console.error(userError);
+            res.status(500).json({ error: 'Error updating user profile photo', reload: true });
         }
 
     } catch (s3Error) {
-        console.error('Error uploading profile photo to AWS S3:', s3Error);
-        res.status(500).send('Error uploading profile photo to AWS S3');
+        console.error(s3Error);
+        res.status(500).json({ error: 'Error uploading profile photo to AWS S3', reload: true });
     }
 }
 
@@ -89,9 +87,9 @@ async function updateProfile (req, res) {
         await user.save();
 
         res.redirect('/users/me');
+
     } catch (error) {
-        console.error(error);
-        res.status(500).send('Error updating user bio');
+        res.status(500).json({ error: 'Error updating user bio', reload: true });
     }
 }
 
@@ -108,6 +106,7 @@ async function handleSearch (req, res) {
     try {
         let errorMessage = '';
         const searchResults = await User.find({
+            _id: { $ne: req.session.userId }, // remove req user from search
             username: {
                 $regex: `${req.body.searchTerm.toLowerCase()}`
             }
@@ -123,8 +122,7 @@ async function handleSearch (req, res) {
         });
 
     } catch (error) {
-        console.error(error);
-        res.status(500).send('Internal Server Error');
+        res.status(500).json({ error: 'Error searching for users', reload: true });
     }
 }
 
@@ -134,21 +132,22 @@ async function viewOtherProfile (req, res) {
         const user = await User.findOne({ username: req.params.username })
             .select('-email, -password')
             .lean();
-        if (!user) return res.status(404).send('User not found');
 
+        if (!user) return res.status(404).json({ error: 'User not found', reload: true });
+
+        // redirects user to controller for own profile
         if (user._id.toHexString() === req.session.userId) return res.redirect('/users/me');
 
         const volumePerMovement = await getVolume(user._id);
         const exerciseStats = volumePerMovement.length > 0 ? formatExerciseStats(volumePerMovement) : null;
 
         const existingRequest = await Request.findOne({
-            from: { $in: [req.session.userId, user._id] },
-            to: { $in: [req.session.userId, user._id] }
+            $or: [
+                { from: req.session.userId, to: user._id },
+                { from: user._id, to: req.session.userId }
+            ]
         })
-        .populate({
-            path: 'to from',
-            select: '_id username'
-        })
+        .populate({ path: 'to from', select: '_id username' })
         .lean();
 
         res.render('profile.ejs', {
@@ -159,8 +158,7 @@ async function viewOtherProfile (req, res) {
         });
 
     } catch (error) {
-        console.error(error);
-        res.status(500).send('Internal Server Error');
+        res.status(500).json({ error: 'Error occured while fetching user profile', reload: true });
     }
 }
 
@@ -168,7 +166,7 @@ async function getVolume (userId) {
     try {
         const volume = await Workout.aggregate([
             {
-                $match: { createdBy: mongoose.Types.ObjectId(userId) } // find user's workouts
+                $match: { createdBy: new mongoose.Types.ObjectId(userId) } // find user's workouts
             },
             { $unwind: '$exercise' },
             {
@@ -225,6 +223,7 @@ async function getVolume (userId) {
         ]);
         
         return volume;
+
     } catch (error) {
         console.error(error);
         return null;
@@ -238,6 +237,4 @@ function filterRequests (requests, status) {
 }
 
 
-module.exports = {
-    getOwnProfile, uploadPhoto, updateProfile, searchView, handleSearch, viewOtherProfile,
-}
+module.exports = { getOwnProfile, uploadPhoto, updateProfile, searchView, handleSearch, viewOtherProfile }
