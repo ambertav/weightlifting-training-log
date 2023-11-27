@@ -1,8 +1,8 @@
 const mongoose = require('mongoose');
 const request = require('supertest');
 const session = require('supertest-session');
+const cheerio = require('cheerio');
 const app = require('../../server');
-const { expectValidationError } = require('../testUtilities');
 
 const User = require('../../models/user');
 const Request = require('../../models/request');
@@ -17,6 +17,9 @@ const testSession = session(app);
 
 let janeId = '';
 let johnId = '';
+let weightedMovement = {};
+let cardioMovement = {};
+let friendship = {};
 
 beforeAll(async () => {
     await mongoose.connection.close();
@@ -27,7 +30,9 @@ beforeAll(async () => {
     await Movement.deleteMany({});
 
     await Movement.create(movementData.slice(0, 5));
-    const movement = await Movement.findOne({});
+    weightedMovement = await Movement.findOne({});
+
+    cardioMovement = await Movement.create(movementData[movementData.length - 1]);
 
     const jane = await User.create({
         firstName: 'Jane',
@@ -45,23 +50,53 @@ beforeAll(async () => {
     });
     johnId = john._id;
 
+    friendship = await Request.create({
+        from: janeId,
+        to: johnId,
+        status: 'accepted'
+    });
+
+    await friendship.populate({ path: 'to', select: 'username' })
+
     await testSession
         .post('/login')
         .send({ email: 'jane@doe.com', password: 'password123' });
 
-    await testSession
-        .post('/workouts')
-        .send({
-            day: 'Monday',
-            exercise: { // req.body structure
-                movement: [movement._id],
-                weight: ['100'],
-                sets: ['1'],
-                reps: ['1'],
-                minutes: [''],
-                caloriesBurned: ['']
-            },
-        });
+    
+    const weightedWorkoutData = {
+        day: 'Monday',
+        exercise: [{ 
+            movement: weightedMovement._id,
+            weight: 100,
+            sets: 1,
+            reps: 1,
+        }],
+    }
+
+    const cardioWorkoutData = {
+        day: 'Monday',
+        exercise: [{ 
+            movement: cardioMovement._id,
+            minutes: 50,
+            caloriesBurned: 50,
+        }],
+    }
+
+    await Workout.insertMany([
+        {
+            createdBy: janeId,
+            ...weightedWorkoutData,
+        }, {
+            createdBy: janeId,
+            ...cardioWorkoutData,
+        }, {
+            createdBy: johnId,
+            ...weightedWorkoutData,
+        }, {
+            createdBy: johnId,
+            ...cardioWorkoutData,
+        }
+    ]);
 });
 
 afterAll(async () => {
@@ -73,7 +108,47 @@ afterAll(async () => {
 // tests for get views
 describe('GET /users/me', () => {
     test('should successfully render user\'s profile view', async () => {
+        const response = await testSession
+            .get('/users/me')
+            .expect(200);
 
+        // query for user
+        const user = await User.findById(janeId);
+        // check that user's profile info is render in view
+        expect(response.text).toContain(`Hello, ${user.firstName}!`);
+        
+        // query for associated weighted and cardio workouts
+        const weightedWorkout = await Workout.find({ 
+            createdBy: janeId, 'exercise.movement': weightedMovement._id
+        }).populate('exercise.movement');
+
+        const cardioWorkout = await Workout.find({
+            createdBy: janeId, 'exercise.movement': cardioMovement._id
+        }).populate('exercise.movement');
+
+        // loop through each weighted workout
+        for (const workout of weightedWorkout) {
+            // for ease, assuming only 1 exercise per workout for test
+            // then loop through musclesWorked array for exercise
+            workout.exercise[0].movement.musclesWorked.forEach((muscle) => {
+                // check that the muscles are rendered in the view (veriication for doughnut chart)
+                expect(response.text).toContain(`${muscle}`);
+            });
+        }
+
+        // loop through each cardio workout
+        for (const workout of cardioWorkout) {
+            // for ease, assuming only 1 exercise per workout for test
+            // then check if minutes and caloriesBurned are rendered in view
+            expect(response.text).toContain(`${workout.exercise[0].minutes}`);
+            expect(response.text).toContain(`${workout.exercise[0].caloriesBurned}`);
+        }
+
+        // using cheerio to select parts of DOM
+        const $ = cheerio.load(response.text);
+        const friendsList = $('#friendsList'); // select friends list
+        // checking that accepted request was correctly sorted into friends list 
+        expect(friendsList.text()).toContain(`${friendship.to.username}`);
     });
 });
 
@@ -89,15 +164,65 @@ describe('GET /users/search', () => {
 
 describe('GET /users/profile/:username', () => {
     test('should successfully render another user\'s profile view', async () => {
+        const otherUser = await User.findById(johnId);
 
+        const response = await testSession
+            .get(`/users/profile/${otherUser.username}`)
+            .expect(200);
+
+        // checking to see if other user's info is present
+        expect(response.text).toContain(`${otherUser.username}`);
+
+        // searching for weighted and cardio movements associated with other user
+        const weightedWorkout = await Workout.find({ 
+            createdBy: johnId, 'exercise.movement': weightedMovement._id
+        }).populate('exercise.movement');
+
+        const cardioWorkout = await Workout.find({
+            createdBy: johnId, 'exercise.movement': cardioMovement._id
+        }).populate('exercise.movement');
+
+        // loop through each weighted workout
+        for (const workout of weightedWorkout) {
+            // for ease, assuming only 1 exercise per workout for test
+            // then loop through musclesWorked array for exercise
+            workout.exercise[0].movement.musclesWorked.forEach((muscle) => {
+                // check that the muscles are rendered in the view (veriication for doughnut chart)
+                expect(response.text).toContain(`${muscle}`);
+            });
+        }
+
+        // loop through each cardio workout
+        for (const workout of cardioWorkout) {
+            // for ease, assuming only 1 exercise per workout for test
+            // then check if minutes and caloriesBurned are rendered in view
+            expect(response.text).toContain(`${workout.exercise[0].minutes}`);
+            expect(response.text).toContain(`${workout.exercise[0].caloriesBurned}`);
+        }
     });
 
     test('should redirect user to /user/me if user routes to own page, and render profile', async () => {
+        const self = await User.findById(janeId); // search for logged in user
 
+        const response = await testSession
+            .get(`/users/profile/${self.username}`)
+            .expect(302);
+
+        // checking that user was redirected to url for own profile
+        expect(response.header.location).toBe('/users/me');
     });
 
     test('should handle error if invalid input', async () => {
-    
+        // ensuring that the username used for test does not return an actual user
+        const count = await User.countDocuments({ username: 'invalid' });
+        expect(count).toBe(0);
+
+        const response = await testSession
+            .get('/users/profile/invalid') // username is 'invalid'
+            .expect(404);
+
+        // checking for error
+        expect(response.body.error).toEqual('User not found');
     });
 });
 
@@ -123,15 +248,15 @@ describe('POST /users/search', () => {
     });
 });
 
-describe('PUT /users/me/photo/edit', () => {
-    test('should update the user\'s photo', async () => {
+// describe('PUT /users/me/photo/edit', () => {
+//     test('should update the user\'s photo', async () => {
 
-    });
+//     });
 
-    test('should handle error if invalid input', async () => {
+//     test('should handle error if invalid input', async () => {
 
-    });
-});
+//     });
+// });
 
 describe('PUT /users/me/bio/edit', () => {
     test('should update the user\'s bio', async () => {
