@@ -56,7 +56,7 @@ async function uploadPhoto (req, res) {
 
     try {
         await s3Client.send(new PutObjectCommand(bucketParams));
-        const s3ProfilePhotoUrl = `${s3BaseUrl}${bucketParams.Bucket}/${fileName}`;
+        const s3ProfilePhotoUrl = `${s3BaseUrl}${fileName}`;
 
         try {
             const user = await User.findById(req.session.userId);

@@ -10,7 +10,7 @@ const s3Config = {
 };
 
 const s3Client = new S3Client(s3Config);
-const s3BaseUrl = 'https://s3.us-east-2.amazonaws.com/';
+const s3BaseUrl = `https://${process.env.AWS_S3_BUCKET_NAME}.s3.amazonaws.com/`;
 
 module.exports = {
     s3Client,
