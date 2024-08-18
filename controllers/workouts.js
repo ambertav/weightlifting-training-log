@@ -10,11 +10,14 @@ async function getWorkouts (req, res) {
         const allWorkouts = await Workout.find({
                 createdBy: req.session.userId
             })
-            .populate('exercise.movement')
-            .lean();
+            .sort({ day: 1 })
+            .populate('exercise.movement');
+
+        const workouts = allWorkouts.map(workout => workout.toJSON());
+
 
         res.render('workout/index.ejs', {
-            workouts: allWorkouts
+            workouts
         });
 
     } catch (error) {
@@ -63,6 +66,12 @@ async function deleteWorkout (req, res) {
 // update
 async function updateWorkout (req, res) {
     try {
+        const workout = await Workout.findOne({ createdBy: req.session.userId, _id: req.params.id })
+            .populate('exercise.movement');
+        
+        if (!workout) 
+                return res.status(404).send('Workout not found');
+
         /* req.body.exercise structure example with 3 movements (weighted, cardio, weighted)
             {
                 movement: ['movement 1', 'movement 2', 'movement 3'],
@@ -78,21 +87,18 @@ async function updateWorkout (req, res) {
         const formattedExerciseArray = formatWorkoutExercise(req.body.exercise);
         req.body.exercise = formattedExerciseArray;
 
-        const updatedWorkout = await Workout.findOneAndUpdate(
-            { createdBy: req.session.userId, _id: req.params.id },
-            req.body,
-            { new: true }
-        )
-        .populate('exercise.movement');
-
-
-        // Validate exercise fields
-        for (const exercise of updatedWorkout.exercise) {
+        // validate exercise fields
+        for (const exercise of req.body.exercise) {
             const validationError = validateExerciseFields(exercise);
-            if (validationError) {
+            if (validationError) 
                 return res.status(400).send(validationError);
-            }
-        }
+       }
+
+        // apply updates and save 
+            // works to use validation on pre save      
+        Object.assign(workout, req.body);
+        await workout.save();
+
 
         res.redirect('/workouts');
 
@@ -121,17 +127,15 @@ async function createWorkout (req, res) {
         req.body.exercise = formattedExerciseArray;
         req.body.createdBy = req.session.userId;
 
+        // validate exercise fields
+        for (const exercise of req.body.exercise) {
+            const validationError = validateExerciseFields(exercise);
+            if (validationError) 
+                return res.status(400).send(validationError);
+        }
+        
         const newWorkout = await Workout.create(req.body);
         await newWorkout.populate('exercise.movement');
-
-        // // Validate exercise fields
-        for (const exercise of newWorkout.exercise) {
-            const validationError = validateExerciseFields(exercise);
-            if (validationError) {
-                await newWorkout.remove();
-                return res.status(400).send(validationError);
-            }
-        }
 
         const createdWorkout = await newWorkout.save();
 
@@ -151,7 +155,6 @@ async function editWorkoutView (req, res) {
                 _id: req.params.id
             })
             .populate('exercise.movement')
-            .lean();
 
 
         const availableMovements = await Movement.find({
@@ -163,7 +166,7 @@ async function editWorkoutView (req, res) {
             .lean();
 
         if (foundWorkout) res.render('workout/edit.ejs', {
-            workout: foundWorkout,
+            workout: foundWorkout.toJSON(),
             movements: availableMovements
         });
 
@@ -196,10 +199,9 @@ async function showWorkout (req, res) {
     try {
         const foundWorkout = await Workout.findById(req.params.id)
             .populate('exercise.movement')
-            .lean();
 
         res.render('workout/show.ejs', {
-            workout: foundWorkout,
+            workout: foundWorkout.toJSON(),
             message: null
         });
         
