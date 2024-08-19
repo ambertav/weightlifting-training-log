@@ -13,6 +13,9 @@ let userId = '';
 let weightedId = '';
 let cardioId = '';
 
+const today = new Date();
+today.setUTCHours(0, 0, 0, 0,);
+
 beforeAll(async () => {
     await mongoose.connect(process.env.MONGO_URL);
     await User.deleteMany({});
@@ -42,7 +45,7 @@ afterAll(async () => {
 describe('Workout model', () => {
     test('should successfully create a workout with valid data', async () => {
         const validWorkoutData = {
-            day: 'Monday',
+            day: today,
             exercise: [{
                 movement: weightedId,
                 weight: 100,
@@ -89,7 +92,7 @@ describe('Workout model', () => {
 
     test('should throw mongoose validation error when invalid exercise inputs are used', async () => {
         const invalidExerciseData = {
-            day: 'Monday',
+            day: today,
             exercise: [{
                 movement: 'invalid',
                 weight: -1,
@@ -131,7 +134,7 @@ describe('Workout model', () => {
 
     test('should only reference a valid user', async () => {
         const workoutWithInvalidUser = {
-            day: 'Monday',
+            day: today,
             exercise: [{
                     movement: weightedId,
                     weight: 100,
@@ -149,6 +152,50 @@ describe('Workout model', () => {
     });
 });
 
+
+describe('Workout model\'s day field validation', () => {
+    test('should throw an error if the workout day is earlier than today', async () => {
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1); // Setting date to yesterday
+
+        const invalidWorkoutData = {
+            day: yesterday,
+            exercise: [{
+                movement: weightedId,
+                weight: 100,
+                sets: 1,
+                reps: 1,
+            }],
+            createdBy: userId
+        };
+
+        const error = await expectValidationError(Workout, invalidWorkoutData);
+
+        expect(error.message).toBe('Workout cannot be before today\'s date or more than 30 days in the future');
+    });
+
+    test('should throw an error if the workout day is more than 30 days in the future', async () => {
+        const tooFarInFuture = new Date();
+        tooFarInFuture.setDate(tooFarInFuture.getDate() + 31); // Setting date to 31 days from now
+
+        const invalidWorkoutData = {
+            day: tooFarInFuture,
+            exercise: [{
+                movement: weightedId,
+                weight: 100,
+                sets: 1,
+                reps: 1,
+            }],
+            createdBy: userId
+        };
+
+        const error = await expectValidationError(Workout, invalidWorkoutData);
+
+        expect(error.message).toBe('Workout cannot be before today\'s date or more than 30 days in the future');
+    });
+});
+
+
 describe('Workout model\'s required exercise fields schema middleware', () => {
     // global variable with common workout data to be use accross schema middleware tests
     const baseWorkoutData = {};
@@ -157,7 +204,7 @@ describe('Workout model\'s required exercise fields schema middleware', () => {
         await Workout.deleteMany({}); // clears database to utilize count documents for each test
 
         // fills out required data
-        baseWorkoutData.day = 'Monday';
+        baseWorkoutData.day = today;
         baseWorkoutData.createdBy = userId;
     });
 
