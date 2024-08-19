@@ -62,6 +62,10 @@ footer {
     height: 1rem;
 }
 
+input[type="date"].form-control {
+    height: 3rem;
+}
+
 .welcome-form {
     width: 50vh;
     align-self: center;

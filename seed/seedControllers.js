@@ -58,7 +58,7 @@ async function seedWorkout () {
         const cleanAndJerk = await Movement.findOne({ name: 'Clean and Jerk' });
 
         await Workout.create({
-            day: 'Monday',
+            day: new Date(),
             exercise: [
                 {
                     movement: snatch._id,

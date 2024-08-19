@@ -17,6 +17,9 @@ let movement = {};
 let userMovement = {};
 let workout = {};
 
+const today = new Date();
+today.setUTCHours(0, 0, 0, 0,);
+
 beforeAll(async () => {
     await mongoose.connection.close();
     await mongoose.connect(process.env.MONGO_URL);
@@ -53,7 +56,7 @@ beforeAll(async () => {
     await testSession
         .post('/workouts')
         .send({
-            day: 'Monday',
+            day: today,
             exercise: { // req.body structure
                 movement: [movement._id],
                 weight: ['100'],
@@ -85,7 +88,7 @@ describe('GET /workouts', () => {
         // verifying page
         expect(response.text).toContain('Workouts');
         // verifying workout info on page
-        expect(response.text).toContain(`${workout.day}`);
+        expect(response.text).toContain(`${workout.formattedDay}`);
     });
 });
 
@@ -134,7 +137,7 @@ describe('GET /workouts/:id', () => {
             .expect('Content-Type', /html/);
 
         // verifying workout info on page
-        expect(response.text).toContain(`${workout.day}`);
+        expect(response.text).toContain(`${workout.formattedDay}`);
         expect(response.text).toContain(`${movement.name}`);
         expect(response.text).toContain(`${workout.exercise[0].weight}`);
         expect(response.text).toContain(`${workout.exercise[0].sets}`);
@@ -147,7 +150,7 @@ describe('POST /workouts', () => {
         await Workout.deleteMany({}); // clears database 
 
         const validWorkout = {
-            day: 'Friday',
+            day: new Date(today + 1),
             exercise: { // req.body structure (same index across arrays in fields belong in same object) -- this input should yield TWO exercise objects
                 movement: [movement._id, userMovement._id],
                 weight: ['100', '150'],
@@ -172,7 +175,7 @@ describe('POST /workouts', () => {
         expect(count).toBe(1);
 
         // verifying length of exercise array in workout
-        const createdWorkout = await Workout.findOne({ createdBy: janeId, day: 'Friday' });
+        const createdWorkout = await Workout.findOne({ createdBy: janeId, day: new Date(today + 1) });
         expect(createdWorkout.exercise.length).toBe(2);
     });
 
@@ -193,7 +196,7 @@ describe('PUT /workouts/:id', () => {
     let updateWorkoutData = {}
 
     test('should update a workout', async () => {
-        workoutToUpdate = await Workout.findOne({ day: 'Friday', createdBy: janeId });
+        workoutToUpdate = await Workout.findOne({ day: today, createdBy: janeId });
 
         workout = workoutToUpdate._id;
         expect(workoutToUpdate.exercise.length).toBe(2);
@@ -207,7 +210,6 @@ describe('PUT /workouts/:id', () => {
                     minutes: [''],
                     caloriesBurned: ['']
             },
-            ...workoutToUpdate
         }
 
         const response = await testSession
@@ -233,9 +235,9 @@ describe('PUT /workouts/:id', () => {
         const response = await testSession
             .put(`/workouts/${id}`)
             .send(updateWorkoutData)
-            .expect(500);
+            .expect(404);
 
-        expect(response.body.message).toEqual('An error occurred while updating the workout');
+        expect(response.body.message).toEqual('Workout not found');
     });
 
     test('should handle error if invalid data', async () => {
