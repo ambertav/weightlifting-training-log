@@ -55,15 +55,6 @@ const workoutSchema = new mongoose.Schema({
     toJSON: { virtuals: true }
 });
 
-// validation for workout.day
-workoutSchema.pre('save', async function (next) {
-    const now = new Date();
-    // calculate 30 days from now
-    const in30Days = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
-
-    if (this.day < now || this.day > in30Days) 
-        return next(new Error('Workout cannot be before today\'s date for more than 30 days in the future'));
-});
 
 // checks exercise.movement.type and validates required associated fields prior to saving workout
 workoutSchema.pre('save', async function (next) {
@@ -84,6 +75,22 @@ workoutSchema.pre('save', async function (next) {
 
     // if all exercise validation requirements are met, move to save instance
     next();
+});
+
+// validation for workout.day
+workoutSchema.pre('save', async function (next) {
+    const now = new Date();
+    now.setUTCHours(0, 0, 0, 0);
+    // calculate 30 days from now
+    const in30Days = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+
+    if (this.day < now || this.day > in30Days) {
+        const error = new mongoose.Error.ValidationError(this);
+        error.message = 'Workout cannot be before today\'s date or more than 30 days in the future';
+        return next(error);
+    }
+
+    else next();
 });
 
 // virtual property for formatting day for rendering in view

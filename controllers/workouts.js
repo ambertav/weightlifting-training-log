@@ -70,7 +70,7 @@ async function updateWorkout (req, res) {
             .populate('exercise.movement');
         
         if (!workout) 
-                return res.status(404).send('Workout not found');
+                return res.status(404).json({ message: 'Workout not found' });
 
         /* req.body.exercise structure example with 3 movements (weighted, cardio, weighted)
             {
@@ -98,7 +98,6 @@ async function updateWorkout (req, res) {
             // works to use validation on pre save      
         Object.assign(workout, req.body);
         await workout.save();
-
 
         res.redirect('/workouts');
 
