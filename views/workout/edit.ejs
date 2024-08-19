@@ -13,14 +13,11 @@
             <form action="/workouts/<%= workout._id %>?_method=PUT" method="POST">
                 <div class="row center">
                     <div class="w-50">
-                        <p class="fs-7 fst-italic">Select Day:</p>
-                        <select name="day" class="form-select" size="4" required>
-                            <% for (const day of daysOfTheWeek) { %>
-                                <option class="select-text" value="<%= day %>" <% if (workout.day === day) { %> selected<% } %>>
-                                    <%= day %>
-                                </option>
-                            <% } %>
-                        </select>
+                        <label class="fs-6 fst-italic mb-2" for="day">Select Day:</label>
+                        <input class="form-control" type="date" placeholder="Select Day:" name="day" required
+                            min="<%= new Date().toISOString().split('T')[0] %>"
+                            max="<%= new Date(new Date().setDate(new Date().getDate() + 30)).toISOString().split('T')[0] %>"
+                            value="<%= workout.day.toISOString().split('T')[0] %>">
                     </div>
                 </div>
                 <h4 class="mt-4">Exercise Details</h4>
