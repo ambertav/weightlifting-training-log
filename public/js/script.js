@@ -1,5 +1,6 @@
 $(document).ready(function () {
-    const URL = 'https://weightlifting-log.herokuapp.com/'
+    // const URL = 'https://weightlifting-log.herokuapp.com/';
+    const URL = 'http://localhost:3000/';
 
     // password and confirmation field inputs
     const $password = $('#password');
@@ -36,6 +37,7 @@ $(document).ready(function () {
     $inputParent.on('click', $delete, deleteExercise);
     $add.on('click', addExercise);
     $complete.on('change', updateProgress);
+    $('.isPublic').on('click', togglePublic);
     $('#addFavorite, #copy, #editProfile, .movementDelete').on('click', function (evt) {
         evt.preventDefault();
         let selectors;
@@ -93,7 +95,7 @@ $(document).ready(function () {
     }
 
     // updates workout completion progress on workout show template
-    function updateProgress(evt) {
+    function updateProgress (evt) {
         const isChecked = $(evt.target).is(':checked');
 
         if (isChecked) completedWorkouts += 1;
@@ -119,7 +121,7 @@ $(document).ready(function () {
     }
 
     // for profile photo submit button
-    function enableSubmit(evt) {
+    function enableSubmit (evt) {
         if ($(evt.target).val() !== '') $(evt.target).siblings().removeAttr('disabled');
     }
 
@@ -168,8 +170,31 @@ $(document).ready(function () {
         if (evt.target.id === 'friendsCollapse') $friend.slideToggle();
     }
 
+    async function togglePublic (evt) {
+        id = evt.target.id;
+        const button = $(evt.target);
+
+        const response = await fetch(URL + 'favorites/' + id + '/toggle-public?_method=PUT', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'Application/json',
+            },
+            body: JSON.stringify({
+                'id': `${id}`,
+            })
+        });
+
+        // toggles classes for styles if response was successful
+        if (response.ok) {
+            if (button.hasClass('btn-success'))
+                button.removeClass('btn-success').addClass('btn-danger').text('Private');
+            else 
+                button.removeClass('btn-danger').addClass('btn-success').text('Public');
+        }
+    }
+
     // updates workout completion status
-    async function completeWorkout(id) {
+    async function completeWorkout (id) {
         await fetch(URL + 'workouts/' + id + '/complete?_method=PUT', {
             method: 'POST',
             headers: {

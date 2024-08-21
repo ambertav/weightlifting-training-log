@@ -9,6 +9,13 @@
         <%- include('../partials/nav'); %>
         <div class="container-md">
             <h2 class="text-capitalize"><%= favorite.name %></h2>
+            <div class="right index my-1">
+                <button 
+                class="btn <%= favorite.isPublic ? 'btn-success' : 'btn-danger' %> btn-xs mb-2 isPublic" 
+                id="<%= favorite._id %>">
+                <%= favorite.isPublic ? 'Public' : 'Private' %>
+            </button>            
+            </div>
             <div class="index">
                 <% for (const exercise of favorite.exercise) { %>
                     <div class="exercise m-2">
