@@ -119,6 +119,27 @@ async function copyFavorite (req, res) {
     }
 }
 
+// toggle isPublic status
+async function toggleIsPublic (req, res) {
+    try {
+        const favorite = await Favorite.findOneAndUpdate(
+            { createdBy: req.session.userId, _id: req.params.id },
+            [ 
+                { $set: { isPublic: { $not: '$isPublic' } } }, // toggles boolean by setting to opposite value
+            ],
+        );
+
+        // if favorite is resolved, send success
+        if (favorite) return res.status(200).json({ message: 'Favorite updated successfully', reload: true }); 
+        // else throw error
+        else return res.status(404).json({ error: 'Favorite not found', reload: true });
+
+    } catch (error) {
+        res.status(500).json({ error: 'An error occurred while toggling the favorite\'s public status', reload: true });
+    }
+}
+
+
 // create
 async function createFavorite (req, res) {
     try {
@@ -196,7 +217,7 @@ async function showFavorite (req, res) {
 }
 
 // sees if the movement within the favorite exists in reference to user, creates the movement if not
-async function createOrRetrieveMovement(exercise, createdBy) {
+async function createOrRetrieveMovement (exercise, createdBy) {
     // search for movement
     let movement = await Movement.findOne({
         name: exercise.movement.name,
@@ -217,4 +238,4 @@ async function createOrRetrieveMovement(exercise, createdBy) {
 }
 
 
-module.exports = { getFavorites, deleteFavorite, shareFavorites, copyFavorite, createFavorite, showFavorite }
+module.exports = { getFavorites, deleteFavorite, shareFavorites, copyFavorite, toggleIsPublic, createFavorite, showFavorite }

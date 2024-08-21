@@ -52,6 +52,11 @@ const favoriteSchema = new mongoose.Schema({
         required: true,
         default: undefined
     },
+    isPublic: {
+        type: Boolean,
+        default: true,
+        required: true
+    },
     createdBy: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
