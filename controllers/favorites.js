@@ -44,8 +44,8 @@ async function deleteFavorite (req, res) {
 // share favorirtes
 async function shareFavorites (req, res) {
     try {
-        const originalFavorite = await Favorite.findOne({
-            createdBy: req.session.userId,
+        const originalFavorite = await Favorite.findById({
+            createdBy: req.body.friend,
             _id: req.params.id
         })
         .lean();
@@ -68,7 +68,7 @@ async function shareFavorites (req, res) {
         const favoriteToShare = new Favorite({
             name: originalFavorite.name,
             exercise: originalFavorite.exercise,
-            createdBy: req.body.friend
+            createdBy: req.session.userId
         });
 
         const sharedFavorite = await favoriteToShare.save();
