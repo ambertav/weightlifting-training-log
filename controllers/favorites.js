@@ -1,6 +1,7 @@
 const Favorite = require('../models/favorite');
 const Workout = require('../models/workout');
 const Movement = require('../models/movement');
+const User = require('../models/user');
 const Request = require('../models/request');
 
 const { formatFavoriteExercise } = require('../utilities/formatHelpers');
@@ -12,7 +13,8 @@ async function getFavorites (req, res) {
             .lean();
 
         res.render('favorite/index.ejs', {
-            favorites
+            favorites,
+            viewer: null // indicates that the favorites belongs to current user
         });
 
     } catch (error) {
@@ -216,6 +218,39 @@ async function showFavorite (req, res) {
     }
 }
 
+async function viewOtherFavorites (req, res) {
+    try {
+        const user = await User.findOne({ username: req.params.username })
+            .select('-email, -password')
+            .lean();
+        
+        if (!user) return res.status(404).json({ error: 'User not found', reload: true });
+
+        if (user._id.toHexString() === req.session.userId) return res.redirect('/favorites');
+
+        const friendship = await Request.findOne({
+            $or: [
+                { from: user._id, to: req.session.userId },
+                { from: req.session.userId, to: user._id }
+            ]
+        });
+
+        if (!friendship) return res.status(404).json({ error: 'Cannot view this user\'s favorites', reload: true });
+
+        const favorites = await Favorite.find({ createdBy: user._id, isPublic: true })
+            .lean();
+
+        res.render('favorite/index.ejs', {
+                favorites,
+                user,
+                viewer: true  // indicates that there is a viewer
+            });
+            
+    } catch (error) {
+        res.status(500).json({ error: 'Error occured while fetching other user favorites', reload: true });
+    }
+}
+
 // sees if the movement within the favorite exists in reference to user, creates the movement if not
 async function createOrRetrieveMovement (exercise, createdBy) {
     // search for movement
@@ -238,4 +273,4 @@ async function createOrRetrieveMovement (exercise, createdBy) {
 }
 
 
-module.exports = { getFavorites, deleteFavorite, shareFavorites, copyFavorite, toggleIsPublic, createFavorite, showFavorite }
+module.exports = { getFavorites, deleteFavorite, shareFavorites, copyFavorite, toggleIsPublic, createFavorite, showFavorite, viewOtherFavorites }

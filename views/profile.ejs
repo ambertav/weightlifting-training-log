@@ -122,7 +122,7 @@
                         <% } else if (existingRequest.status === 'pending') { %>
                             <h5>Request Pending</h5>
                         <% } else if (existingRequest.status === 'accepted') { %>
-                            <a href="/favorites">Click here to browse <%= user.username %>'s favorites</a>
+                            <a href="/users/<%= user.username %>/favorites">Click here to browse <%= user.username %>'s favorites</a>
                         <% } %>
                     </div>
                 <% } else { %>
