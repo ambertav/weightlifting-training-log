@@ -36,13 +36,12 @@ $(document).ready(function () {
     $inputParent.on('click', $delete, deleteExercise);
     $add.on('click', addExercise);
     $complete.on('change', updateProgress);
-    $('#addFavorite, #copy, #share, #editProfile, .movementDelete').on('click', function (evt) {
+    $('#addFavorite, #copy, #editProfile, .movementDelete').on('click', function (evt) {
         evt.preventDefault();
         let selectors;
 
         if ($(this).is('#addFavorite')) selectors = ['.favorite'];
         else if ($(this).is('#copy')) selectors = ['.copy'];
-        else if ($(this).is('#share')) selectors = ['.share'];
         else if ($(this).is('.movementDelete')) { 
             const $button = $(this);
             $div = $($button.closest('div'));
@@ -111,7 +110,7 @@ $(document).ready(function () {
         }
     }
 
-    // toggles hidden forms for editing profile, adding favorites, sharing favorites and copying favorites to workouts
+    // toggles hidden forms for editing profile, adding favorites, and copying favorites to workouts
     function toggleForms (selectors) {
         for (const selector of selectors) {
             const $element = $(selector);

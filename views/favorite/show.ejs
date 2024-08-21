@@ -28,23 +28,6 @@
             <br>
             <br>
             <div class="mb-1">
-                <button class="btn btn-outline-info btn-xs mb-2" id="share">Share Favorite</button>
-                <form class="d-none share" action="/favorites/<%= favorite._id %>/share" method="POST">
-                    <input type="hidden" name="id" value="<%= favorite._id %>">
-                    <p class="fs-7 fst-italic mx-5">Select a Friend:</p>
-                    <div class="center">
-                        <select id="friends" name="friend" class="form-select w-50" size="4" required>
-                            <% for (const friend of friends) { %>
-                                <option value="<%= friend._id %>" class="text-capitalize select-text"><%= friend.username %></option>
-                            <% } %>
-                        </select>
-                    </div>
-                    <div class="right">
-                        <input type="submit" value="Submit Share" class="btn btn-outline-success btn-xs mt-1 mb-2 mx-3">
-                    </div>
-                </form>
-            </div>
-            <div class="mb-1">
                 <button class="btn btn-outline-warning btn-xs mb-2" id="copy">Copy to Workouts</button>
                 <form class="d-none copy" action="/favorites/<%= favorite._id %>/copy" method="POST">
                     <input type="hidden" name="id" value="<%= favorite._id %>">
