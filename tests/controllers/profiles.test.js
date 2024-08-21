@@ -162,12 +162,12 @@ describe('GET /users/search', () => {
     });
 });
 
-describe('GET /users/profile/:username', () => {
+describe('GET /users/:username/profile', () => {
     test('should successfully render another user\'s profile view', async () => {
         const otherUser = await User.findById(johnId);
 
         const response = await testSession
-            .get(`/users/profile/${otherUser.username}`)
+            .get(`/users/${otherUser.username}/profile`)
             .expect(200);
 
         // checking to see if other user's info is present
@@ -205,7 +205,7 @@ describe('GET /users/profile/:username', () => {
         const self = await User.findById(janeId); // search for logged in user
 
         const response = await testSession
-            .get(`/users/profile/${self.username}`)
+            .get(`/users/${self.username}/profile`)
             .expect(302);
 
         // checking that user was redirected to url for own profile
@@ -218,7 +218,7 @@ describe('GET /users/profile/:username', () => {
         expect(count).toBe(0);
 
         const response = await testSession
-            .get('/users/profile/invalid') // username is 'invalid'
+            .get('/users/invalid/profile') // username is 'invalid'
             .expect(404);
 
         // checking for error
