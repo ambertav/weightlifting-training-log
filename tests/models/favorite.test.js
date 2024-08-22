@@ -4,7 +4,6 @@ const User = require('../../models/user');
 const Favorite = require('../../models/favorite');
 const { expectValidationError } = require('../testUtilities');
 const movementData = require('../../seed/movementData');
-const user = require('../../models/user');
 
 require('dotenv').config();
 

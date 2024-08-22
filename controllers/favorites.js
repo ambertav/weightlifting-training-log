@@ -146,8 +146,7 @@ async function toggleIsPublic (req, res) {
 async function createFavorite (req, res) {
     try {
         const workout = await Workout.findById(req.params.id)
-            .populate('exercise.movement')
-            .lean();
+            .populate('exercise.movement');
         
         // send error if workout doesn't exist
         if (!workout) return res.status(404).json({ error: 'Workout not found' });
@@ -175,7 +174,7 @@ async function createFavorite (req, res) {
         const createdFavorite = await Favorite.create(newFavorite); // creates favorite
 
         res.render('workout/show.ejs', {
-            workout,
+            workout: workout.toJSON(),
             message: 'Favorite added!' // confirmation message
         });
 
