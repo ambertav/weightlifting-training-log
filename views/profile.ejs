@@ -122,8 +122,7 @@
                         <% } else if (existingRequest.status === 'pending') { %>
                             <h5>Request Pending</h5>
                         <% } else if (existingRequest.status === 'accepted') { %>
-                            <h5>You can now share your favorite workouts with <p class="text-capitalize"><%= user.username %>!</p></h5>
-                            <a href="/favorites">Click here to browse favorites</a>
+                            <a href="/users/<%= user.username %>/favorites">Click here to browse <%= user.username %>'s favorites</a>
                         <% } %>
                     </div>
                 <% } else { %>
@@ -136,7 +135,7 @@
                                         <% const pending = request.to._id.toHexString() === user._id.toHexString() ? request.from : request.to %>
                                         <% if (pending === request.from) { %>
                                             <li class="py-1 px-3">
-                                                <a href="/users/profile/<%= pending.username %>"><%= pending.username %></a>
+                                                <a href="/users/<%= pending.username %>/profile"><%= pending.username %></a>
                                                 <form action="/users/request/edit/?_method=PUT" method="POST">
                                                     <input type="hidden" name="requestId" value="<%= request._id %>">
                                                     <input type="submit" name="decision" value="Accept" class="btn btn-outline-success btn-xs">
@@ -145,7 +144,7 @@
                                             </li>
                                         <% } else if (pending === request.to) { %>
                                         <li class="py-1 px-3">
-                                            <a class="text-capitalize" href="/users/profile/<%= pending.username %>"><p><%= pending.username %></p></a>
+                                            <a class="text-capitalize" href="/users/<%= pending.username %>/profile"><p><%= pending.username %></p></a>
                                         </li>
                                         <% } %>
                                     <% } %>
@@ -166,7 +165,7 @@
                                     <% for (const friendship of friendships) { %>
                                         <% const friend = friendship.to._id.toHexString() === user._id.toHexString() ? friendship.from : friendship.to %>
                                         <li class="py-1 px-3">
-                                            <a class="text-capitalize" href="/users/profile/<%= friend.username %>"><p><%= friend.username %></p></a>
+                                            <a class="text-capitalize" href="/users/<%= friend.username %>/profile"><p><%= friend.username %></p></a>
                                         </li>
                                     <% } %>
                                 <% } else { %>

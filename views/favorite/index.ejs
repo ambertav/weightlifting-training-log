@@ -7,14 +7,23 @@
     <div class="container">
         <%- include('../partials/nav'); %>
         <div class="container-md">
-            <h2>Favorite Workouts</h2>
+            <% if (viewer) { %>
+                <h2 class="text-capitalize"><%= user.username %>'s Favorite Workouts</h2>
+            <% } else { %>
+                <h2>Favorite Workouts</h2>
+            <% } %>
+
             <ul class="index">
                 <% displayFavorite(0); %>
                 <% function displayFavorite (index) { %>
                     <% if (favorites.length === 0) { %>
                         <div class="center mb-5">
-                            <a href="/workouts/new" class="btn btn-outline-secondary btn">Save workouts by adding them to
-                                your favorites!</a>
+                            <% if (viewer) { %>
+                                <p>No available favorites</p>
+                            <% } else { %>
+                                <a href="/workouts/new" class="btn btn-outline-secondary btn">Save workouts by adding them to
+                                    your favorites!</a>
+                            <% } %>
                         </div>
                         <% return; %>
                     <% } %>
@@ -23,21 +32,42 @@
                     <% const favorite = favorites[index]; %>
 
                     <div class="card m-4">
-                        <a href="favorites/<%= favorite._id %>">
+                        <% if (viewer) { %>
                             <h4 class="text-capitalize"><%= favorite.name %></h4>
-                        </a>
+                        <% } else { %>
+                            <a href="favorites/<%= favorite._id %>">
+                                <h4 class="text-capitalize"><%= favorite.name %></h4>
+                            </a>
+                        <% } %>
                         <li class="card-body center">
                             <% for (const exercise of favorite.exercise) { %>
                                 <%= exercise.movement.name %>
+                                <% if (viewer) { %>
+                                    <% if (exercise.movement.type === 'weighted') { %>
+                                        : <%= exercise.weight %>lbs, 
+                                        <%= exercise.sets %> x 
+                                        <%= exercise.reps %>
+                                    <% } else { %>
+                                        : <%= exercise.minutes %> mins,
+                                        <%= exercise.caloriesBurned %> cal
+                                    <% } %>
+                                <% } %>
                                 <br>
                             <% } %>
                         </li>
                         </a>
                         <div class="card-footer">
                             <p>
+                            <% if (viewer) { %>
+                                <form action="/favorites/<%= favorite._id %>/share?_method=POST" method="POST">
+                                    <input type="hidden" name="friend" value="<%= user._id %>">
+                                    <input type="submit" value="Save Favorite" class="btn btn-outline-success btn-sm">
+                                </form>
+                            <% } else { %>
                                 <form action="/favorites/<%= favorite._id %>?_method=DELETE" method="POST">
                                     <input type="submit" value="Delete Favorite" class="btn btn-outline-danger btn-sm">
                                 </form>
+                            <% } %>
                             </p>
                         </div>
                     </div>

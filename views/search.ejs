@@ -32,7 +32,7 @@
                         <ul class="index-grid w-75 mx-3">
                             <% for (const user of searchResults) { %>
                                 <li class="text-center">
-                                    <a href="/users/profile/<%= user.username %>" class="text-capitalize">
+                                    <a href="/users/<%= user.username %>/profile" class="text-capitalize">
                                         <img src="<%= user.profilePhoto %>" alt="<%= user.username %>'s profile photo" class="rounded" width="60px" height="60px">
                                         <br>
                                         <p><%= user.username %></p>

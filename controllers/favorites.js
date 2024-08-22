@@ -1,6 +1,7 @@
 const Favorite = require('../models/favorite');
 const Workout = require('../models/workout');
 const Movement = require('../models/movement');
+const User = require('../models/user');
 const Request = require('../models/request');
 
 const { formatFavoriteExercise } = require('../utilities/formatHelpers');
@@ -12,7 +13,8 @@ async function getFavorites (req, res) {
             .lean();
 
         res.render('favorite/index.ejs', {
-            favorites
+            favorites,
+            viewer: null // indicates that the favorites belongs to current user
         });
 
     } catch (error) {
@@ -42,8 +44,8 @@ async function deleteFavorite (req, res) {
 // share favorirtes
 async function shareFavorites (req, res) {
     try {
-        const originalFavorite = await Favorite.findOne({
-            createdBy: req.session.userId,
+        const originalFavorite = await Favorite.findById({
+            createdBy: req.body.friend,
             _id: req.params.id
         })
         .lean();
@@ -66,7 +68,7 @@ async function shareFavorites (req, res) {
         const favoriteToShare = new Favorite({
             name: originalFavorite.name,
             exercise: originalFavorite.exercise,
-            createdBy: req.body.friend
+            createdBy: req.session.userId
         });
 
         const sharedFavorite = await favoriteToShare.save();
@@ -119,12 +121,32 @@ async function copyFavorite (req, res) {
     }
 }
 
+// toggle isPublic status
+async function toggleIsPublic (req, res) {
+    try {
+        const favorite = await Favorite.findOneAndUpdate(
+            { createdBy: req.session.userId, _id: req.params.id },
+            [ 
+                { $set: { isPublic: { $not: '$isPublic' } } }, // toggles boolean by setting to opposite value
+            ],
+        );
+
+        // if favorite is resolved, send success
+        if (favorite) return res.status(200).json({ message: 'Favorite updated successfully', reload: true }); 
+        // else throw error
+        else return res.status(404).json({ error: 'Favorite not found', reload: true });
+
+    } catch (error) {
+        res.status(500).json({ error: 'An error occurred while toggling the favorite\'s public status', reload: true });
+    }
+}
+
+
 // create
 async function createFavorite (req, res) {
     try {
         const workout = await Workout.findById(req.params.id)
-            .populate('exercise.movement')
-            .lean();
+            .populate('exercise.movement');
         
         // send error if workout doesn't exist
         if (!workout) return res.status(404).json({ error: 'Workout not found' });
@@ -152,7 +174,7 @@ async function createFavorite (req, res) {
         const createdFavorite = await Favorite.create(newFavorite); // creates favorite
 
         res.render('workout/show.ejs', {
-            workout,
+            workout: workout.toJSON(),
             message: 'Favorite added!' // confirmation message
         });
 
@@ -195,8 +217,41 @@ async function showFavorite (req, res) {
     }
 }
 
+async function viewOtherFavorites (req, res) {
+    try {
+        const user = await User.findOne({ username: req.params.username })
+            .select('-email, -password')
+            .lean();
+        
+        if (!user) return res.status(404).json({ error: 'User not found', reload: true });
+
+        if (user._id.toHexString() === req.session.userId) return res.redirect('/favorites');
+
+        const friendship = await Request.findOne({
+            $or: [
+                { from: user._id, to: req.session.userId },
+                { from: req.session.userId, to: user._id }
+            ]
+        });
+
+        if (!friendship) return res.status(404).json({ error: 'Cannot view this user\'s favorites', reload: true });
+
+        const favorites = await Favorite.find({ createdBy: user._id, isPublic: true })
+            .lean();
+
+        res.render('favorite/index.ejs', {
+                favorites,
+                user,
+                viewer: true  // indicates that there is a viewer
+            });
+            
+    } catch (error) {
+        res.status(500).json({ error: 'Error occured while fetching other user favorites', reload: true });
+    }
+}
+
 // sees if the movement within the favorite exists in reference to user, creates the movement if not
-async function createOrRetrieveMovement(exercise, createdBy) {
+async function createOrRetrieveMovement (exercise, createdBy) {
     // search for movement
     let movement = await Movement.findOne({
         name: exercise.movement.name,
@@ -217,4 +272,4 @@ async function createOrRetrieveMovement(exercise, createdBy) {
 }
 
 
-module.exports = { getFavorites, deleteFavorite, shareFavorites, copyFavorite, createFavorite, showFavorite }
+module.exports = { getFavorites, deleteFavorite, shareFavorites, copyFavorite, toggleIsPublic, createFavorite, showFavorite, viewOtherFavorites }
