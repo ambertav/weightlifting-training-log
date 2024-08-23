@@ -131,7 +131,7 @@ $(document).ready(function () {
         if ($(evt.target).val() !== '') $(evt.target).siblings().removeAttr('disabled');
     }
 
-    // validate that at least 1 muscle is selected, and the type of movement is determined before submitting
+    // validate the type of movement, and if weighted that at least 1 muscle is selected, is selected before submitting
     function validateMovementForm () {
         const selectedMovementType = $('input[name="type"]:checked').val();
         
