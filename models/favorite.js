@@ -40,6 +40,10 @@ const favoriteSchema = new mongoose.Schema({
                 type: Number,
                 min: 1,
             },
+            distance: {
+                type: Number,
+                min: 1
+            },
             minutes: {
                 type: Number,
                 min: 1
