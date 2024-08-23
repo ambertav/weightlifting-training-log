@@ -19,16 +19,6 @@
                         <textarea rows="4" name="description" class="form-control" id="description" maxlength="150" style="height:100%"><%= movement.description %></textarea>
                         <label for="description">Description</label>
                     </div>
-                    <h4 class="mt-5 mb-3">Muscles Worked</h4>
-                    <div class="check-grid mb-5 mx-3">
-                        <% for (const muscle of muscleGroups) { %>
-                            <div class="form-check">
-                                <input type="checkbox" name="musclesWorked[<%= muscle %>]" class="form-check-input muscleCheckbox"
-                                    <%= movement.musclesWorked.includes(muscle) ? 'checked' : '' %>>
-                                <label for="<%= muscle %>"><%= muscle %></label>
-                            </div>
-                        <% } %>
-                    </div>
                     <h4 class="mt-5 mb-3">Cardio or Weighted?</h4>
                     <div class="mb-3">
                         <div class="form-check">
@@ -41,6 +31,16 @@
                                 <%= movement.type === 'weighted' ? 'checked' : '' %>>
                             <label for="weighted">Weighted</label>
                         </div>
+                    </div>
+                    <h4 class="mt-5 mb-3 <%= movement.type === 'cardio' ? 'd-none' : '' %> musclesWorked">Muscles Worked</h4>
+                    <div class="check-grid mb-5 mx-3 <%= movement.type === 'cardio' ? 'd-none' : '' %> musclesWorked">
+                        <% for (const muscle of muscleGroups) { %>
+                            <div class="form-check">
+                                <input type="checkbox" name="musclesWorked[<%= muscle %>]" class="form-check-input muscleCheckbox"
+                                    <%= movement.musclesWorked.includes(muscle) ? 'checked' : '' %>>
+                                <label for="<%= muscle %>"><%= muscle %></label>
+                            </div>
+                        <% } %>
                     </div>
                     <br>
                     <br>

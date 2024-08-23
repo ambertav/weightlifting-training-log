@@ -57,8 +57,14 @@ $(document).ready(function () {
         }
         toggleForms(selectors);
     });
+    $('.movementTypeCheckbox').on('change', function () {
+        // uses separate toggling logic due to specific condition of only showing when 'weighted' is checked
+        if ($(this).is(':checked') && $(this).val() === 'weighted')
+            $('.musclesWorked').removeClass('d-none');
+        else $('.musclesWorked').addClass('d-none');
+    });
     $('#profilePhoto').on('change', enableSubmit);
-    $muscles.add($movementType).on('change', validateMovementForm);
+    $movementType.add($muscles).on('change', validateMovementForm);
     $('.movementSelect').each(handleWorkoutFormChange);
     $inputParent.on('change', '.movementSelect', handleWorkoutFormChange);
     $inputParent.on('change', enableWorkoutSubmit);
@@ -127,8 +133,10 @@ $(document).ready(function () {
 
     // validate that at least 1 muscle is selected, and the type of movement is determined before submitting
     function validateMovementForm () {
-        const validateMuscle = $muscles.is(':checked');
-        const validateType = $movementType.is(':checked');
+        const selectedMovementType = $('input[name="type"]:checked').val();
+        
+        const validateMuscle = selectedMovementType === 'weighted' ? $muscles.is(':checked') : true;
+        const validateType = selectedMovementType !== undefined;
         $movementSubmit.prop('disabled', !(validateMuscle && validateType));
     }
 
