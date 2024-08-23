@@ -3,7 +3,7 @@ const { muscleGroups } = require('./constants');
 // formatting the exercise array for create and update routes
 function formatWorkoutExercise(exercise) {
     const exerciseObjects = [];
-    const properties = ['movement', 'weight', 'sets', 'reps', 'minutes', 'caloriesBurned']; // all possible properties
+    const properties = ['movement', 'weight', 'sets', 'reps', 'distance', 'minutes', 'caloriesBurned']; // all possible properties
 
     // iterating through indices of 'movement' array to get access to indices of values in each key
     for (let i = 0; i < exercise.movement.length; i++) {
@@ -20,9 +20,13 @@ function formatWorkoutExercise(exercise) {
 
 // format the movement data from req.body
 function formatMovementData(movementData, userId) {
-    const selectedMuscles = Object.keys(movementData.musclesWorked).filter(function (key) {
-        return muscleGroups.includes(key);
-    });
+    let selectedMuscles = [];
+
+    if (movementData.type === 'weighted') 
+        selectedMuscles = Object.keys(movementData.musclesWorked).filter(function (key) {
+            return muscleGroups.includes(key);
+        });
+
     const musclesWorked = [...selectedMuscles];
 
     const type = movementData.type
@@ -43,7 +47,7 @@ function formatFavoriteExercise(exercise, movement) {
 
     const keysByType = {
         weighted: ['weight', 'sets', 'reps'],
-        cardio: ['minutes', 'caloriesBurned']
+        cardio: ['distance', 'minutes', 'caloriesBurned']
     }
 
     // determines what keys the object will have based on type of movement

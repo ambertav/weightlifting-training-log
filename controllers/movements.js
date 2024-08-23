@@ -8,10 +8,18 @@ async function getMovements (req, res) {
     try {
         const pageSize = 8;
         const page = req.query.page || 1;
+        const typeFilter = req.query.typeFilter;
+        const muscleFilter = req.query.muscle ? req.query.muscle.split(',') : [];
 
         // creates filtering parameters
         const filter = {}
-        if (req.query.muscle) filter.musclesWorked = { $all: req.query.muscle };
+        if (typeFilter === 'cardio') {
+            filter.type = 'cardio';
+        }
+        else if (typeFilter === 'weighted') {
+            filter.type = 'weighted';
+            if (req.query.muscle) filter.musclesWorked = { $all: req.query.muscle };
+        }
 
         // count of all the movements accessible by user
         const totalMovements = await Movement.countDocuments({
@@ -40,6 +48,8 @@ async function getMovements (req, res) {
         res.render('movement/index.ejs', {
             movements,
             muscleGroups,
+            typeFilter,
+            muscleFilter,
             currentPage: page,
             totalPages
         });
@@ -59,14 +69,14 @@ function newMovementView (req, res) {
 // delete
 async function deleteMovement (req, res) {
     try {
-        const deletedMovement = await Movement.findOneAndDelete({
+        const deletedMovement = await Movement.findOne({
             createdBy: req.session.userId,
             _id: req.params.id
         });
 
         if (!deletedMovement) return res.status(404).json({ error: 'Movement not found', reload: true });
 
-        await deletedMovement.remove();
+        await deletedMovement.deleteOne();
 
         res.redirect('/movements');
     } catch (error) {
@@ -77,19 +87,27 @@ async function deleteMovement (req, res) {
 // update
 async function updateMovement (req, res) {
     try {
-        if (!req.body.name || !req.body.musclesWorked || !req.body.type) {
+        if (!req.body.name || !req.body.type) {
             return res.status(400).json({ error: 'Invalid input', reload: true });
         }
 
          // req.body in format of musclesWorked: { muscle: 'on', muscle: 'on' }, must reformat before creating instance
         const editMovement = formatMovementData(req.body, req.session.userId); // format req.body per schema
 
-        const updatedMovement = await Movement.findOneAndUpdate({
+        const movement = await Movement.findOne({
             createdBy: req.session.userId,
             _id: req.params.id
-        }, editMovement, { new: true });
+        });
+
+        if (!movement) return res.status(404).json({ error: 'Movement not found '});
+
+        // apply updates and save 
+            // works to use validation on pre save  
+        Object.assign(movement, editMovement);
+        await movement.save();
 
         res.redirect('/movements');
+
     } catch (error) {
         res.status(500).send('An error occurred while updating the movement.');
     }
@@ -98,7 +116,7 @@ async function updateMovement (req, res) {
 // create
 async function createMovement (req, res) {
     try {
-        if (!req.body.name || !req.body.musclesWorked || !req.body.type) {
+        if (!req.body.name || !req.body.type) {
             return res.status(400).json({ error: 'Invalid input', reload: true });
         }
 

@@ -62,6 +62,7 @@ beforeAll(async () => {
                 weight: ['100'],
                 sets: ['1'],
                 reps: ['1'],
+                distance: [''],
                 minutes: [''],
                 caloriesBurned: ['']
             },
@@ -156,6 +157,7 @@ describe('POST /workouts', () => {
                 weight: ['100', '150'],
                 sets: ['1', '2'],
                 reps: ['1', '2'],
+                distance: ['', ''],
                 minutes: ['', ''],
                 caloriesBurned: ['', '']
             },
@@ -207,6 +209,7 @@ describe('PUT /workouts/:id', () => {
                     weight: ['5000'],
                     sets: ['1'],
                     reps: ['1'],
+                    distance: [''],
                     minutes: [''],
                     caloriesBurned: ['']
             },

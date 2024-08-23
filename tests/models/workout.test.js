@@ -98,6 +98,7 @@ describe('Workout model', () => {
                 weight: -1,
                 sets: 0,
                 reps: 0,
+                distance: 0,
                 minutes: -1,
                 caloriesBurned: -1,
             }],
@@ -107,7 +108,7 @@ describe('Workout model', () => {
         const error = await expectValidationError(Workout, invalidExerciseData);
 
         // ensures errors for each min value violation are included
-        ['weight', 'sets', 'reps', 'minutes', 'caloriesBurned'].forEach(field => {
+        ['weight', 'sets', 'reps', 'distance', 'minutes', 'caloriesBurned'].forEach(field => {
             expect(error.errors[`exercise.0.${field}`]).toBeDefined();
         });
 
@@ -230,7 +231,7 @@ describe('Workout model\'s required exercise fields schema middleware', () => {
             exercise: [{ movement: cardioId }]
         }
 
-        await expectCreationError(cardioWorkoutMissingFields, 'Cardio exercises require minutes and calories burned');
+        await expectCreationError(cardioWorkoutMissingFields, 'Cardio exercises require distance, minutes, and calories burned');
     });
 
     test('should throw error when cardio type movement exercises have weighted fields', async () => {
@@ -241,6 +242,7 @@ describe('Workout model\'s required exercise fields schema middleware', () => {
                 weight: 100,
                 sets: 1,
                 reps: 1,
+                distance: 1,
                 minutes: 1,
                 caloriesBurned: 1,
             }]
@@ -266,11 +268,12 @@ describe('Workout model\'s required exercise fields schema middleware', () => {
                 weight: 100,
                 sets: 1,
                 reps: 1,
+                distance: 1,
                 minutes: 1,
                 caloriesBurned: 1,
             }]
         }
 
-        await expectCreationError(weightedWorkoutWrongFields, 'Weighted exercises cannot have minutes and calories burned');
+        await expectCreationError(weightedWorkoutWrongFields, 'Weighted exercises cannot have distance, minutes, or calories burned');
     });
 });

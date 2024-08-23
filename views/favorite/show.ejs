@@ -26,6 +26,7 @@
                             <p>Repetitions per Set: <%= exercise.reps %></p>
                         <% } %>
                         <% if (exercise.movement.type === 'cardio') { %>
+                            <p>Distance: <%= exercise.distance %> miles</p>
                             <p>Duration: <%= exercise.minutes %> minutes</p>
                             <p>Calories Burned: <%= exercise.caloriesBurned %></p>
                         <% } %>
