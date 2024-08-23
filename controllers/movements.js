@@ -8,10 +8,18 @@ async function getMovements (req, res) {
     try {
         const pageSize = 8;
         const page = req.query.page || 1;
+        const typeFilter = req.query.typeFilter;
+        const muscleFilter = req.query.muscle ? req.query.muscle.split(',') : [];
 
         // creates filtering parameters
         const filter = {}
-        if (req.query.muscle) filter.musclesWorked = { $all: req.query.muscle };
+        if (typeFilter === 'cardio') {
+            filter.type = 'cardio';
+        }
+        else if (typeFilter === 'weighted') {
+            filter.type = 'weighted';
+            if (req.query.muscle) filter.musclesWorked = { $all: req.query.muscle };
+        }
 
         // count of all the movements accessible by user
         const totalMovements = await Movement.countDocuments({
@@ -40,6 +48,8 @@ async function getMovements (req, res) {
         res.render('movement/index.ejs', {
             movements,
             muscleGroups,
+            typeFilter,
+            muscleFilter,
             currentPage: page,
             totalPages
         });
