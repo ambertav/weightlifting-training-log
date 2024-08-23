@@ -57,11 +57,16 @@ $(document).ready(function () {
         }
         toggleForms(selectors);
     });
-    $('.movementTypeCheckbox').on('change', function () {
+    $('.movementTypeCheckbox, .typeFilter').on('change', function () {
         // uses separate toggling logic due to specific condition of only showing when 'weighted' is checked
-        if ($(this).is(':checked') && $(this).val() === 'weighted')
-            $('.musclesWorked').removeClass('d-none');
-        else $('.musclesWorked').addClass('d-none');
+        let eventTrigger = $(this);
+        let targetForm;
+
+        if ($(this).is('.movementTypeCheckbox'))
+            targetForm = $('.musclesWorked');
+        else targetForm = $('#muscleFilter');
+
+        toggleFormsBasedOnMovementType(eventTrigger, targetForm);
     });
     $('#profilePhoto').on('change', enableSubmit);
     $movementType.add($muscles).on('change', validateMovementForm);
@@ -124,6 +129,12 @@ $(document).ready(function () {
             const $element = $(selector);
             $element.toggleClass('d-none');
         }
+    }
+
+    function toggleFormsBasedOnMovementType (eventTrigger, targetForm) {
+        if (eventTrigger.is(':checked') && eventTrigger.val() === 'weighted')
+            targetForm.removeClass('d-none');
+        else targetForm.addClass('d-none');
     }
 
     // for profile photo submit button
