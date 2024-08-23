@@ -84,12 +84,20 @@ async function updateMovement (req, res) {
          // req.body in format of musclesWorked: { muscle: 'on', muscle: 'on' }, must reformat before creating instance
         const editMovement = formatMovementData(req.body, req.session.userId); // format req.body per schema
 
-        const updatedMovement = await Movement.findOneAndUpdate({
+        const movement = await Movement.findOne({
             createdBy: req.session.userId,
             _id: req.params.id
-        }, editMovement, { new: true });
+        });
+
+        if (!movement) return res.status(404).json({ error: 'Movement not found '});
+
+        // apply updates and save 
+            // works to use validation on pre save  
+        Object.assign(movement, editMovement);
+        await movement.save();
 
         res.redirect('/movements');
+
     } catch (error) {
         res.status(500).send('An error occurred while updating the movement.');
     }

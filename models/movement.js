@@ -18,8 +18,6 @@ const movementSchema = new mongoose.Schema({
     },
     musclesWorked: {
         type: Array,
-        required: true,
-        default: undefined,
     },
     type: {
         type: String,
@@ -34,6 +32,20 @@ const movementSchema = new mongoose.Schema({
     timestamps: true
 });
 
+
+// ensures that musclesWorked is only required for movements of type 'weighted'
+movementSchema.pre('save', function (next) {
+    // if type cardio, save with empty array
+    if (this.type === 'cardio')
+        this.musclesWorked = [];
+
+    // if type weighted, make sure array with at least 1 element 
+    else if (this.type === 'weighted') 
+        if (!Array.isArray(this.musclesWorked) || this.musclesWorked.length === 0) 
+            return next(new Error('Muscles worked is required for weighted movements.'));
+        
+    next();
+});
 
 // removes associated exercises from workout when a movement is deleted
 movementSchema.pre('remove', async function (next) {
