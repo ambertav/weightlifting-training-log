@@ -1,5 +1,5 @@
 // based on movement type, makes certain fields on exercise instance required 
-    // cardio types -- minutes, caloriesBurned
+    // cardio types -- minutes, distance, caloriesBurned
     // weighted types -- weight, sets, reps 
 function exerciseSchemaMiddleware (exercise) {
 
@@ -7,8 +7,8 @@ function exerciseSchemaMiddleware (exercise) {
     if (exercise.movement.type === 'cardio') {
 
         // throw error if missing:
-        if (!exercise.minutes || !exercise.caloriesBurned) {
-            throw new Error('Cardio exercises require minutes and calories burned');
+        if (!exercise.distance || !exercise.minutes || !exercise.caloriesBurned) {
+            throw new Error('Cardio exercises require distance, minutes, and calories burned');
         }
 
         // throw error if present:
@@ -25,8 +25,8 @@ function exerciseSchemaMiddleware (exercise) {
         }
         
         // throw error if present:
-        if (exercise.minutes || exercise.caloriesBurned) {
-            throw new Error('Weighted exercises cannot have minutes and calories burned');
+        if (exercise.distance || exercise.minutes || exercise.caloriesBurned) {
+            throw new Error('Weighted exercises cannot have distance, minutes, or calories burned');
         }
     }
 }

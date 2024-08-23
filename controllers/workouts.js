@@ -78,6 +78,7 @@ async function updateWorkout (req, res) {
                 weight: ['weight 1', '', 'weight 3'],
                 sets: ['sets 1', '', 'sets 3'],
                 reps: ['reps 1', '', 'reps 3'],
+                distance: ['', 'distance 2', ''],
                 minutes: ['', 'minutes 2', ''],
                 caloriesBurned: ['', 'caloriesBurned 2', ''],
             }
@@ -116,6 +117,7 @@ async function createWorkout (req, res) {
                 weight: ['weight 1', '', 'weight 3'],
                 sets: ['sets 1', '', 'sets 3'],
                 reps: ['reps 1', '', 'reps 3'],
+                distance: ['', 'distance 2', ''],
                 minutes: ['', 'minutes 2', ''],
                 caloriesBurned: ['', 'caloriesBurned 2', ''],
             }
