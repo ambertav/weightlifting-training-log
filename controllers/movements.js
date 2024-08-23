@@ -69,14 +69,14 @@ function newMovementView (req, res) {
 // delete
 async function deleteMovement (req, res) {
     try {
-        const deletedMovement = await Movement.findOneAndDelete({
+        const deletedMovement = await Movement.findOne({
             createdBy: req.session.userId,
             _id: req.params.id
         });
 
         if (!deletedMovement) return res.status(404).json({ error: 'Movement not found', reload: true });
 
-        await deletedMovement.remove();
+        await deletedMovement.deleteOne();
 
         res.redirect('/movements');
     } catch (error) {

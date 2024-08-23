@@ -48,17 +48,17 @@ movementSchema.pre('save', function (next) {
 });
 
 // removes associated exercises from workout when a movement is deleted
-movementSchema.pre('remove', async function (next) {
+movementSchema.pre('deleteOne', async function (next) {
     try {
-        const workouts = await Workout.find({ 'exercise.movement': this._id });
+        const movementId = this.getQuery()._id;
 
-        const movementId = this._id;
+        const workouts = await Workout.find({ 'exercise.movement': movementId });
 
         for (const workout of workouts) {
             workout.exercise = workout.exercise.filter(function (exercise) {
                 return exercise.movement.toString() !== movementId._id.toString();
             });
-            if (workout.exercise.length === 0) await workout.remove();
+            if (workout.exercise.length === 0) await workout.deleteOne();
             else await workout.save();
         }
 
