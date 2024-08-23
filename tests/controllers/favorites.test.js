@@ -95,6 +95,7 @@ beforeAll(async () => {
                 weight: ['100'],
                 sets: ['1'],
                 reps: ['1'],
+                distance: [''],
                 minutes: [''],
                 caloriesBurned: ['']
             },

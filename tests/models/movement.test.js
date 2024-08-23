@@ -10,6 +10,9 @@ require('dotenv').config();
 
 let userId = '';
 
+const today = new Date();
+today.setUTCHours(0, 0, 0, 0,);
+
 beforeAll(async () => {
     await mongoose.connect(process.env.MONGO_URL);
     await User.deleteMany({});
@@ -29,7 +32,7 @@ afterAll(async () => {
 });
 
 describe('Movement model', () => {
-    test('should successfully create a movement with valid data', async () => {
+    test('should successfully create a weighted movement with valid data', async () => {
 
         const validMovementData = {
             name: 'Back Squat',
@@ -48,12 +51,30 @@ describe('Movement model', () => {
         expect(movement).toMatchObject(validMovementData);
     });
 
+    test('should successfully create a cardio movement with valid data', async () => {
+
+        const validMovementData = {
+            name: 'Biking',
+            description: 'mountain biking through hills',
+            type: 'cardio',
+            createdBy: userId,
+        }
+
+        const movement = await Movement.create(validMovementData);
+
+        // ensures that movement was created
+        expect(movement).toBeDefined();
+
+        // ensures that created movement has the input's data
+        expect(movement).toMatchObject(validMovementData);
+    });
+
     test('should throw mongoose validation error when required fields are missing', async () => {
         const movementWithMissingFields = {}
         const error = await expectValidationError(Movement, movementWithMissingFields);
 
         // ensures that errors for each required field violation is included
-        ['name', 'musclesWorked', 'type'].forEach(field => {
+        ['name', 'type'].forEach(field => {
             expect(error.errors[field]).toBeDefined();
         });
 
@@ -109,7 +130,7 @@ describe('Movement model\'s remove middleware', () => {
 
         // creates workout with exercises containing the movement that will be deleted, and one movement that won't be
         const workoutToBeModified = await Workout.create({
-            day: 'Monday',
+            day: today,
             exercise: [
                 {
                     movement: squat._id,
@@ -129,7 +150,7 @@ describe('Movement model\'s remove middleware', () => {
 
         // creates a workout with only one exercise, containing the movement that will be deleted
         const workoutToBeDeleted = await Workout.create({
-            day: 'Tuesday',
+            day: today,
             exercise: [
                 {
                     movement: deadlift._id,
@@ -146,7 +167,7 @@ describe('Movement model\'s remove middleware', () => {
         expect(workoutToBeDeleted).toBeDefined();
 
         // invokes the remove method to delete the movement and call remove middleware
-        await deadlift.remove();
+        await deadlift.deleteOne();
 
         // ensures that the movement was deleted
         const deletedMovement = await Movement.findById(deadlift._id);

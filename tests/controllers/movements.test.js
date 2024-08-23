@@ -19,7 +19,7 @@ beforeAll(async () => {
     await mongoose.connect(process.env.MONGO_URL);
     await User.deleteMany({});
     await Movement.deleteMany({});
-    await Movement.create(movementData.slice(0, 5));
+    await Movement.create(movementData);
 
     movement = await Movement.findOne({}).lean();
 
@@ -54,10 +54,21 @@ describe('GET /movements', () => {
         expect(response.text).toContain(movementData[0].name);
     });
 
-    test('should filter the movements view', async () => {
+    test('should filter the movements view based on type', async () => {
         const response = await testSession
             .get('/movements')
-            .query({ muscle: 'Chest', page: 1 })
+            .query({ typeFilter: 'cardio', page: 1 })
+            .expect(200)
+            .expect('Content-Type', /html/);
+
+        expect(response.text).toContain('Movements');
+        expect(response.text).toContain('Running');
+    });
+
+    test('should filter the movements view based on muscles', async () => {
+        const response = await testSession
+            .get('/movements')
+            .query({ typeFilter: 'weighted', muscle: 'Chest', page: 1 })
             .expect(200)
             .expect('Content-Type', /html/);
 
