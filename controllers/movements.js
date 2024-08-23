@@ -77,7 +77,7 @@ async function deleteMovement (req, res) {
 // update
 async function updateMovement (req, res) {
     try {
-        if (!req.body.name || !req.body.musclesWorked || !req.body.type) {
+        if (!req.body.name || !req.body.type) {
             return res.status(400).json({ error: 'Invalid input', reload: true });
         }
 
@@ -106,7 +106,7 @@ async function updateMovement (req, res) {
 // create
 async function createMovement (req, res) {
     try {
-        if (!req.body.name || !req.body.musclesWorked || !req.body.type) {
+        if (!req.body.name || !req.body.type) {
             return res.status(400).json({ error: 'Invalid input', reload: true });
         }
 

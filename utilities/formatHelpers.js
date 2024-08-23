@@ -20,9 +20,13 @@ function formatWorkoutExercise(exercise) {
 
 // format the movement data from req.body
 function formatMovementData(movementData, userId) {
-    const selectedMuscles = Object.keys(movementData.musclesWorked).filter(function (key) {
-        return muscleGroups.includes(key);
-    });
+    let selectedMuscles = [];
+
+    if (movementData.type === 'weighted') 
+        selectedMuscles = Object.keys(movementData.musclesWorked).filter(function (key) {
+            return muscleGroups.includes(key);
+        });
+
     const musclesWorked = [...selectedMuscles];
 
     const type = movementData.type
