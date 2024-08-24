@@ -1,29 +1,33 @@
-const mongoose = require('mongoose');
-const User = require('../models/user');
-const Request = require('../models/request');
-const Workout = require('../models/workout');
-const { s3Client, s3BaseUrl, PutObjectCommand } = require('../config/awsConfig');
+import { Request, Response } from 'express';
+import mongoose from 'mongoose';
+import { UploadedFile } from 'express-fileupload';
+import { PutObjectCommand } from '@aws-sdk/client-s3';
 
-const { formatExerciseStats } = require('../utilities/formatHelpers');
+import User from '../models/user';
+import FriendRequest, { FriendRequestDocument } from '../models/friend-request';
+import Workout from '../models/workout';
+
+import { s3Client, s3BaseUrl } from '../config/awsConfig';
+import { formatExerciseStats } from '../utilities/formatHelpers';
 
 // user profile
-async function getOwnProfile (req, res) {
+export async function getOwnProfile (req : Request, res : Response) {
     try {
         const user = await User.findById(req.session.userId)
             .select('-email -password')
             .lean();
 
-        const volumePerMovement = await getVolume(req.session.userId);
+        const volumePerMovement : any = await getVolume(req.session.userId!);
         const exerciseStats = volumePerMovement.length > 0 ? formatExerciseStats(volumePerMovement) : null;
 
-        const requests = await Request.find({
+        const requests = await FriendRequest.find({
             $or: [
                 { to: req.session.userId },
                 { from: req.session.userId },
             ]
         })
-        .populate({ path: 'to from', select: '_id username' })
-        .lean();
+            .populate({ path: 'to from', select: '_id username' })
+            .lean();
 
         const awaiting = filterRequests(requests, 'pending');
         const friendships = filterRequests(requests, 'accepted');
@@ -42,8 +46,8 @@ async function getOwnProfile (req, res) {
 }
 
 // user profile photo upload
-async function uploadPhoto (req, res) {
-    const file = req.files.profilePhoto;
+export async function uploadPhoto (req : Request, res : Response) {
+    const file = req.files!.profilePhoto as UploadedFile;
     const fileInput = file.name.split('.');
     const fileType = fileInput[1];
     const fileName = `${req.session.userId}.${fileType}`
@@ -60,6 +64,9 @@ async function uploadPhoto (req, res) {
 
         try {
             const user = await User.findById(req.session.userId);
+
+            if (!user) return res.status(404).json({ error: 'User not found', reload: true });
+
             user.profilePhoto = s3ProfilePhotoUrl;
             await user.save();
 
@@ -79,9 +86,11 @@ async function uploadPhoto (req, res) {
 }
 
 // user profile update bio
-async function updateProfile (req, res) {
+export async function updateProfile (req : Request, res : Response) {
     try {
         const user = await User.findById(req.session.userId);
+
+        if (!user) return res.status(404).json({ error: 'User not found' });
 
         user.bio = req.body.bio;
         await user.save();
@@ -94,7 +103,7 @@ async function updateProfile (req, res) {
 }
 
 // search for other users
-function searchView (req, res) {
+export function searchView (req : Request, res : Response) {
     res.render('search.ejs', {
         error: null,
         searchResults: null
@@ -102,7 +111,7 @@ function searchView (req, res) {
 }
 
 // handle search submission
-async function handleSearch (req, res) {
+export async function handleSearch (req : Request, res : Response) {
     try {
         let errorMessage = '';
         const searchResults = await User.find({
@@ -111,8 +120,8 @@ async function handleSearch (req, res) {
                 $regex: `${req.body.searchTerm.toLowerCase()}`
             }
         })
-        .select('username profilePhoto')
-        .lean();
+            .select('username profilePhoto')
+            .lean();
 
         if (searchResults.length === 0) errorMessage = 'No users found, please try again';
 
@@ -127,7 +136,7 @@ async function handleSearch (req, res) {
 }
 
 // view other profiles
-async function viewOtherProfile (req, res) {
+export async function viewOtherProfile (req : Request, res : Response) {
     try {
         const user = await User.findOne({ username: req.params.username })
             .select('-email, -password')
@@ -138,17 +147,17 @@ async function viewOtherProfile (req, res) {
         // redirects user to controller for own profile
         if (user._id.toHexString() === req.session.userId) return res.redirect('/users/me');
 
-        const volumePerMovement = await getVolume(user._id);
+        const volumePerMovement : any = await getVolume(user._id);
         const exerciseStats = volumePerMovement.length > 0 ? formatExerciseStats(volumePerMovement) : null;
 
-        const existingRequest = await Request.findOne({
+        const existingRequest = await FriendRequest.findOne({
             $or: [
                 { from: req.session.userId, to: user._id },
                 { from: user._id, to: req.session.userId }
             ]
         })
-        .populate({ path: 'to from', select: '_id username' })
-        .lean();
+            .populate({ path: 'to from', select: '_id username' })
+            .lean();
 
         res.render('profile.ejs', {
             user,
@@ -162,7 +171,7 @@ async function viewOtherProfile (req, res) {
     }
 }
 
-async function getVolume (userId) {
+async function getVolume (userId : string) {
     try {
         const volume = await Workout.aggregate([
             {
@@ -230,11 +239,8 @@ async function getVolume (userId) {
     }
 }
 
-function filterRequests (requests, status) {
+function filterRequests (requests : FriendRequestDocument[], status : string) {
     return requests.filter(function (req) {
         return req.status === status;
     });
 }
-
-
-module.exports = { getOwnProfile, uploadPhoto, updateProfile, searchView, handleSearch, viewOtherProfile }

@@ -1,5 +1,5 @@
-const express = require('express');
-const profilesController = require('../controllers/profiles');
+import express from 'express';
+import * as profilesController from '../controllers/profiles';
 
 const router = express.Router();
 
@@ -11,4 +11,4 @@ router.post('/users/search', profilesController.handleSearch);
 router.get('/users/:username/profile', profilesController.viewOtherProfile);
 
 
-module.exports = router;
+export default router;
