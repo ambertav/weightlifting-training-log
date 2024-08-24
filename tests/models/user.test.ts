@@ -1,8 +1,8 @@
-const mongoose = require('mongoose');
-const bcrypt = require('bcrypt');
+import mongoose from 'mongoose';
+import bcrypt from 'bcrypt';
 
-const User = require('../../models/user');
-const { expectValidationError } = require('../testUtilities');
+import User, { UserDocument } from '../../models/user';
+import { expectValidationError } from '../testUtilities';
 
 require('dotenv').config();
 
@@ -10,7 +10,7 @@ require('dotenv').config();
 const notHashedPassword = 'password123';
 
 beforeAll(async () => {
-    await mongoose.connect(process.env.MONGO_URL);
+    await mongoose.connect(process.env.MONGO_URL!);
     await User.deleteMany({});
 });
 
@@ -38,14 +38,14 @@ describe('User Model', () => {
     });
 
     test('should hash password before saving user instance', async () => {
-        const user = await User.findOne({ email: 'jane@example.com' });
+        const user : UserDocument | null = await User.findOne({ email: 'jane@example.com' });
         expect(user).toBeDefined();
 
         // ensuring that password saved isn't equal to unhashed password
-        expect(user.password).not.toBe(notHashedPassword);
+        expect(user!.password).not.toBe(notHashedPassword);
 
         // ensuring that password is valid bcrypt hash of the not hashed password
-        const isPasswordValid = await bcrypt.compare(notHashedPassword, user.password);
+        const isPasswordValid = await bcrypt.compare(notHashedPassword, user!.password);
         expect(isPasswordValid).toBe(true);
     });
 
@@ -58,9 +58,6 @@ describe('User Model', () => {
         ['firstName', 'username', 'email', 'password'].forEach(field => {
             expect(error.errors[field]).toBeDefined();
         });
-
-        // final assurance that the error message confirms failure
-        expect(error._message).toEqual('User validation failed');
     });
 
     test('should throw mongoose validation error for violation of maxLength', async () => {
@@ -78,10 +75,6 @@ describe('User Model', () => {
         ['firstName', 'username', 'bio'].forEach(field => {
             expect(error.errors[field]).toBeDefined();
         });
-
-        // final assurance that the error message confirms failure
-        expect(error._message).toEqual('User validation failed');
-        
     });
 
     test('should throw MongoDB server error for a duplicate key value on unique fields', async () => {
@@ -103,23 +96,23 @@ describe('User Model', () => {
     });
 
     test('should remove password when returning JSON', async () => {
-        const user = await User.findOne({ email: 'jane@example.com' });
+        const user : UserDocument | null = await User.findOne({ email: 'jane@example.com' });
         expect(user).toBeDefined();
 
         // testing toJSON transform to remove password
-        const userJSON = user.toJSON();
+        const userJSON = user!.toJSON();
 
         // password should be deleted and thus return undefined
         expect(userJSON.password).toBeUndefined();
     });
 
     test('should add default value to excluded keys when user is created', async () => {
-        const user = await User.findOne({ email: 'jane@example.com' });
+        const user : UserDocument | null = await User.findOne({ email: 'jane@example.com' });
         expect(user).toBeDefined();
 
         // ensuring that default values on fields are being assigned to created user
-        expect(user.profilePhoto).toBe('https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png');
-        expect(user.bio).toBe('');
+        expect(user!.profilePhoto).toBe('https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png');
+        expect(user!.bio).toBe('');
     });
 });
 

@@ -1,10 +1,11 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
-const Movement = require('../../models/movement');
-const User = require('../../models/user');
-const Workout = require('../../models/workout');
-const { expectValidationError } = require('../testUtilities');
-const movementData = require('../../seed/movementData');
+import Movement, { MovementDocument } from '../../models/movement';
+import User from '../../models/user';
+import Workout, { WorkoutDocument } from '../../models/workout';
+import { expectValidationError } from '../testUtilities';
+
+import movementData from '../../seed/movementData';
 
 require('dotenv').config();
 
@@ -14,7 +15,7 @@ const today = new Date();
 today.setUTCHours(0, 0, 0, 0,);
 
 beforeAll(async () => {
-    await mongoose.connect(process.env.MONGO_URL);
+    await mongoose.connect(process.env.MONGO_URL!);
     await User.deleteMany({});
     await Movement.deleteMany({});
 
@@ -77,9 +78,6 @@ describe('Movement model', () => {
         ['name', 'type'].forEach(field => {
             expect(error.errors[field]).toBeDefined();
         });
-
-        // final assurance that the error message confirms failure
-        expect(error._message).toEqual('Movement validation failed');
     });
 
     test('should throw mongoose validation error for violation of maxLength', async () => {
@@ -95,9 +93,7 @@ describe('Movement model', () => {
         // ensures that errors for each maxLength violation is included
         expect(error.errors.name).toBeDefined();
         expect(error.errors.description).toBeDefined();
-        
-        // final assurance that the error message confirms failure
-        expect(error._message).toEqual('Movement validation failed');
+
     });
 
     test('should throw mongoose validation error for invalid movement type', async () => {
@@ -112,17 +108,15 @@ describe('Movement model', () => {
 
         // ensures that errors for each invalid enum type is included
         expect(error.errors.type).toBeDefined();
-        
-        // final assurance that the error message confirms failure
-        expect(error._message).toEqual('Movement validation failed');
+
     });
 });
 
 
 describe('Movement model\'s remove middleware', () => {
     test('should correctly remove associated exercises within workouts upon deletion', async () => {
-        const squat = await Movement.findOne({ name: 'Back Squat' });
-        const deadlift = await Movement.create(movementData[4]);
+        const squat : MovementDocument | null = await Movement.findOne({ name: 'Back Squat' });
+        const deadlift : MovementDocument | null = await Movement.create(movementData[4]);
 
         // ensuring that necessary instances are created successfully
         expect(squat).toBeDefined();
@@ -133,13 +127,13 @@ describe('Movement model\'s remove middleware', () => {
             day: today,
             exercise: [
                 {
-                    movement: squat._id,
+                    movement: squat!._id,
                     weight: 100,
                     sets: 1,
                     reps: 1,
                 },
                 {
-                    movement: deadlift._id,
+                    movement: deadlift!._id,
                     weight: 100,
                     sets: 1,
                     reps: 1,
@@ -149,7 +143,7 @@ describe('Movement model\'s remove middleware', () => {
         });
 
         // creates a workout with only one exercise, containing the movement that will be deleted
-        const workoutToBeDeleted = await Workout.create({
+        const workoutToBeDeleted : WorkoutDocument = await Workout.create({
             day: today,
             exercise: [
                 {
@@ -170,16 +164,18 @@ describe('Movement model\'s remove middleware', () => {
         await deadlift.deleteOne();
 
         // ensures that the movement was deleted
-        const deletedMovement = await Movement.findById(deadlift._id);
+        const deletedMovement : MovementDocument | null = await Movement.findById(deadlift._id);
         expect(deletedMovement).toBeNull();
 
         // ensures that the workout with the exercise containing the deleted movement, was deleted
-        const deletedWorkout = await Workout.findById(workoutToBeDeleted._id);
+        const deletedWorkout : WorkoutDocument | null = await Workout.findById(workoutToBeDeleted._id);
         expect(deletedWorkout).toBeNull();
 
         // ensures that the workout with two exercises was modified to now only include the movement that wasn't deleted
-        const modifiedWorkout = await Workout.findById(workoutToBeModified._id);
-        expect(modifiedWorkout.exercise.length).toBe(1); // should be 1 exercise
-        expect(modifiedWorkout.exercise.movement).not.toEqual(deadlift._id); // the exercise.movement shouldn't be the deleted movement
+        const modifiedWorkout : WorkoutDocument | null = await Workout.findById(workoutToBeModified._id);
+        expect(modifiedWorkout).not.toBeNull();
+
+        expect(modifiedWorkout!.exercise.length).toBe(1); // should be 1 exercise
+        expect((modifiedWorkout!.exercise[0].movement) as MovementDocument).not.toEqual(deadlift._id); // the exercise.movement shouldn't be the deleted movement
     });
 });

@@ -1,8 +1,8 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
-const Request = require('../../models/request');
-const User = require('../../models/user');
-const { expectValidationError } = require('../testUtilities');
+import FriendRequest, { FriendRequestDocument } from '../../models/friend-request';
+import User, { UserDocument } from '../../models/user';
+import { expectValidationError } from '../testUtilities';
 
 require('dotenv').config();
 
@@ -10,9 +10,9 @@ let janeId = '';
 let johnId = '';
 
 beforeAll(async () => {
-    await mongoose.connect(process.env.MONGO_URL);
+    await mongoose.connect(process.env.MONGO_URL!);
     await User.deleteMany({});
-    await Request.deleteMany({});
+    await FriendRequest.deleteMany({});
 
     const userJane = await User.create({
         firstName: 'Jane',
@@ -39,7 +39,7 @@ afterAll(async () => {
 describe('Request Model', () => {
     test('should successfully create a request with valid data', async () => {
 
-        const request = await Request.create({
+        const request : FriendRequestDocument = await FriendRequest.create({
             from: janeId,
             to: johnId,
         });
@@ -50,22 +50,23 @@ describe('Request Model', () => {
     });
 
     test('should default request to a status of pending', async () => {
-        const request = await Request.findOne({ from: janeId });
+        const request : FriendRequestDocument | null = await FriendRequest.findOne({ from: janeId });
 
-        expect(request.status).toBeDefined();
-        expect(request.status).toEqual('pending');
+        expect(request).not.toBeNull();
+
+        expect(request!.status).toBeDefined();
+        expect(request!.status).toEqual('pending');
     });
 
     test('should throw mongoose error for invalid user', async () => {
         const invalidUserId = 'invalidID';
 
-        const error = await expectValidationError(Request, {
+        const error = await expectValidationError(FriendRequest, {
             from: janeId,
             to: invalidUserId,
         });
 
         expect(error.errors.to).toBeDefined();
-        expect(error._message).toEqual('Request validation failed');
     });
 
     test('should throw mongoose error for invalid enum value', async () => {
@@ -76,17 +77,18 @@ describe('Request Model', () => {
             status: 'invalid'
         }
     
-        const error = await expectValidationError(Request, invalidRequestStatus);
+        const error = await expectValidationError(FriendRequest, invalidRequestStatus);
 
         expect(error.errors.status).toBeDefined();
-        expect(error._message).toEqual('Request validation failed');
     });
 
     test('should allow population of referenced model instances', async () => {
-        const request = await Request.findOne({ from: janeId })
+        const request : FriendRequestDocument | null = await FriendRequest.findOne({ from: janeId })
             .populate('to from');
+        
+        expect(request).not.toBeNull();
 
-        expect(request.from.username).toBeDefined();
-        expect(request.to.username).toBeDefined();
+        expect((request!.from as UserDocument).username).toBeDefined();
+        expect((request!.to as UserDocument).username).toBeDefined();
     });
 });

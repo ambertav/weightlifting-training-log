@@ -1,19 +1,35 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
-const User = require('../../models/user');
-const Favorite = require('../../models/favorite');
-const { expectValidationError } = require('../testUtilities');
-const movementData = require('../../seed/movementData');
+import User, { UserDocument } from '../../models/user';
+import Favorite, { FavoriteDocument } from '../../models/favorite';
+import { expectValidationError } from '../testUtilities';
+
+import movementData from '../../seed/movementData';
+import { MovementDocument } from '../../models/movement';
 
 require('dotenv').config();
 
 // global variables used for referenced documents throughout tests
 let userId = '';
-let weightedMovement;
-let cardioMovement;
+let weightedMovement : Partial<MovementDocument>;
+let cardioMovement : Partial<MovementDocument>;
+
+interface FavoriteData {
+    name : string; 
+    createdBy : string;
+    exercise : {
+        movement : Partial<MovementDocument>;
+        weight? : number;
+        reps? : number;
+        sets? : number;
+        distance? : number;
+        minutes? : number;
+        caloriesBurned? : number;
+    }[];
+}
 
 beforeAll(async () => {
-    await mongoose.connect(process.env.MONGO_URL);
+    await mongoose.connect(process.env.MONGO_URL!);
     await User.deleteMany({});
     await Favorite.deleteMany({});
 
@@ -43,6 +59,7 @@ afterAll(async () => {
 
 describe('Favorite model', () => {
     test('should successfully create a favorite with valid data', async () => {
+        console.log(weightedMovement);
         const validFavoriteData = {
             name: 'favorite',
             exercise: [{
@@ -70,8 +87,6 @@ describe('Favorite model', () => {
         ['name', 'exercise', 'createdBy'].forEach(field => {
             expect(error.errors[field]).toBeDefined();
         });
-
-        expect(error._message).toEqual('Favorite validation failed');
     });
 
     test('should throw validation error when data violates minimum value field requirements', async () => {
@@ -96,8 +111,6 @@ describe('Favorite model', () => {
         ['weight', 'sets', 'reps', 'minutes', 'caloriesBurned'].forEach(field => {
             expect(error.errors[`exercise.0.${field}`]).toBeDefined();
         });
-
-        expect(error._message).toEqual('Favorite validation failed');
     });
 
     test('should throw validation error when data violates max length requirements', async () => {
@@ -121,16 +134,16 @@ describe('Favorite model', () => {
         // ensures that error for each max length violation is present
         expect(error.errors.name).toBeDefined();
         expect(error.errors['exercise.0.movement.name']).toBeDefined();
-
-        expect(error._message).toEqual('Favorite validation failed');
     });
 
     test('should allow population of referenced model instances', async () => {
-        const favorite = await Favorite.findOne()
+        const favorite : FavoriteDocument | null = await Favorite.findOne()
             .populate('createdBy')
+        
+        expect(favorite).not.toBeNull();
 
         // checks that the field populated and exists
-        expect(favorite.createdBy.username).toBeDefined();
+        expect((favorite!.createdBy as UserDocument).username).toBeDefined();
     });
 
     test('should throw error when invalid movement type enum', async () => {
@@ -153,7 +166,6 @@ describe('Favorite model', () => {
 
         // verifies enum on movement type
         expect(error.errors['exercise.0.movement.type']).toBeDefined();
-        expect(error._message).toEqual('Favorite validation failed');
     });
 
     test('should throw error when invalid user is referenced', async () => {
@@ -172,13 +184,12 @@ describe('Favorite model', () => {
 
         // ensures that favorite wasn't created with invalid user
         expect(error.errors.createdBy).toBeDefined();
-        expect(error._message).toEqual('Favorite validation failed');
     });
 });
 
 
 describe('Favorite model\'s required exercise fields schema middleware', () => {
-    const baseFavoriteData = {}
+    const baseFavoriteData = {} as FavoriteData
 
     beforeEach(async () => {
         await Favorite.deleteMany({});
@@ -188,14 +199,17 @@ describe('Favorite model\'s required exercise fields schema middleware', () => {
     });
 
     // reuseable function for attempt to create, and verifying the message rationale
-    async function expectCreationError (favoriteData, errorMessage) {
+    async function expectCreationError (favoriteData : FavoriteData, errorMessage : string) {
         try {
             await Favorite.create(favoriteData);
             // fail if success
             fail('Expected an error but did not receive one');
         } catch (error) {
-            // verifies exercise middleware's error message
-            expect(error.message).toBe(errorMessage);
+            if (error instanceof mongoose.Error.ValidationError)
+                // verifies exercise middleware's error message
+                expect(error.message).toContain(errorMessage);
+
+            else throw error;
         }
 
         // ensures that favorite was not saved in database

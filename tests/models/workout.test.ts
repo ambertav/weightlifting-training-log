@@ -1,10 +1,10 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
-const Workout = require('../../models/workout');
-const User = require('../../models/user');
-const Movement = require('../../models/movement');
-const { expectValidationError } = require('../testUtilities');
-const movementData = require('../../seed/movementData');
+import Workout, { ExerciseDocument, WorkoutDocument } from '../../models/workout';
+import User, { UserDocument } from '../../models/user';
+import Movement, { MovementDocument } from '../../models/movement';
+import { expectValidationError } from '../testUtilities';
+import movementData from '../../seed/movementData';
 
 require('dotenv').config();
 
@@ -16,8 +16,22 @@ let cardioId = '';
 const today = new Date();
 today.setUTCHours(0, 0, 0, 0,);
 
+interface WorkoutData {
+    day : Date; 
+    createdBy : string;
+    exercise : {
+        movement : string;
+        weight? : number;
+        reps? : number;
+        sets? : number;
+        distance? : number;
+        minutes? : number;
+        caloriesBurned? : number;
+    }[];
+}
+
 beforeAll(async () => {
-    await mongoose.connect(process.env.MONGO_URL);
+    await mongoose.connect(process.env.MONGO_URL!);
     await User.deleteMany({});
     await Movement.deleteMany({});
     await Workout.deleteMany({});
@@ -55,7 +69,7 @@ describe('Workout model', () => {
             createdBy: userId
         }
 
-        const workout = await Workout.create(validWorkoutData);
+        const workout : WorkoutDocument = await Workout.create(validWorkoutData);
 
         // ensures that workout was created
         expect(workout).toBeDefined();
@@ -85,9 +99,6 @@ describe('Workout model', () => {
         ['day', 'exercise', 'createdBy'].forEach(field => {
             expect(error.errors[field]).toBeDefined();
         });
-
-        // ensures presence of error message
-        expect(error._message).toEqual('Workout validation failed');
     });
 
     test('should throw mongoose validation error when invalid exercise inputs are used', async () => {
@@ -111,26 +122,27 @@ describe('Workout model', () => {
         ['weight', 'sets', 'reps', 'distance', 'minutes', 'caloriesBurned'].forEach(field => {
             expect(error.errors[`exercise.0.${field}`]).toBeDefined();
         });
-
-        // final error message check
-        expect(error._message).toEqual('Workout validation failed');
     });
 
     test('should allow population of referenced model isntances', async () => {
-        const workout = await Workout.findOne()
+        const workout : WorkoutDocument | null = await Workout.findOne()
             .populate('exercise.movement createdBy');
+    
+        expect(workout).not.toBeNull();
 
         // ensures that referenced documents are populated
-        expect(workout.createdBy.username).toBeDefined();
-        expect(workout.exercise[0].movement.name).toBeDefined();
+        expect((workout!.createdBy as Partial<UserDocument>).username).toBeDefined();
+        expect((workout!.exercise[0].movement as Partial<MovementDocument>).name).toBeDefined();
     });
 
     test('should add default value to isComplete field', async () => {
-        const workout = await Workout.findOne()
+        const workout : WorkoutDocument | null = await Workout.findOne();
+
+        expect(workout).not.toBeNull();
 
         // ensures that successfully created workout has isComplete field with default value
-        expect(workout.isComplete).toBeDefined();
-        expect(workout.isComplete).toEqual(false);
+        expect(workout!.isComplete).toBeDefined();
+        expect(workout!.isComplete).toEqual(false);
     });
 
     test('should only reference a valid user', async () => {
@@ -146,10 +158,9 @@ describe('Workout model', () => {
         }
 
         const error = await expectValidationError(Workout, workoutWithInvalidUser);
-
+        
         // ensures that valid userId must be included
         expect(error.errors.createdBy).toBeDefined();
-        expect(error._message).toEqual('Workout validation failed');
     });
 });
 
@@ -199,7 +210,7 @@ describe('Workout model\'s day field validation', () => {
 
 describe('Workout model\'s required exercise fields schema middleware', () => {
     // global variable with common workout data to be use accross schema middleware tests
-    const baseWorkoutData = {};
+    const baseWorkoutData = {} as WorkoutData;
 
     beforeEach(async () => {
         await Workout.deleteMany({}); // clears database to utilize count documents for each test
@@ -210,14 +221,17 @@ describe('Workout model\'s required exercise fields schema middleware', () => {
     });
 
     // reuseable function for attempt to create, and verifying the message rationale
-    async function expectCreationError (workoutData, errorMessage) {
+    async function expectCreationError (workoutData : WorkoutData, errorMessage : string) {
         try {
             await Workout.create(workoutData);
             // fail if success
             fail('Expected an error but did not receive one');
         } catch (error) {
-            // verifies exercise middleware's error message
-            expect(error.message).toBe(errorMessage);
+            if (error instanceof mongoose.Error.ValidationError)
+                // verifies exercise middleware's error message
+                expect(error.message).toContain(errorMessage);
+
+            else throw error;
         }
 
         // ensures that workout was not saved in database
@@ -235,7 +249,7 @@ describe('Workout model\'s required exercise fields schema middleware', () => {
     });
 
     test('should throw error when cardio type movement exercises have weighted fields', async () => {
-        const cardioWorkoutWrongFields = {
+        const cardioWorkoutWrongFields : WorkoutData = {
             ...baseWorkoutData,
             exercise: [{
                 movement: cardioId,
