@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import { UserDocument } from './user';
 
 
 const friendRequestSchema = new mongoose.Schema({
@@ -22,8 +23,8 @@ const friendRequestSchema = new mongoose.Schema({
 });
 
 export interface FriendRequestDocument extends mongoose.Document {
-    from : mongoose.Types.ObjectId;
-    to : mongoose.Types.ObjectId;
+    from : mongoose.Types.ObjectId | UserDocument;
+    to : mongoose.Types.ObjectId | UserDocument;
     status : 'pending' | 'accepted';
 }
 

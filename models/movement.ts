@@ -72,7 +72,7 @@ export interface MovementDocument extends mongoose.Document {
     description : string;
     musclesWorked : string[];
     type : 'cardio' | 'weighted';
-    createdBy : mongoose.Types.ObjectId;
+    createdBy : mongoose.Types.ObjectId | null;
 }
 
 

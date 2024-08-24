@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import { ExerciseDocument } from '../models/workout';
 
 
@@ -6,18 +7,21 @@ import { ExerciseDocument } from '../models/workout';
     // weighted types -- weight, sets, reps 
 export default function exerciseSchemaMiddleware (exercise : ExerciseDocument) {
     if (typeof exercise.movement === 'object' && 'type' in exercise.movement) {
+        const error = new mongoose.Error.ValidationError();
 
         // verify cardio fields on cardio movements
         if (exercise.movement.type  === 'cardio') {
 
             // throw error if missing:
             if (!exercise.distance || !exercise.minutes || !exercise.caloriesBurned) {
-                throw new Error('Cardio exercises require distance, minutes, and calories burned');
+                error.message = 'Cardio exercises require distance, minutes, and calories burned';
+                throw error;
             }
 
             // throw error if present:
             if (exercise.weight || exercise.sets || exercise.reps) {
-                throw new Error('Cardio exercises cannot have weight, sets, or reps');
+                error.message = 'Cardio exercises cannot have weight, sets, or reps';
+                throw error;
             }
         
         // verify weighted fields on weighted movements
@@ -25,12 +29,14 @@ export default function exerciseSchemaMiddleware (exercise : ExerciseDocument) {
             
             // throw error if missing:
             if (!exercise.weight || !exercise.sets || !exercise.reps) {
-                throw new Error('Weighted exercises require weight, sets, and reps');
+                error.message = 'Weighted exercises require weight, sets, and reps';
+                throw error;
             }
             
             // throw error if present:
             if (exercise.distance || exercise.minutes || exercise.caloriesBurned) {
-                throw new Error('Weighted exercises cannot have distance, minutes, or calories burned');
+                error.message = 'Weighted exercises cannot have distance, minutes, or calories burned';
+                throw error;
             }
         }
     }

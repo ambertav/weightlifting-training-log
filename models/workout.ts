@@ -3,6 +3,7 @@ import { MovementDocument } from './movement';
 import exerciseSchemaMiddleware from '../middleware/exercise';
 
 import { months } from '../utilities/constants';
+import { UserDocument } from './user';
 
 
 const workoutSchema = new mongoose.Schema <WorkoutDocument> ({
@@ -121,7 +122,7 @@ export interface WorkoutDocument extends mongoose.Document {
     day : Date;
     exercise : ExerciseDocument[];
     isComplete : boolean;
-    createdBy : mongoose.Types.ObjectId;
+    createdBy : mongoose.Types.ObjectId | Partial<UserDocument>;
 }
 
 

@@ -1,3 +1,5 @@
+import { MovementDocument } from "../models/movement";
+
 export default [
     {
         name: 'Snatch',
@@ -75,4 +77,4 @@ export default [
         type: 'cardio',
         createdBy: null,
     },
-];
+] as Partial<MovementDocument>[];
