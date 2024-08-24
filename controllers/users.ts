@@ -1,16 +1,18 @@
-const User = require('../models/user');
-const bcrypt = require('bcrypt');
+import { Request, Response } from 'express';
+import { MongoServerError } from 'mongodb';
+import User from '../models/user';
+import bcrypt from 'bcrypt';
 
 
 // sign up form
-function signupView (req, res) {
+export function signupView (req : Request, res : Response) {
     res.render('signup.ejs', {
         error: null
     });
 }
 
 // handle form submission
-async function signupUser (req, res) {
+export async function signupUser (req : Request, res : Response) {
     try {
         // validate if passwords match
         if (req.body.password !== req.body.passwordConfirmation) {
@@ -26,32 +28,35 @@ async function signupUser (req, res) {
         req.session.userId = newUser._id;
 
         res.redirect('/workouts');
-    } catch (error) {
-        if (error.code === 11000) {
-            let errorMessage = ''
-            if (error.keyPattern.email === 1) errorMessage = 'Email is already in use.';
-            else if (error.keyPattern.username === 1) errorMessage = 'Username is already in use.';
-            return res.status(400).render('signup.ejs', {
+    } catch (error ) {
+        if (error instanceof MongoServerError) {
+            if (error.code === 11000) {
+                let errorMessage = ''
+                if (error.keyPattern.email === 1) errorMessage = 'Email is already in use.';
+                else if (error.keyPattern.username === 1) errorMessage = 'Username is already in use.';
+                return res.status(400).render('signup.ejs', {
+                    error: errorMessage
+                });
+            }
+        }
+        else {
+            const errorMessage = 'An error occurred during signup.';
+            res.status(500).render('signup.ejs', {
                 error: errorMessage
             });
         }
-
-        const errorMessage = 'An error occurred during signup.';
-        res.status(500).render('signup.ejs', {
-            error: errorMessage
-        });
     }
 }
 
 // login form
-function loginView (req, res) {
+export function loginView (req : Request, res : Response) {
     res.render('login.ejs', {
         error: null
     });
 }
 
 // handle form submission
-async function loginUser (req, res) {
+export async function loginUser (req : Request, res : Response) {
     try {
         const foundUser = await User.findOne({
             email: req.body.email
@@ -82,13 +87,8 @@ async function loginUser (req, res) {
 }
 
 // logout
-function logoutUser (req, res) {
+export function logoutUser (req : Request, res : Response) {
     req.session.destroy(function (error) {
         res.redirect('/');
     });
-}
-
-
-module.exports = { 
-    signupView, signupUser, loginView, loginUser, logoutUser,
 }

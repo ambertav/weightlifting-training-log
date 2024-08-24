@@ -1,5 +1,5 @@
-const mongoose = require('mongoose');
-const bcrypt = require('bcrypt');
+import mongoose from 'mongoose';
+import bcrypt from 'bcrypt';
 
 const userSchema = new mongoose.Schema({
     firstName: {
@@ -52,11 +52,20 @@ userSchema.pre('save', async function (next) {
             const hashedPassword = await bcrypt.hash(this.password, 10);
             this.password = hashedPassword;
 
-        } catch (error) {
+        } catch (error : any) {
             next(error);
         }
     } else next();
 });
 
+export interface UserDocument extends mongoose.Document {
+    firstName : string;
+    username : string;
+    email : string;
+    password : string;
+    profilePhoto : string;
+    bio : string;
+}
 
-module.exports = mongoose.model('User', userSchema);
+
+export default mongoose.model <UserDocument> ('User', userSchema);

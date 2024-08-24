@@ -1,5 +1,5 @@
-const express = require('express');
-const usersController = require('../controllers/users');
+import express from 'express';
+import * as usersController from '../controllers/users';
 
 const router = express.Router();
 
@@ -10,4 +10,4 @@ router.post('/login', usersController.loginUser);
 router.get('/logout', usersController.logoutUser);
 
 
-module.exports = router;
+export default router;
