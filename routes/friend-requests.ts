@@ -1,5 +1,5 @@
-const express = require('express');
-const requestsController = require('../controllers/requests');
+import express from 'express';
+import * as requestsController from '../controllers/friend-requests';
 
 const router = express.Router();
 
@@ -7,4 +7,4 @@ router.post('/users/request', requestsController.createRequest);
 router.put('/users/request/edit', requestsController.handleRequest);
 
 
-module.exports = router;
+export default router;

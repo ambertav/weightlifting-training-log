@@ -10,7 +10,7 @@ import movementsRouter from './routes/movements';
 import usersRouter from './routes/users';
 import workoutsRouter from './routes/workouts';
 import profilesRouter from './routes/profiles';
-import requestRouter from './routes/requests';
+import requestRouter from './routes/friend-requests';
 import favoriteRouter from './routes/favorites';
 
 const app = express();

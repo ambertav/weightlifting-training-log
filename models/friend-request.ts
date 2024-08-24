@@ -1,7 +1,7 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 
-const requestSchema = new mongoose.Schema({
+const friendRequestSchema = new mongoose.Schema({
     from: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
@@ -21,5 +21,11 @@ const requestSchema = new mongoose.Schema({
     timestamps: true
 });
 
+export interface FriendRequestDocument extends mongoose.Document {
+    from : mongoose.Types.ObjectId;
+    to : mongoose.Types.ObjectId;
+    status : 'pending' | 'accepted';
+}
 
-module.exports = mongoose.model('Request', requestSchema);
+
+export default mongoose.model <FriendRequestDocument> ('FriendRequest', friendRequestSchema);
