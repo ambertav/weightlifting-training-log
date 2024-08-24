@@ -17,10 +17,10 @@ const app = express();
 
 require('dotenv').config();
 const PORT = process.env.PORT;
-const DATABASE_URL = process.env.DATABASE_URL;
+const DATABASE_URL = process.env.DATABASE_URL!;
 
 mongoose.set('strictQuery', false);
-mongoose.connect(DATABASE_URL!);
+mongoose.connect(DATABASE_URL);
 
 const db = mongoose.connection;
 
