@@ -1,4 +1,4 @@
-module.exports = [
+export default [
     {
         name: 'Snatch',
         description: 'classic snatch',

@@ -1,16 +1,15 @@
-const mongoose = require('mongoose');
-const bcrypt = require('bcrypt');
+import bcrypt from 'bcrypt';
 
-const User = require('../models/user');
-const Movement = require('../models/movement');
-const Workout = require('../models/workout');
-const Favorite = require('../models/favorite');
-const Request = require('../models/request');
+import User from '../models/user';
+import Movement from '../models/movement';
+import Workout from '../models/workout';
+import Favorite from '../models/favorite';
+import FriendRequest from '../models/friend-request';
 
-const movementData = require('./movementData');
+import movementData from './movementData';
 
 // creates two users
-async function seedUsers () {
+export async function seedUsers () {
     try {
         await User.deleteMany({});
         
@@ -37,7 +36,7 @@ async function seedUsers () {
 }
 
 // seeds in the default movements
-async function seedMovements () {
+export async function seedMovements () {
     try {
         await Movement.deleteMany({});
         await Movement.create(movementData);
@@ -48,14 +47,18 @@ async function seedMovements () {
 }
 
 // creates a workout with default movements, associated with the first seed user
-async function seedWorkout () {
+export async function seedWorkout () {
     try {
         await Workout.deleteMany({});
 
         const user = await User.findOne();
 
+        if (!user) throw Error('Could not find user');
+
         const snatch = await Movement.findOne({ name: 'Snatch' });
         const cleanAndJerk = await Movement.findOne({ name: 'Clean and Jerk' });
+
+        if (!snatch || !cleanAndJerk) throw Error('Could not find movements');
 
         await Workout.create({
             day: new Date(),
@@ -83,7 +86,7 @@ async function seedWorkout () {
 }
 
 // creates a favorite from the seed workout
-async function seedFavorite () {
+export async function seedFavorite () {
     try {
         await Favorite.deleteMany({});
 
@@ -91,17 +94,21 @@ async function seedFavorite () {
             .populate('exercise.movement')
             .lean();
 
+        if (!workout) throw Error('Could not find workout');
+        
         const { createdBy } = workout;
 
         const exerciseInfo = workout.exercise.map(function (exercise) {
             const { movement, ...remaining } = exercise;
-            return {
-                movement: {
-                    name: movement.name,
-                    musclesWorked: movement.musclesWorked,
-                    type: movement.type,
-                },
-                ...remaining,
+            if (typeof movement === 'object' && movement !== null && 'name' in movement) {
+                return {
+                    movement: {
+                        name: movement.name,
+                        musclesWorked: movement.musclesWorked,
+                        type: movement.type,
+                    },
+                    ...remaining,
+                }
             }
         });
 
@@ -117,14 +124,16 @@ async function seedFavorite () {
 }
 
 // creates a friendship (an accepted request) between the two seed users
-async function seedRequest () {
+export async function seedRequest () {
     try {
-        await Request.deleteMany({});
+        await FriendRequest.deleteMany({});
 
         const userOne = await User.findOne({ username: 'jane_doe' });
         const userTwo = await User.findOne({ username: 'john_doe' });
 
-        await Request.create({
+        if (!userOne || !userTwo) throw Error('Could not find users');
+
+        await FriendRequest.create({
             from: userTwo._id,
             to: userOne._id,
             status: 'accepted'
@@ -134,6 +143,3 @@ async function seedRequest () {
         console.error('Request seed error: ', error);
     }
 }
-
-
-module.exports = { seedUsers, seedMovements, seedWorkout, seedFavorite, seedRequest }

@@ -1,9 +1,9 @@
-const mongoose = require('mongoose');
-const { seedUsers, seedMovements, seedWorkout, seedFavorite, seedRequest } = require('./seedControllers');
+import mongoose from 'mongoose';
+import { seedUsers, seedMovements, seedWorkout, seedFavorite, seedRequest } from './seedControllers';
 
 // add mongo database connection url to .env file...
 require('dotenv').config();
-const DATABASE_URL = process.env.DATABASE_URL;
+const DATABASE_URL = process.env.DATABASE_URL!;
 
 mongoose.set('strictQuery', false);
 mongoose.connect(DATABASE_URL);
