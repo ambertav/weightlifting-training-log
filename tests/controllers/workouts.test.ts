@@ -1,28 +1,28 @@
-const mongoose = require('mongoose');
-const request = require('supertest');
-const session = require('supertest-session');
-const app = require('../../server');
+import mongoose from 'mongoose';
+import request from 'supertest';
+import app from '../../server';
 
-const User = require('../../models/user');
-const Movement = require('../../models/movement');
-const Workout = require('../../models/workout');
-const movementData = require('../../seed/movementData');
+import User from '../../models/user';
+import Movement, { MovementDocument } from '../../models/movement';
+import Workout, { WorkoutDocument } from '../../models/workout';
+
+import movementData from '../../seed/movementData';
 
 require('dotenv').config();
 
-const testSession = session(app);
+let cookie : string;
 
 let janeId = '';
-let movement = {};
-let userMovement = {};
-let workout = {};
+let movement = {} as MovementDocument;
+let userMovement = {} as MovementDocument;
+let workout = {} as WorkoutDocument;
 
 const today = new Date();
-today.setUTCHours(0, 0, 0, 0,);
+today.setUTCHours(0, 0, 0, 0);
 
 beforeAll(async () => {
     await mongoose.connection.close();
-    await mongoose.connect(process.env.MONGO_URL);
+    await mongoose.connect(process.env.MONGO_URL!);
     await User.deleteMany({});
     await Movement.deleteMany({});
     await Workout.deleteMany({});
@@ -36,14 +36,17 @@ beforeAll(async () => {
     janeId = jane._id;
 
     await Movement.create(movementData.slice(0, 5));
-    movement = await Movement.findOne({}).lean();
+    movement = await Movement.findOne({}).lean() as MovementDocument
 
-    await testSession
+    const loginResponse = await request(app)
         .post('/login')
-        .send({ email: 'jane@doe.com', password: 'password123' });
+        .send({ email: 'jane@doe.com', password: 'password123' })
 
-    await testSession
+    cookie = loginResponse.headers['set-cookie'][0];
+
+    await request(app)
         .post('/movements')
+        .set('Cookie', cookie)
         .send({
             name: 'Bicep Movement',
             description: 'a bicep movement',
@@ -51,10 +54,11 @@ beforeAll(async () => {
             type: 'weighted'
         });
 
-    userMovement = await Movement.findOne({ createdBy: janeId });
+    userMovement = await Movement.findOne({ createdBy: janeId }) as MovementDocument
 
-    await testSession
+    await request(app)
         .post('/workouts')
+        .set('Cookie', cookie)
         .send({
             day: today,
             exercise: { // req.body structure
@@ -69,20 +73,20 @@ beforeAll(async () => {
             createdBy: janeId
         });
     
-    workout = await Workout.findOne({ createdBy: janeId });
+    workout = await Workout.findOne({ createdBy: janeId }) as WorkoutDocument;
 
 });
 
 afterAll(async () => {
-    testSession.destroy();
     await mongoose.connection.close();
 });
 
 
 describe('GET /workouts', () => {
     test('should render the workouts index view', async () => {
-        const response = await testSession
+        const response = await request(app)
             .get('/workouts')
+            .set('Cookie', cookie)
             .expect(200)
             .expect('Content-Type', /html/);
 
@@ -95,8 +99,9 @@ describe('GET /workouts', () => {
 
 describe('GET /workouts/new', () => {
     test('should render the create new workout view', async () => {
-        const response = await testSession
+        const response = await request(app)
             .get('/workouts/new')
+            .set('Cookie', cookie)
             .expect(200)
             .expect('Content-Type', /html/);
 
@@ -111,8 +116,9 @@ describe('GET /workouts/new', () => {
 
 describe('GET /workouts/:id/edit', () => {
     test('should render the edit workout view', async () => {
-        const response = await testSession
-        .get(`/workouts/${workout._id}/edit`)
+        const response = await request(app)
+            .get(`/workouts/${workout._id}/edit`)
+            .set('Cookie', cookie)
             .expect(200)
             .expect('Content-Type', /html/);
 
@@ -132,8 +138,9 @@ describe('GET /workouts/:id/edit', () => {
 
 describe('GET /workouts/:id', () => {
     test('should render the workout detail view', async () => {
-        const response = await testSession
+        const response = await request(app)
             .get(`/workouts/${workout._id}`)
+            .set('Cookie', cookie)
             .expect(200)
             .expect('Content-Type', /html/);
 
@@ -150,8 +157,11 @@ describe('POST /workouts', () => {
     test('should create a new workout', async () => {
         await Workout.deleteMany({}); // clears database 
 
+        const date = new Date(today);
+        date.setDate(today.getDate() + 1);
+
         const validWorkout = {
-            day: new Date(today + 1),
+            day: date,
             exercise: { // req.body structure (same index across arrays in fields belong in same object) -- this input should yield TWO exercise objects
                 movement: [movement._id, userMovement._id],
                 weight: ['100', '150'],
@@ -164,8 +174,9 @@ describe('POST /workouts', () => {
             createdBy: janeId
         }
 
-        const response = await testSession
+        const response = await request(app)
             .post('/workouts')
+            .set('Cookie', cookie)
             .send(validWorkout)
             .expect(302);
 
@@ -177,15 +188,17 @@ describe('POST /workouts', () => {
         expect(count).toBe(1);
 
         // verifying length of exercise array in workout
-        const createdWorkout = await Workout.findOne({ createdBy: janeId, day: new Date(today + 1) });
-        expect(createdWorkout.exercise.length).toBe(2);
+        const createdWorkout : WorkoutDocument | null = await Workout.findOne({ createdBy: janeId, day: date });
+        expect(createdWorkout).not.toBeNull();
+        expect(createdWorkout!.exercise.length).toBe(2);
     });
 
     test('should handle error if invalid input', async () => {
         const invalidWorkout = {}
 
-        const response = await testSession
+        const response = await request(app)
             .post('/workouts')
+            .set('Cookie', cookie)
             .send(invalidWorkout)
             .expect(500)
 
@@ -194,11 +207,14 @@ describe('POST /workouts', () => {
 });
 
 describe('PUT /workouts/:id', () => {
-    let workoutToUpdate = {}
-    let updateWorkoutData = {}
+    let workoutToUpdate = {} as WorkoutDocument;
+    let updateWorkoutData = {};
+
+    const date = new Date(today);
+    date.setDate(today.getDate() + 1);
 
     test('should update a workout', async () => {
-        workoutToUpdate = await Workout.findOne({ day: today, createdBy: janeId });
+        workoutToUpdate = await Workout.findOne({ day: date, createdBy: janeId }) as WorkoutDocument;
 
         workout = workoutToUpdate._id;
         expect(workoutToUpdate.exercise.length).toBe(2);
@@ -215,8 +231,9 @@ describe('PUT /workouts/:id', () => {
             },
         }
 
-        const response = await testSession
-            .put(`/workouts/${workoutToUpdate._id}`)
+        const response = await request(app)
+            .put(`/workouts/${workoutToUpdate?._id!}`)
+            .set('Cookie', cookie)
             .send(updateWorkoutData)
             .expect(302);
 
@@ -224,10 +241,12 @@ describe('PUT /workouts/:id', () => {
         expect(response.header.location).toBe('/workouts');
         
         // checking update workout against input
-        const updatedWorkout = await Workout.findById(workoutToUpdate._id);
-        expect(updatedWorkout.exercise[0].weight).toEqual(5000);
-        expect(updatedWorkout.exercise[0].movement).toEqual(workoutToUpdate.exercise[0].movement);
-        expect(updatedWorkout.exercise.length).toBe(1);
+        const updatedWorkout : WorkoutDocument | null = await Workout.findById(workoutToUpdate._id);
+        expect (updatedWorkout).not.toBeNull();
+
+        expect(updatedWorkout!.exercise[0].weight).toEqual(5000);
+        expect(updatedWorkout!.exercise[0].movement).toEqual(workoutToUpdate.exercise[0].movement);
+        expect(updatedWorkout!.exercise.length).toBe(1);
 
     });
 
@@ -235,8 +254,9 @@ describe('PUT /workouts/:id', () => {
         // invalid workout id, but valid input
         const id = new mongoose.Types.ObjectId();
 
-        const response = await testSession
+        const response = await request(app)
             .put(`/workouts/${id}`)
+            .set('Cookie', cookie)
             .send(updateWorkoutData)
             .expect(404);
 
@@ -245,8 +265,9 @@ describe('PUT /workouts/:id', () => {
 
     test('should handle error if invalid data', async () => {
         // valid workout id, but invalid input
-        const response = await testSession
-            .put(`/workouts/${workoutToUpdate._id}`)
+        const response = await request(app)
+            .put(`/workouts/${workoutToUpdate?._id}`)
+            .set('Cookie', cookie)
             .send({})
             .expect(500);
 
@@ -256,32 +277,38 @@ describe('PUT /workouts/:id', () => {
 
 describe('PUT /workouts/:id/complete', () => {
     test('should toggle isComplete field on workout', async () => {
-        const workoutToComplete = await Workout.findOne({ createdBy: janeId });
-        expect(workoutToComplete.isComplete).toBe(false); // checking isComplete is default: false
+        const workoutToComplete : WorkoutDocument | null = await Workout.findOne({ createdBy: janeId });
+        expect(workoutToComplete).not.toBeNull();
+        expect(workoutToComplete!.isComplete).toBe(false); // checking isComplete is default: false
 
         // toggling to true
-        const setToTrueResponse = await testSession
-            .put(`/workouts/${workoutToComplete._id}/complete`)
+        const setToTrueResponse = await request(app)
+            .put(`/workouts/${workoutToComplete!._id}/complete`)
+            .set('Cookie', cookie)
             .expect(200);
 
-        const completedWorkout = await Workout.findById(workoutToComplete._id);
-        expect(completedWorkout.isComplete).toBe(true); // verifying update to true
+        const completedWorkout : WorkoutDocument | null = await Workout.findById(workoutToComplete!._id);
+        expect(completedWorkout).not.toBeNull();
+        expect(completedWorkout!.isComplete).toBe(true); // verifying update to true
 
 
         // toggling to false
-        const setToFalseResponse = await testSession
-            .put(`/workouts/${workoutToComplete._id}/complete`)
+        const setToFalseResponse = await request(app)
+            .put(`/workouts/${workoutToComplete!._id}/complete`)
+            .set('Cookie', cookie)
             .expect(200);
 
-        const notCompleteWorkout = await Workout.findById(workoutToComplete._id);
-        expect(notCompleteWorkout.isComplete).toBe(false); // verifying update to false
+        const notCompleteWorkout : WorkoutDocument | null = await Workout.findById(workoutToComplete!._id);
+        expect(notCompleteWorkout).not.toBeNull();
+        expect(notCompleteWorkout!.isComplete).toBe(false); // verifying update to false
     });
 
     test('should handle error if invalid input', async () => {
         const id = new mongoose.Types.ObjectId(); // invalid workout id
 
-        const response = await testSession
+        const response = await request(app)
             .put(`/workouts/${id}/complete`)
+            .set('Cookie', cookie)
             .expect(404);
 
         expect(response.body.error).toEqual('Workout not found');
@@ -291,21 +318,24 @@ describe('PUT /workouts/:id/complete', () => {
 describe('DELETE /workouts/:id', () => {
     test('should delete a workout', async () => {
         const workoutToDelete = await Workout.findOne({ createdBy: janeId });
+        expect(workoutToDelete).not.toBeNull();
 
-        const response = await testSession
-            .delete(`/workouts/${workoutToDelete._id}`)
+        const response = await request(app)
+            .delete(`/workouts/${workoutToDelete!._id}`)
+            .set('Cookie', cookie)
             .expect(302);
         
         // verifying delete
-        const deletedWorkout = await Workout.findById(workoutToDelete._id);
+        const deletedWorkout = await Workout.findById(workoutToDelete!._id);
         expect(deletedWorkout).toBeNull();
     });
 
     test('should handle error if invalid workout', async () => {
         const id = new mongoose.Types.ObjectId(); // invalid workout id
 
-        const response = await testSession
+        const response = await request(app)
             .delete(`/workouts/${id}`)
+            .set('Cookie', cookie)
             .expect(404);
         
         expect(response.body.error).toEqual('Workout not found, could not delete');

@@ -1,34 +1,33 @@
-const mongoose = require('mongoose');
-const request = require('supertest');
-const session = require('supertest-session');
-const app = require('../../server');
+import mongoose from 'mongoose';
+import  request from 'supertest';
+import app from '../../server';
 
-const User = require('../../models/user');
-const Request = require('../../models/request');
-const Movement = require('../../models/movement');
-const Workout = require('../../models/workout');
-const Favorite = require('../../models/favorite');
+import User from '../../models/user';
+import FriendRequest from '../../models/friend-request';
+import Movement, { MovementDocument } from '../../models/movement';
+import Workout, { WorkoutDocument } from '../../models/workout';
+import Favorite, { FavoriteDocument } from '../../models/favorite';
 
-const movementData = require('../../seed/movementData');
+import movementData from '../../seed/movementData';
 
 require('dotenv').config();
 
-const testSession = session(app);
+let cookie : string;
 
 let janeId = '';
-let friendId = '';
+let friendId = ''
 let friendUsername = '';
 let notFriendUsername = '';
-let workout = {};
-let favorite = {};
-let movement = {};
+let workout = {} as WorkoutDocument;
+let favorite = {} as FavoriteDocument;
+let movement = {} as MovementDocument;
 
 const today = new Date();
 today.setUTCHours(0, 0, 0, 0,);
 
 beforeAll(async () => {
     await mongoose.connection.close();
-    await mongoose.connect(process.env.MONGO_URL);
+    await mongoose.connect(process.env.MONGO_URL!);
     await User.deleteMany({});
     await Movement.deleteMany({});
     await Workout.deleteMany({});
@@ -57,14 +56,14 @@ beforeAll(async () => {
     });
     notFriendUsername = notFriend.username;
 
-    const friendship = await Request.create({
+    const friendship = await FriendRequest.create({
         from: janeId,
         to: john._id
     });
-    friendId = friendship.to
+    friendId = String(friendship.to)
 
     await Movement.create(movementData.slice(0, 5));
-    movement = await Movement.findOne({}).lean();
+    movement = await Movement.findOne({}).lean() as MovementDocument;
 
     await Favorite.create({
         name: 'johns favorite',
@@ -81,13 +80,16 @@ beforeAll(async () => {
         createdBy: john._id
     });
 
-    await testSession
+    const loginResponse = await request(app)
         .post('/login')
         .send({ email: 'jane@doe.com', password: 'password123' });
+    
+    cookie = loginResponse.headers['set-cookie'][0]; 
 
 
-    await testSession
+    await request(app)
         .post('/workouts')
+        .set('Cookie', cookie)
         .send({
             day: today,
             exercise: { // req.body structure
@@ -101,19 +103,19 @@ beforeAll(async () => {
             },
         });
     
-    workout = await Workout.findOne({ createdBy: janeId });
+    workout = await Workout.findOne({ createdBy: janeId }) as WorkoutDocument;
 
-    await testSession
-    .post(`/workouts/${workout._id}/favorite`)
-    .send({
-        name: 'favorite'
-    });
+    await request(app)
+        .post(`/workouts/${workout._id}/favorite`)
+        .set('Cookie', cookie)
+        .send({
+            name: 'favorite'
+        });
 
-    favorite = await Favorite.findOne({ createdBy: janeId, name: 'favorite' })
+    favorite = await Favorite.findOne({ createdBy: janeId, name: 'favorite' }) as FavoriteDocument;
 });
 
 afterAll(async () => {
-    testSession.destroy();
     await mongoose.connection.close();
 });
 
@@ -121,8 +123,9 @@ afterAll(async () => {
 // tests for GET views
 describe('GET /favorites', () => {
     test('should render the favorites index view', async () => {
-        const response = await testSession
+        const response = await request(app)
             .get('/favorites')
+            .set('Cookie', cookie)
             .expect(200);
 
         expect(response.text).toContain('Favorites');
@@ -132,12 +135,13 @@ describe('GET /favorites', () => {
 
 describe('GET /favorites/:id', () => {
     test('should render the favorite detail view', async () => {
-        const response = await testSession
+        const response = await request(app)
             .get(`/favorites/${favorite._id}`)
+            .set('Cookie', cookie)
             .expect(200);
 
         expect(response.text).toContain(`${favorite.name}`);
-        expect(response.text).toContain(`${favorite.exercise[0].movement.name}`);
+        expect(response.text).toContain(`${(favorite.exercise[0].movement as MovementDocument).name}`);
         expect(response.text).toContain(`${favorite.exercise[0].weight}`);
         expect(response.text).toContain(`${favorite.exercise[0].sets}`);
         expect(response.text).toContain(`${favorite.exercise[0].reps}`);
@@ -147,8 +151,9 @@ describe('GET /favorites/:id', () => {
 describe('GET /users/:username/favorites', () => {
     test('should render public favorites for other user', async () => {
         const favorites = await Favorite.find({ createdBy: friendId, isPublic: true });
-        const response = await testSession
+        const response = await request(app)
             .get(`/users/${friendUsername}/favorites`)
+            .set('Cookie', cookie)
             .expect(200);
         
         expect(response.text).toContain(`${friendUsername}\'s Favorite Workouts`);
@@ -158,16 +163,18 @@ describe('GET /users/:username/favorites', () => {
     });
 
     test('should handle error for invalid username', async () => {
-        const response = await testSession
+        const response = await request(app)
             .get(`/users/invalidUsername/favorites`)
+            .set('Cookie', cookie)
             .expect(404);
         
         expect(response.body.error).toEqual('User not found');
     });
 
     test('should handle error if requesting user is not other user\'s friend', async () => {
-        const response = await testSession
+        const response = await request(app)
             .get(`/users/${notFriendUsername}/favorites`)
+            .set('Cookie', cookie)
             .expect(404);
         
         expect(response.body.error).toEqual('Cannot view this user\'s favorites');
@@ -178,8 +185,9 @@ describe('GET /users/:username/favorites', () => {
 // tests for non-GET methods
 describe('POST /workouts/:id/favorite', () => {
     test('should successfully create a favorite', async () => {
-        const response = await testSession
+        const response = await request(app)
             .post(`/workouts/${workout._id}/favorite`)
+            .set('Cookie', cookie)
             .send({ name: 'favorite workout' })
             .expect(200)
         
@@ -192,8 +200,9 @@ describe('POST /workouts/:id/favorite', () => {
 
     test('should handle error if invalid workout input', async () => {
         const id = new mongoose.Types.ObjectId();
-        const response = await testSession
+        const response = await request(app)
             .post(`/workouts/${id}/favorite`)
+            .set('Cookie', cookie)
             .send({ name: 'invalid favorite' })
             .expect(404)
 
@@ -209,8 +218,9 @@ describe('POST /favorites/:id/copy', () => {
         const date = new Date(today);
         date.setDate(today.getDate() + 15);
 
-        const response = await testSession
+        const response = await request(app)
             .post(`/favorites/${favorite._id}/copy`)
+            .set('Cookie', cookie)
             .send({ day: date })
             .expect(302)
 
@@ -224,9 +234,9 @@ describe('POST /favorites/:id/copy', () => {
             day: date,
             exercise: [{
                 movement: expect.objectContaining({
-                    name: favorite.exercise[0].movement.name,
-                    musclesWorked: favorite.exercise[0].movement.musclesWorked,
-                    type: favorite.exercise[0].movement.type
+                    name: (favorite.exercise[0].movement as MovementDocument).name,
+                    musclesWorked: (favorite.exercise[0].movement as MovementDocument).musclesWorked,
+                    type: (favorite.exercise[0].movement as MovementDocument).type
                 }),
                 weight: favorite.exercise[0].weight,
                 sets: favorite.exercise[0].sets,
@@ -242,8 +252,9 @@ describe('POST /favorites/:id/copy', () => {
 
         await Movement.deleteOne({ _id: movement._id });
 
-        const response = await testSession
+        const response = await request(app)
             .post(`/favorites/${favorite._id}/copy`)
+            .set('Cookie', cookie)
             .send({ day: date })
             .expect(302);
 
@@ -251,9 +262,10 @@ describe('POST /favorites/:id/copy', () => {
 
         const createdWorkout = await Workout.findOne({ day: date, createdBy: janeId })
             .populate('exercise.movement');
-        expect(createdWorkout).toBeDefined();
+        
+        expect(createdWorkout).not.toBeNull();
 
-        const createdMovement = await Movement.findById(createdWorkout.exercise[0].movement);
+        const createdMovement = await Movement.findById(createdWorkout!.exercise[0].movement);
         expect(createdMovement).toBeDefined();
         expect(createdMovement).toMatchObject({
             ...favorite.exercise[0].movement
@@ -266,8 +278,9 @@ describe('POST /favorites/:id/copy', () => {
 
         const invalidId = new mongoose.Types.ObjectId();
 
-        const response = await testSession
+        const response = await request(app)
             .post(`/favorites/${invalidId}/copy`)
+            .set('Cookie', cookie)
             .send({ day: date })
             .expect(404)
 
@@ -280,16 +293,18 @@ describe('POST /favorites/:id/copy', () => {
 
 describe('POST /favorites/:id/share', () => {
     test('should successfully share a favorite', async () => {
-        const response = await testSession
+        const response = await request(app)
             .post(`/favorites/${favorite._id}/share`)
+            .set('Cookie', cookie)
             .send({ friend: friendId })
             .expect(302)
 
         expect(response.header.location).toBe('/favorites');
 
         const sharedFavorite = await Favorite.findOne({ name: favorite.name, createdBy: janeId });
-        expect(sharedFavorite).toBeDefined();
-        expect(sharedFavorite.exercise[0]).toMatchObject({
+        expect(sharedFavorite).not.toBeNull();
+
+        expect(sharedFavorite!.exercise[0]).toMatchObject({
             movement: favorite.exercise[0].movement,
             weight: favorite.exercise[0].weight,
             sets: favorite.exercise[0].sets,
@@ -300,8 +315,9 @@ describe('POST /favorites/:id/share', () => {
     test('should handle error if invalid favorite', async () => {
         const id = new mongoose.Types.ObjectId();
 
-        const response = await testSession
+        const response = await request(app)
             .post(`/favorites/${id}/share`)
+            .set('Cookie', cookie)
             .send({ friend: friendId })
             .expect(404)
         
@@ -311,8 +327,9 @@ describe('POST /favorites/:id/share', () => {
     test('should handle error if invalid friendship', async () => {
         const id = new mongoose.Types.ObjectId();
 
-        const response = await testSession
+        const response = await request(app)
             .post(`/favorites/${favorite._id}/share`)
+            .set('Cookie', cookie)
             .send({ friend: id })
             .expect(403)
     
@@ -322,8 +339,9 @@ describe('POST /favorites/:id/share', () => {
 
 describe('DELETE /favorites/:id', () => {
     test('should successfully delete a favorite', async () => {
-        const response = await testSession 
+        const response = await request(app) 
             .delete(`/favorites/${favorite._id}`)
+            .set('Cookie', cookie)
             .expect(302)
 
         expect(response.header.location).toBe('/favorites');
@@ -335,8 +353,9 @@ describe('DELETE /favorites/:id', () => {
     test('should handle error if invalid input', async () => {
         const id = new mongoose.Types.ObjectId();
 
-        const response = await testSession 
+        const response = await request(app) 
             .delete(`/favorites/${id}`)
+            .set('Cookie', cookie)
             .expect(404)
 
         expect(response.body.error).toEqual('Favorite not found, could not delete');
@@ -345,24 +364,29 @@ describe('DELETE /favorites/:id', () => {
 
 describe('PUT /favorites/:id/toggle-public', () => {
     test('should successfully toggle the isPublic attribute', async () => {
-        const favorite = await Favorite.findOne({ createdBy: janeId });
+        const favorite : FavoriteDocument | null = await Favorite.findOne({ createdBy: janeId });
+        expect(favorite).not.toBeNull();
 
-        const response = await testSession
-            .put(`/favorites/${favorite._id}/toggle-public`)
+        const response = await request(app)
+            .put(`/favorites/${favorite!._id}/toggle-public`)
+            .set('Cookie', cookie)
             .expect(200);
         
 
         expect(response.body.message).toEqual('Favorite updated successfully');
 
-        const updatedFavorite = await Favorite.findById(favorite._id);
-        expect(updatedFavorite.isPublic).toBe(!favorite.isPublic);
+        const updatedFavorite : FavoriteDocument | null = await Favorite.findById(favorite!._id);
+        expect(favorite).not.toBeNull();
+
+        expect(updatedFavorite!.isPublic).toBe(!favorite!.isPublic);
     });
 
     test('should handle error if invalid favorite', async () => {
         const invalidId = new mongoose.Types.ObjectId();
 
-        const response = await testSession
+        const response = await request(app)
             .put(`/favorites/${invalidId}/toggle-public`)
+            .set('Cookie', cookie)
             .expect(404);
         
         expect(response.body.error).toEqual('Favorite not found');

@@ -1,27 +1,27 @@
-const mongoose = require('mongoose');
-const request = require('supertest');
-const session = require('supertest-session');
-const app = require('../../server');
+import mongoose from 'mongoose';
+import request from 'supertest';
+import app from '../../server';
 
-const User = require('../../models/user');
-const Movement = require('../../models/movement');
-const movementData = require('../../seed/movementData');
+import User from '../../models/user';
+import Movement, { MovementDocument } from '../../models/movement';
+
+import movementData from '../../seed/movementData';
 
 require('dotenv').config();
 
-const testSession = session(app);
+let cookie : string;
 
 let janeId = '';
-let movement = {};
+let movement = {} as MovementDocument;
 
 beforeAll(async () => {
     await mongoose.connection.close();
-    await mongoose.connect(process.env.MONGO_URL);
+    await mongoose.connect(process.env.MONGO_URL!);
     await User.deleteMany({});
     await Movement.deleteMany({});
     await Movement.create(movementData);
 
-    movement = await Movement.findOne({}).lean();
+    movement = await Movement.findOne({}).lean() as MovementDocument;
 
     const jane = await User.create({
         firstName: 'Jane',
@@ -31,13 +31,14 @@ beforeAll(async () => {
     });
     janeId = jane._id;
 
-    await testSession
+    const loginResponse = await request(app)
         .post('/login')
         .send({ email: 'jane@doe.com', password: 'password123' });
+    
+    cookie = loginResponse.headers['set-cookie'][0];   
 });
 
 afterAll(async () => {
-    testSession.destroy();
     await mongoose.connection.close();
 });
 
@@ -45,8 +46,9 @@ afterAll(async () => {
 // tests for GET views
 describe('GET /movements', () => {
     test('should render the movements view', async () => {
-        const response = await testSession
+        const response = await request(app)
             .get('/movements')
+            .set('Cookie', cookie)
             .expect(200)
             .expect('Content-Type', /html/);
 
@@ -55,8 +57,9 @@ describe('GET /movements', () => {
     });
 
     test('should filter the movements view based on type', async () => {
-        const response = await testSession
+        const response = await request(app)
             .get('/movements')
+            .set('Cookie', cookie)
             .query({ typeFilter: 'cardio', page: 1 })
             .expect(200)
             .expect('Content-Type', /html/);
@@ -66,8 +69,9 @@ describe('GET /movements', () => {
     });
 
     test('should filter the movements view based on muscles', async () => {
-        const response = await testSession
+        const response = await request(app)
             .get('/movements')
+            .set('Cookie', cookie)
             .query({ typeFilter: 'weighted', muscle: 'Chest', page: 1 })
             .expect(200)
             .expect('Content-Type', /html/);
@@ -79,8 +83,9 @@ describe('GET /movements', () => {
 
 describe('GET /movements/new', () => {
     test('should render the create movements view', async () => {
-        const response = await testSession
+        const response = await request(app)
             .get('/movements/new')
+            .set('Cookie', cookie)
             .expect(200)
             .expect('Content-Type', /html/);
 
@@ -90,8 +95,9 @@ describe('GET /movements/new', () => {
 
 describe('GET /movements/:id/edit', () => {
     test('should render the edit movements view', async () => {
-        const response = await testSession
+        const response = await request(app)
             .get(`/movements/${movement._id}/edit`)
+            .set('Cookie', cookie)
             .expect(200)
             .expect('Content-Type', /html/);
 
@@ -110,8 +116,9 @@ describe('POST /movements', () => {
             type: 'weighted'
         }
 
-        const response = await testSession
+        const response = await request(app)
             .post('/movements')
+            .set('Cookie', cookie)
             .send(testMovement)
             .expect(302)
         
@@ -130,8 +137,9 @@ describe('POST /movements', () => {
     });
 
     test('should handle error if invalid input', async () => {
-        const response = await testSession
+        const response = await request(app)
             .post('/movements')
+            .set('Cookie', cookie)
             .send({})
             .expect(400);
 
@@ -141,14 +149,16 @@ describe('POST /movements', () => {
 
 describe('PUT /movements/:id', () => {
     test('should successfully update a movement', async () => {
-        const testMovement = await Movement.findOne({ name: 'Bicep Movement' }).lean();
+        const testMovement : MovementDocument | null = await Movement.findOne({ name: 'Bicep Movement' }).lean();
+        expect(testMovement).not.toBeNull();
         const movementUpdate = {
             ...testMovement,
             musclesWorked: { Forearms: 'on' },
         }
 
-        const response = await testSession
-            .put(`/movements/${testMovement._id}`)
+        const response = await request(app)
+            .put(`/movements/${testMovement!._id}`)
+            .set('Cookie', cookie)
             .send(movementUpdate)
             .expect(302)
 
@@ -157,20 +167,20 @@ describe('PUT /movements/:id', () => {
 
 
         // checking updated movement against input
-        const updatedMovement = await Movement.findById(testMovement._id);
-
+        const updatedMovement = await Movement.findById(testMovement!._id);
         expect(updatedMovement).toBeDefined();
         expect(updatedMovement).toMatchObject({
-            name: testMovement.name,
-            description: testMovement.description,
+            name: testMovement!.name,
+            description: testMovement!.description,
             musclesWorked: ['Forearms'],
-            type: testMovement.type,
+            type: testMovement!.type,
         });
     });
 
     test('should handle error if invalid input', async () => {
-        const response = await testSession
+        const response = await request(app)
             .put(`/movements/${movement._id}`)
+            .set('Cookie', cookie)
             .send({})
             .expect(400);
 
@@ -179,15 +189,16 @@ describe('PUT /movements/:id', () => {
 });
 
 describe('DELETE /movements/:id', () => {
-    let testMovement = ''
+    let testMovement = {} as MovementDocument;
 
     beforeAll(async () => {
-        testMovement = await Movement.findOne({ name: 'Bicep Movement' }).lean();
+        testMovement = await Movement.findOne({ name: 'Bicep Movement' }).lean() as MovementDocument;
     });
     
     test('should successfully delete a movement', async () => {
-        const response = await testSession
+        const response = await request(app)
             .delete(`/movements/${testMovement._id}`)
+            .set('Cookie', cookie)
             .expect(302);
 
         // redirect check
@@ -199,8 +210,9 @@ describe('DELETE /movements/:id', () => {
     });
 
     test('should handle error if invalid movement', async () => {
-        const response = await testSession
+        const response = await request(app)
             .delete(`/movements/${testMovement._id}`)
+            .set('Cookie', cookie)
             .expect(404);
 
         expect(response.body.error).toEqual('Movement not found');

@@ -123,6 +123,7 @@ export interface WorkoutDocument extends mongoose.Document {
     exercise : ExerciseDocument[];
     isComplete : boolean;
     createdBy : mongoose.Types.ObjectId | Partial<UserDocument>;
+    formattedDay? : string;
 }
 
 

@@ -1,15 +1,16 @@
-const mongoose = require('mongoose');
-const request = require('supertest');
-const cookie = require('cookie');
-const app = require('../../server');
+import mongoose from 'mongoose';
+import { MongoServerError } from 'mongodb';
+import request from 'supertest';
+import cookie from 'cookie';
+import app from '../../server';
 
-const User = require('../../models/user');
+import User, { UserDocument } from '../../models/user';
 
 require('dotenv').config();
 
 beforeAll(async () => {
     await mongoose.connection.close();
-    await mongoose.connect(process.env.MONGO_URL);
+    await mongoose.connect(process.env.MONGO_URL!);
     await User.deleteMany({});
 
     const user = await User.create({
@@ -54,12 +55,9 @@ describe('POST /signup', () => {
             email: 'john@doe.com',
             password: 'password123',
             passwordConfirmation: 'password123',
-        }
+        } 
 
-        jest.spyOn(User, 'create').mockResolvedValue({
-            _id: 'fakeUserId',
-            ...userData,
-        });
+        jest.spyOn(User, 'create');
 
         const response = await request(app)
             .post('/signup')
@@ -69,17 +67,19 @@ describe('POST /signup', () => {
         expect(User.create).toHaveBeenCalledWith(userData);
         expect(response.header.location).toBe('/workouts');
 
-        const cookies = cookie.parse(response.header['set-cookie'].join('; '));
-        const sessionId = cookies['connect.sid'];
-
+        const setCookieHeader = cookie.parse(String(response.header['set-cookie']));
+        const sessionId = setCookieHeader!['connect.sid'];
+        
         expect(sessionId).toBeDefined();
     });
 
     test('should handle duplicate email', async () => {
         jest.spyOn(User, 'create').mockImplementation(() => {
-            const error = new mongoose.Error.ValidationError();
-            error.code = 11000;
-            error.keyPattern = { email: 1 }
+            const error = new MongoServerError({
+                message: 'Duplicate key error',
+                code: 11000,
+                keyPattern: { email: 1 }
+            });
             throw error;
         });
 
@@ -100,9 +100,11 @@ describe('POST /signup', () => {
 
     test('should handle duplicate username', async () => {
         jest.spyOn(User, 'create').mockImplementation(() => {
-            const error = new mongoose.Error.ValidationError();
-            error.code = 11000;
-            error.keyPattern = { username: 1 }
+            const error = new MongoServerError({
+                message: 'Duplicate key error',
+                code: 11000,
+                keyPattern: { username: 1 }
+            });
             throw error;
         });
 
@@ -133,8 +135,8 @@ describe('POST /login', () => {
 
         expect(response.header.location).toBe('/workouts');
 
-        const cookies = cookie.parse(response.header['set-cookie'].join('; '));
-        const sessionId = cookies['connect.sid'];
+        const setCookieHeader = cookie.parse(String(response.header['set-cookie']));
+        const sessionId = setCookieHeader!['connect.sid'];
 
         expect(sessionId).toBeDefined();
     });

@@ -1,23 +1,22 @@
-const mongoose = require('mongoose');
-const request = require('supertest');
-const session = require('supertest-session');
-const app = require('../../server');
+import mongoose from 'mongoose';
+import request from 'supertest';
+import app from '../../server';
 
-const User = require('../../models/user');
-const Request = require('../../models/request');
+import User from '../../models/user';
+import FriendRequest, { FriendRequestDocument } from '../../models/friend-request';
 
 require('dotenv').config();
 
-const testSession = session(app);
+let cookie : string;
 
 let janeId = '';
 let johnId = '';
 
 beforeAll(async () => {
     await mongoose.connection.close();
-    await mongoose.connect(process.env.MONGO_URL);
+    await mongoose.connect(process.env.MONGO_URL!);
     await User.deleteMany({});
-    await Request.deleteMany({});
+    await FriendRequest.deleteMany({});
 
     const jane = await User.create({
         firstName: 'Jane',
@@ -35,13 +34,15 @@ beforeAll(async () => {
     });
     johnId = john._id;
 
-    await testSession
+    const loginResponse = await request(app)
         .post('/login')
         .send({ email: 'jane@doe.com', password: 'password123' });
+    
+    cookie = loginResponse.headers['set-cookie'][0];
+
 });
 
 afterAll(async () => {
-    testSession.destroy();
     await mongoose.connection.close();
 });
 
@@ -53,22 +54,24 @@ describe('POST /users/request', () => {
             to: johnId
         }
 
-        const response = await testSession
+        const response = await request(app)
             .post('/users/request')
+            .set('Cookie', cookie)
             .send(requestData)
             .expect(302);
 
         expect(response.header.location).toBe('/users/me');
 
-        const createdRequest = await Request.findOne(requestData);
+        const createdRequest = await FriendRequest.findOne(requestData);
         expect(createdRequest).toBeDefined();
         expect(createdRequest).toMatchObject(requestData);
     });
 
     test('should send error if existing request', async () => {
 
-        const response = await testSession
+        const response = await request(app)
             .post('/users/request')
+            .set('Cookie', cookie)
             .send({
                 from: janeId,
                 to: johnId
@@ -79,8 +82,9 @@ describe('POST /users/request', () => {
     });
 
     test('should handle error if one or more invalid users', async () => {
-        const response = await testSession
+        const response = await request(app)
             .post('/users/request')
+            .set('Cookie', cookie)
             .send({
                 from: 'invalidOne',
                 to: 'invalidTwo'
@@ -92,36 +96,39 @@ describe('POST /users/request', () => {
 });
 
 describe('PUT /users/request/edit', () => {
-    let request = {}
+    let friendRequest = {} as FriendRequestDocument;
 
     beforeEach(async () => {
-        await Request.deleteMany({});
-        request = await Request.create({
+        await FriendRequest.deleteMany({});
+        friendRequest = await FriendRequest.create({
             from: johnId,
             to: janeId
         });
     });
 
     test('should successfully update the request if accepted', async () => {
-        const response = await testSession
+        const response = await request(app)
             .put('/users/request/edit')
+            .set('Cookie', cookie)
             .send({
-                requestId: request._id,
+                requestId: friendRequest._id,
                 decision: 'Accept'
             })
             .expect(302)
 
             expect(response.header.location).toBe('/users/me');
 
-            const updatedRequest = await Request.findById(request._id);
-            expect(updatedRequest.status).toEqual('accepted');
+            const updatedRequest : FriendRequestDocument | null = await FriendRequest.findById(friendRequest._id);
+            expect(updatedRequest).not.toBeNull();
+            expect(updatedRequest!.status).toEqual('accepted');
     });
 
     test('should throw error if invalid decision is included', async () => {
-        const response = await testSession
+        const response = await request(app)
             .put('/users/request/edit')
+            .set('Cookie', cookie)
             .send({
-                requestId: request._id,
+                requestId: friendRequest._id,
                 decision: 'invalid'
             })
             .expect(400)
@@ -130,24 +137,26 @@ describe('PUT /users/request/edit', () => {
     });
 
     test('should delete a declined request', async () => {
-        const response = await testSession
+        const response = await request(app)
             .put('/users/request/edit')
+            .set('Cookie', cookie)
             .send({
-                requestId: request._id,
+                requestId: friendRequest._id,
                 decision: 'Decline'
             })
             .expect(302)
 
             expect(response.header.location).toBe('/users/me');
 
-            const deletedRequest = await Request.findById(request._id);
+            const deletedRequest = await FriendRequest.findById(friendRequest._id);
             expect(deletedRequest).toBeNull();
 
     });
 
     test('should handle error if request is not found', async () => {
-        const response = await testSession
+        const response = await request(app)
             .put('/users/request/edit')
+            .set('Cookie', cookie)
             .send({
                 requestId: new mongoose.Types.ObjectId(),
                 decision: 'Accept'

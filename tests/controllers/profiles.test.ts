@@ -1,36 +1,38 @@
-const mongoose = require('mongoose');
-const request = require('supertest');
-const session = require('supertest-session');
-const cheerio = require('cheerio');
-const app = require('../../server');
+import mongoose from 'mongoose';
+import request from 'supertest';
+import { load } from 'cheerio';
+import app from '../../server';
 
-const User = require('../../models/user');
-const Request = require('../../models/request');
-const Workout = require('../../models/workout');
-const Movement = require('../../models/movement');
+import User, { UserDocument } from '../../models/user';
+import FriendRequest, { FriendRequestDocument } from '../../models/friend-request';
+import Workout from '../../models/workout';
+import Movement, { MovementDocument } from '../../models/movement';
 
-const movementData = require('../../seed/movementData');
+import movementData from '../../seed/movementData';
 
 require('dotenv').config();
 
-const testSession = session(app);
+let cookie : string;
 
 let janeId = '';
 let johnId = '';
-let weightedMovement = {};
-let cardioMovement = {};
-let friendship = {};
+let weightedMovement = {} as MovementDocument;
+let cardioMovement = {} as MovementDocument;
+let friendship = {} as FriendRequestDocument;
+
+const today = new Date();
+today.setUTCHours(0, 0, 0, 0);
 
 beforeAll(async () => {
     await mongoose.connection.close();
-    await mongoose.connect(process.env.MONGO_URL);
+    await mongoose.connect(process.env.MONGO_URL!);
     await User.deleteMany({});
-    await Request.deleteMany({});
+    await FriendRequest.deleteMany({});
     await Workout.deleteMany({});
     await Movement.deleteMany({});
 
     await Movement.create(movementData.slice(0, 5));
-    weightedMovement = await Movement.findOne({});
+    weightedMovement = await Movement.findOne({}) as MovementDocument;
 
     cardioMovement = await Movement.create(movementData[movementData.length - 1]);
 
@@ -50,7 +52,7 @@ beforeAll(async () => {
     });
     johnId = john._id;
 
-    friendship = await Request.create({
+    friendship = await FriendRequest.create({
         from: janeId,
         to: johnId,
         status: 'accepted'
@@ -58,13 +60,15 @@ beforeAll(async () => {
 
     await friendship.populate({ path: 'to', select: 'username' })
 
-    await testSession
+    const loginResponse = await request(app)
         .post('/login')
         .send({ email: 'jane@doe.com', password: 'password123' });
+    
+    cookie = loginResponse.headers['set-cookie'][0];
 
     
     const weightedWorkoutData = {
-        day: 'Monday',
+        day: today,
         exercise: [{ 
             movement: weightedMovement._id,
             weight: 100,
@@ -74,7 +78,7 @@ beforeAll(async () => {
     }
 
     const cardioWorkoutData = {
-        day: 'Monday',
+        day: today,
         exercise: [{ 
             movement: cardioMovement._id,
             minutes: 50,
@@ -100,7 +104,6 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-    testSession.destroy();
     await mongoose.connection.close();
 });
 
@@ -108,14 +111,16 @@ afterAll(async () => {
 // tests for get views
 describe('GET /users/me', () => {
     test('should successfully render user\'s profile view', async () => {
-        const response = await testSession
+        const response = await request(app)
             .get('/users/me')
+            .set('Cookie', cookie)
             .expect(200);
 
         // query for user
-        const user = await User.findById(janeId);
+        const user : UserDocument | null = await User.findById(janeId);
+        expect(user).not.toBeNull();
         // check that user's profile info is render in view
-        expect(response.text).toContain(`Hello, ${user.firstName}!`);
+        expect(response.text).toContain(`Hello, ${user!.firstName}!`);
         
         // query for associated weighted and cardio workouts
         const weightedWorkout = await Workout.find({ 
@@ -130,7 +135,7 @@ describe('GET /users/me', () => {
         for (const workout of weightedWorkout) {
             // for ease, assuming only 1 exercise per workout for test
             // then loop through musclesWorked array for exercise
-            workout.exercise[0].movement.musclesWorked.forEach((muscle) => {
+            (workout.exercise[0].movement as MovementDocument).musclesWorked.forEach((muscle) => {
                 // check that the muscles are rendered in the view (veriication for doughnut chart)
                 expect(response.text).toContain(`${muscle}`);
             });
@@ -145,17 +150,18 @@ describe('GET /users/me', () => {
         }
 
         // using cheerio to select parts of DOM
-        const $ = cheerio.load(response.text);
+        const $ = load(response.text);
         const friendsList = $('#friendsList'); // select friends list
         // checking that accepted request was correctly sorted into friends list 
-        expect(friendsList.text()).toContain(`${friendship.to.username}`);
+        expect(friendsList.text()).toContain(`${(friendship.to as UserDocument).username}`);
     });
 });
 
 describe('GET /users/search', () => {
     test('should successfully render search view', async () => {
-        const response = await testSession 
+        const response = await request(app) 
             .get('/users/search')
+            .set('Cookie', cookie)
             .expect(200)
 
         expect(response.text).toContain('Search for Users');
@@ -164,14 +170,16 @@ describe('GET /users/search', () => {
 
 describe('GET /users/:username/profile', () => {
     test('should successfully render another user\'s profile view', async () => {
-        const otherUser = await User.findById(johnId);
+        const otherUser : UserDocument | null = await User.findById(johnId);
+        expect(otherUser).not.toBeNull();
 
-        const response = await testSession
-            .get(`/users/${otherUser.username}/profile`)
+        const response = await request(app)
+            .get(`/users/${otherUser!.username}/profile`)
+            .set('Cookie', cookie)
             .expect(200);
 
         // checking to see if other user's info is present
-        expect(response.text).toContain(`${otherUser.username}`);
+        expect(response.text).toContain(`${otherUser!.username}`);
 
         // searching for weighted and cardio movements associated with other user
         const weightedWorkout = await Workout.find({ 
@@ -186,7 +194,7 @@ describe('GET /users/:username/profile', () => {
         for (const workout of weightedWorkout) {
             // for ease, assuming only 1 exercise per workout for test
             // then loop through musclesWorked array for exercise
-            workout.exercise[0].movement.musclesWorked.forEach((muscle) => {
+            (workout.exercise[0].movement as MovementDocument).musclesWorked.forEach((muscle) => {
                 // check that the muscles are rendered in the view (veriication for doughnut chart)
                 expect(response.text).toContain(`${muscle}`);
             });
@@ -202,10 +210,12 @@ describe('GET /users/:username/profile', () => {
     });
 
     test('should redirect user to /user/me if user routes to own page, and render profile', async () => {
-        const self = await User.findById(janeId); // search for logged in user
+        const self : UserDocument | null = await User.findById(janeId); // search for logged in user
+        expect(self).not.toBeNull();
 
-        const response = await testSession
-            .get(`/users/${self.username}/profile`)
+        const response = await request(app)
+            .get(`/users/${self!.username}/profile`)
+            .set('Cookie', cookie)
             .expect(302);
 
         // checking that user was redirected to url for own profile
@@ -217,8 +227,9 @@ describe('GET /users/:username/profile', () => {
         const count = await User.countDocuments({ username: 'invalid' });
         expect(count).toBe(0);
 
-        const response = await testSession
+        const response = await request(app)
             .get('/users/invalid/profile') // username is 'invalid'
+            .set('Cookie', cookie)
             .expect(404);
 
         // checking for error
@@ -228,19 +239,23 @@ describe('GET /users/:username/profile', () => {
 
 describe('POST /users/search', () => {
     test('should search for users based on input', async () => {
-        const response = await testSession
+        const response = await request(app)
             .post('/users/search')
+            .set('Cookie', cookie)
             .send({ searchTerm: 'john' })
             .expect(200)
 
-        const searchedUser = await User.findById(johnId);
-        expect(response.text).toContain(`${searchedUser.username}`);
-        expect(response.text).toContain(`${searchedUser.profilePhoto}`);
+        const searchedUser : UserDocument | null = await User.findById(johnId);
+        expect(searchedUser).not.toBeNull();
+
+        expect(response.text).toContain(`${searchedUser!.username}`);
+        expect(response.text).toContain(`${searchedUser!.profilePhoto}`);
     });
 
     test('should not return own user\'s username in results', async () => {
-        const response = await testSession
+        const response = await request(app)
             .post('/users/search')
+            .set('Cookie', cookie)
             .send({ searchTerm: 'janedoe' })
             .expect(200)
 
@@ -262,21 +277,26 @@ describe('PUT /users/me/bio/edit', () => {
     test('should update the user\'s bio', async () => {
         const bio = 'this is a bio';
 
-        const response = await testSession
+        const response = await request(app)
             .put('/users/me/bio/edit')
+            .set('Cookie', cookie)
             .send({ bio })
             .expect(302);
 
         expect(response.header.location).toBe('/users/me');
-        const updatedUser = await User.findById(janeId);
-        expect(updatedUser.bio).toEqual(bio);
+
+        const updatedUser : UserDocument | null = await User.findById(janeId);
+        expect(updatedUser).not.toBeNull();
+        
+        expect(updatedUser!.bio).toEqual(bio);
     });
 
     test('should handle error if invalid input', async () => {
         const tooLongBio = 'a'.repeat(101);
 
-        const response = await testSession
+        const response = await request(app)
             .put('/users/me/bio/edit')
+            .set('Cookie', cookie)
             .send({ bio: tooLongBio })
             .expect(500);
         
