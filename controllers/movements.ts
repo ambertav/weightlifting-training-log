@@ -1,18 +1,26 @@
-const Movement = require('../models/movement');
+import { Request, Response } from 'express';
+import Movement from '../models/movement';
 
-const { formatMovementData } = require('../utilities/formatHelpers');
-const { muscleGroups } = require('../utilities/constants');
+import { formatMovementData } from '../utilities/formatHelpers';
+import { muscleGroups } from '../utilities/constants';
+
+
+// TEMPORARY TYPE
+interface MovementFilter {
+    type? : 'cardio' | 'weighted';
+    musclesWorked? : any;
+}
 
 // index
-async function getMovements (req, res) {
+export async function getMovements (req : Request, res : Response) {
     try {
         const pageSize = 8;
-        const page = req.query.page || 1;
+        const page : number = Number(req.query.page) || 1;
         const typeFilter = req.query.typeFilter;
-        const muscleFilter = req.query.muscle ? req.query.muscle.split(',') : [];
+        const muscleFilter = req.query.muscle && typeof req.query.muscle === 'string' ? req.query.muscle.split(',') : [];
 
         // creates filtering parameters
-        const filter = {}
+        const filter : MovementFilter = {}
         if (typeFilter === 'cardio') {
             filter.type = 'cardio';
         }
@@ -60,14 +68,14 @@ async function getMovements (req, res) {
 }
 
 // new
-function newMovementView (req, res) {
+export function newMovementView (req : Request, res : Response) {
     res.render('movement/new.ejs', {
         muscleGroups,
     });
 }
 
 // delete
-async function deleteMovement (req, res) {
+export async function deleteMovement (req : Request, res : Response) {
     try {
         const deletedMovement = await Movement.findOne({
             createdBy: req.session.userId,
@@ -85,14 +93,14 @@ async function deleteMovement (req, res) {
 }
 
 // update
-async function updateMovement (req, res) {
+export async function updateMovement (req : Request, res : Response) {
     try {
         if (!req.body.name || !req.body.type) {
             return res.status(400).json({ error: 'Invalid input', reload: true });
         }
 
          // req.body in format of musclesWorked: { muscle: 'on', muscle: 'on' }, must reformat before creating instance
-        const editMovement = formatMovementData(req.body, req.session.userId); // format req.body per schema
+        const editMovement = formatMovementData(req.body, req.session.userId!); // format req.body per schema
 
         const movement = await Movement.findOne({
             createdBy: req.session.userId,
@@ -114,14 +122,14 @@ async function updateMovement (req, res) {
 }
 
 // create
-async function createMovement (req, res) {
+export async function createMovement (req : Request, res : Response) {
     try {
         if (!req.body.name || !req.body.type) {
             return res.status(400).json({ error: 'Invalid input', reload: true });
         }
 
         // req.body in format of musclesWorked: { muscle: 'on', muscle: 'on' }, must reformat before creating instance
-        const newMovement = formatMovementData(req.body, req.session.userId); // format req.body per schema
+        const newMovement = formatMovementData(req.body, req.session.userId!); // format req.body per schema
 
         const createdMovement = await Movement.create(newMovement);
         return res.redirect('/movements');
@@ -132,18 +140,17 @@ async function createMovement (req, res) {
 }
 
 // edit
-async function editMovementView (req, res) {
+export async function editMovementView (req : Request, res : Response) {
     try {
         const foundMovement = await Movement.findById(req.params.id)
             .lean();
+
         res.render('movement/edit.ejs', {
             movement: foundMovement,
             muscleGroups
         });
+
     } catch (error) {
         res.status(500).send('An error occurred while fetching the movement.');
     }
 }
-
-
-module.exports = { getMovements, newMovementView, deleteMovement, updateMovement, createMovement, editMovementView }

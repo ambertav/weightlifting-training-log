@@ -1,5 +1,5 @@
-const express = require('express');
-const movementsController = require('../controllers/movements');
+import express from 'express';
+import * as movementsController from '../controllers/movements';
 
 const router = express.Router();
 
@@ -11,4 +11,4 @@ router.post('/movements', movementsController.createMovement);
 router.get('/movements/:id/edit', movementsController.editMovementView);
 
 
-module.exports = router;
+export default router;

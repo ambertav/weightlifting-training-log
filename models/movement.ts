@@ -1,6 +1,5 @@
-const mongoose = require('mongoose');
-
-const Workout = require('./workout'); 
+import mongoose from 'mongoose';
+import Workout from './workout';
 
 
 const movementSchema = new mongoose.Schema({
@@ -63,10 +62,18 @@ movementSchema.pre('deleteOne', async function (next) {
         }
 
         next();
-    } catch (error) {
+    } catch (error : any) {
         next(error);
     }
 });
 
+export interface MovementDocument extends mongoose.Document {
+    name : string;
+    description : string;
+    musclesWorked : string[];
+    type : 'cardio' | 'weighted';
+    createdBy : mongoose.Types.ObjectId;
+}
 
-module.exports = mongoose.model('Movement', movementSchema);
+
+export default mongoose.model <MovementDocument> ('Movement', movementSchema);
