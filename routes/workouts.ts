@@ -1,7 +1,7 @@
-const express = require('express');
-const workoutsController = require('../controllers/workouts');
+import express, { Router } from 'express';
+import * as workoutsController from '../controllers/workouts';
 
-const router = express.Router();
+const router : Router = express.Router();
 
 router.get('/workouts', workoutsController.getWorkouts);
 router.get('/workouts/new', workoutsController.newWorkoutView);
@@ -13,4 +13,4 @@ router.put('/workouts/:id/complete', workoutsController.toggleWorkoutCompletion)
 router.get('/workouts/:id', workoutsController.showWorkout);
 
 
-module.exports = router;
+export default router;

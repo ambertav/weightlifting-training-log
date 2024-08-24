@@ -1,11 +1,13 @@
-const Workout = require('../models/workout');
-const Movement = require('../models/movement');
+import { Request, Response } from 'express';
 
-const { validateExerciseFields, handleValidationErrors } = require('../utilities/validationHelpers');
-const { formatWorkoutExercise } = require('../utilities/formatHelpers');
+import Workout from '../models/workout';
+import Movement from '../models/movement';
+
+import { validateExerciseFields, handleValidationErrors } from '../utilities/validationHelpers';
+import { formatWorkoutExercise } from '../utilities/formatHelpers';
 
 // index
-async function getWorkouts (req, res) {
+export async function getWorkouts (req : Request, res : Response) {
     try {
         const allWorkouts = await Workout.find({
                 createdBy: req.session.userId
@@ -26,7 +28,7 @@ async function getWorkouts (req, res) {
 }
 
 // new
-async function newWorkoutView (req, res) {
+export async function newWorkoutView (req : Request, res : Response) {
     try {
         const availableMovements = await Movement.find({
                 createdBy: {
@@ -45,7 +47,7 @@ async function newWorkoutView (req, res) {
 }
 
 // delete
-async function deleteWorkout (req, res) {
+export async function deleteWorkout (req : Request, res : Response) {
     try {
         const workoutToDelete = await Workout.findOne({ // find desired workout
             createdBy: req.session.userId,
@@ -64,7 +66,7 @@ async function deleteWorkout (req, res) {
 }
 
 // update
-async function updateWorkout (req, res) {
+export async function updateWorkout (req : Request, res : Response) {
     try {
         const workout = await Workout.findOne({ createdBy: req.session.userId, _id: req.params.id })
             .populate('exercise.movement');
@@ -102,14 +104,14 @@ async function updateWorkout (req, res) {
 
         res.redirect('/workouts');
 
-    } catch (error) {
+    } catch (error : any) {
         const message = 'An error occurred while updating the workout'
         handleValidationErrors(error, res, message);
     }
 }
 
 // create
-async function createWorkout (req, res) {
+export async function createWorkout (req : Request, res : Response) {
     try {
         /* req.body.exercise structure example with 3 movements (weighted, cardio, weighted)
             {
@@ -142,14 +144,14 @@ async function createWorkout (req, res) {
 
         res.redirect('/workouts');
 
-    } catch (error) {
+    } catch (error : any) {
         const message = 'An error occurred while creating the workout'
         handleValidationErrors(error, res, message);
     }
 }
 
 // edit
-async function editWorkoutView (req, res) {
+export async function editWorkoutView (req : Request, res : Response) {
     try {
         const foundWorkout = await Workout.findById({
                 createdBy: req.session.userId,
@@ -178,7 +180,7 @@ async function editWorkoutView (req, res) {
 }
 
 // toggle complete
-async function toggleWorkoutCompletion (req, res) {
+export async function toggleWorkoutCompletion (req : Request, res : Response) {
     try {
         const workout = await Workout.findOneAndUpdate(
             { createdBy: req.session.userId,_id: req.params.id,},
@@ -196,13 +198,15 @@ async function toggleWorkoutCompletion (req, res) {
 }
 
 // show
-async function showWorkout (req, res) {
+export async function showWorkout (req : Request, res : Response) {
     try {
         const foundWorkout = await Workout.findById(req.params.id)
             .populate('exercise.movement')
 
+        if (!foundWorkout) res.status(404).json({ error: 'Workout not found' });
+
         res.render('workout/show.ejs', {
-            workout: foundWorkout.toJSON(),
+            workout: foundWorkout!.toJSON(),
             message: null
         });
         
@@ -210,6 +214,3 @@ async function showWorkout (req, res) {
         res.status(500).json({ error: 'An error occurred while fetching the workout', reload: true });
     }
 }
-
-
-module.exports = { getWorkouts, newWorkoutView, deleteWorkout, updateWorkout, createWorkout, editWorkoutView, toggleWorkoutCompletion, showWorkout }

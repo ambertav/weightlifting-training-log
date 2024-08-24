@@ -1,10 +1,11 @@
-const mongoose = require('mongoose');
-const { exerciseSchemaMiddleware } = require('../middleware/exercise');
+import mongoose from 'mongoose';
+import { MovementDocument } from './movement';
+import exerciseSchemaMiddleware from '../middleware/exercise';
 
-const { months } = require('../utilities/constants');
+import { months } from '../utilities/constants';
 
 
-const workoutSchema = new mongoose.Schema({
+const workoutSchema = new mongoose.Schema <WorkoutDocument> ({
     day: {
         type: Date,
         required: true
@@ -71,7 +72,7 @@ workoutSchema.pre('save', async function (next) {
             // run through exercise schema middleware (shared with favoriteSchema)
             exerciseSchemaMiddleware(this.exercise[i]);
 
-        } catch (error) {
+        } catch (error : any) {
             // error for population failure
             return next(error);
         }
@@ -89,12 +90,12 @@ workoutSchema.pre('save', async function (next) {
     const in30Days = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
 
     if (this.day < now || this.day > in30Days) {
-        const error = new mongoose.Error.ValidationError(this);
+        const error = new mongoose.Error.ValidationError();
         error.message = 'Workout cannot be before today\'s date or more than 30 days in the future';
         return next(error);
     }
 
-    else next();
+    next();
 });
 
 // virtual property for formatting day for rendering in view
@@ -106,4 +107,22 @@ workoutSchema.virtual('formattedDay').get(function () {
 });
 
 
-module.exports = mongoose.model('Workout', workoutSchema);
+export interface ExerciseDocument extends mongoose.Document {
+    movement : mongoose.Types.ObjectId | MovementDocument;
+    weight? : Number;
+    reps? : Number;
+    sets? : Number;
+    distance? : Number;
+    minutes? : Number;
+    caloriesBurned? : Number;
+}
+
+export interface WorkoutDocument extends mongoose.Document {
+    day : Date;
+    exercise : ExerciseDocument[];
+    isComplete : boolean;
+    createdBy : mongoose.Types.ObjectId;
+}
+
+
+export default mongoose.model <WorkoutDocument> ('Workout', workoutSchema);
