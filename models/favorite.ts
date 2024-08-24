@@ -1,5 +1,7 @@
-const mongoose = require('mongoose');
-const { exerciseSchemaMiddleware } = require('../middleware/exercise');
+import mongoose from 'mongoose';
+import exerciseSchemaMiddleware from '../middleware/exercise';
+import { ExerciseDocument } from './workout';
+import { MovementDocument } from './movement';
 
 
 const favoriteSchema = new mongoose.Schema({
@@ -73,13 +75,19 @@ const favoriteSchema = new mongoose.Schema({
 favoriteSchema.pre('save', async function (next) {
     // loop through exercises within favorite instance
     for (const exercise of this.exercise) {
-
         // run through exercise schema middleware (shared with workoutSchema)
-        exerciseSchemaMiddleware(exercise);
+        exerciseSchemaMiddleware({ ...exercise, movement: exercise.movement as Partial<MovementDocument> } as ExerciseDocument);
     }
 
     next();
 });
 
+export interface FavoriteDocument extends mongoose.Document {
+    name : string;
+    exercise : ExerciseDocument[];
+    isPublic : boolean;
+    createdBy : mongoose.Types.ObjectId;
+}
 
-module.exports = mongoose.model('Favorite', favoriteSchema);
+
+export default mongoose.model <FavoriteDocument> ('Favorite', favoriteSchema);

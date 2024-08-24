@@ -1,13 +1,14 @@
-const Favorite = require('../models/favorite');
-const Workout = require('../models/workout');
-const Movement = require('../models/movement');
-const User = require('../models/user');
-const Request = require('../models/request');
+import { Request, Response } from 'express';
+import Favorite from '../models/favorite';
+import Workout, { ExerciseDocument } from '../models/workout';
+import Movement, { MovementDocument } from '../models/movement';
+import User from '../models/user';
+import FriendRequest from '../models/friend-request';
 
-const { formatFavoriteExercise } = require('../utilities/formatHelpers');
+import { formatFavoriteExercise } from '../utilities/formatHelpers';
 
 // index
-async function getFavorites (req, res) {
+export async function getFavorites (req : Request, res : Response) {
     try {
         const favorites = await Favorite.find({ createdBy: req.session.userId })
             .lean();
@@ -23,18 +24,17 @@ async function getFavorites (req, res) {
 }
 
 // delete
-async function deleteFavorite (req, res) {
+export async function deleteFavorite (req : Request, res : Response) {
     try {
         const favoriteToDelete = await Favorite.findOne({
             createdBy: req.session.userId, _id: req.params.id
         });
 
-        if (favoriteToDelete) {
-            await favoriteToDelete.deleteOne();
-            res.redirect('/favorites');
-        }
-        
-        else res.status(404).json({ error: 'Favorite not found, could not delete', reload: true });
+        if (!favoriteToDelete) return res.status(404).json({ error: 'Favorite not found, could not delete', reload: true });
+
+        await favoriteToDelete.deleteOne();
+        res.redirect('/favorites');
+    
 
     } catch (error) {
         res.status(500).json({ error: 'An error occurred while deleteing the favorite', reload: true });
@@ -42,19 +42,19 @@ async function deleteFavorite (req, res) {
 }
 
 // share favorirtes
-async function shareFavorites (req, res) {
+export async function shareFavorites (req : Request, res : Response) {
     try {
         const originalFavorite = await Favorite.findById({
             createdBy: req.body.friend,
             _id: req.params.id
         })
-        .lean();
+            .lean();
 
         // send error if favorite not found
         if (!originalFavorite) return res.status(404).json({ error: 'Favorite not found', reload: true });
 
         // searching for valid accepted request between users
-        const friendship = await Request.findOne({
+        const friendship = await FriendRequest.findOne({
             $or: [
                 { from: req.body.friend, to: req.session.userId },
                 { from: req.session.userId, to: req.body.friend }
@@ -81,13 +81,13 @@ async function shareFavorites (req, res) {
 }
 
 // copy to workouts
-async function copyFavorite (req, res) {
+export async function copyFavorite (req : Request, res : Response) {
     try {
         const favorite = await Favorite.findById(req.params.id);
         // send error if favorite not found
         if (!favorite) return res.status(404).json({ error: 'Favorite not found', reload: true });
 
-        const createdBy = req.session.userId;
+        const createdBy = req.session.userId!;
         
         const newWorkoutExercise = [];
         const { exercise } = favorite; // destructure to get access to exercise
@@ -97,10 +97,14 @@ async function copyFavorite (req, res) {
             try {
                 // retrieving movement id since favorites saved with movement name
                 const movement = await createOrRetrieveMovement(ex, createdBy);
+                if (!movement) throw Error('Movement not found');
+
                 // formats exercise object with required fields based on movement type
                 const exerciseObj = formatFavoriteExercise(ex, movement);
+
                 // acculumates exercise objects
                 newWorkoutExercise.push(exerciseObj);
+                
             } catch (error) {
                 console.error(error);
             }
@@ -122,7 +126,7 @@ async function copyFavorite (req, res) {
 }
 
 // toggle isPublic status
-async function toggleIsPublic (req, res) {
+export async function toggleIsPublic (req : Request, res : Response) {
     try {
         const favorite = await Favorite.findOneAndUpdate(
             { createdBy: req.session.userId, _id: req.params.id },
@@ -143,7 +147,7 @@ async function toggleIsPublic (req, res) {
 
 
 // create
-async function createFavorite (req, res) {
+export async function createFavorite (req : Request, res : Response) {
     try {
         const workout = await Workout.findById(req.params.id)
             .populate('exercise.movement');
@@ -154,15 +158,18 @@ async function createFavorite (req, res) {
         const { createdBy } = workout;
 
         const exerciseInfo = workout.exercise.map(function (exercise) {
-            const { movement, ...remaining } = exercise; // destructures to access to movement
-            return {
-                movement: { // reformats movement to just save name, musclesWorked, type (will not save as an objectId for favorite)
-                    name: movement.name,
-                    musclesWorked: movement.musclesWorked,
-                    type: movement.type,
-                },
-                ...remaining,
-            };
+            const { movement , ...remaining } = exercise; // destructures to access to movement
+
+            if (typeof movement === 'object' && movement !== null && 'name' in movement) {
+                return {
+                    movement: { // reformats movement to just save name, musclesWorked, type (will not save as an objectId for favorite)
+                        name: movement.name,
+                        musclesWorked: movement.musclesWorked,
+                        type: movement.type,
+                    },
+                    ...remaining,
+                };
+            }
         });
 
         const newFavorite = { // constructs new favorite
@@ -184,13 +191,13 @@ async function createFavorite (req, res) {
 }
 
 // show
-async function showFavorite (req, res) {
+export async function showFavorite (req : Request, res : Response) {
     try {
         const favorite = await Favorite.findById(req.params.id)
             .lean();
 
         // find all friendships user has
-        const requests = await Request.find({
+        const requests = await FriendRequest.find({
                 $or: [
                     { to: req.session.userId },
                     { from: req.session.userId },
@@ -217,7 +224,7 @@ async function showFavorite (req, res) {
     }
 }
 
-async function viewOtherFavorites (req, res) {
+export async function viewOtherFavorites (req : Request, res : Response) {
     try {
         const user = await User.findOne({ username: req.params.username })
             .select('-email, -password')
@@ -227,7 +234,7 @@ async function viewOtherFavorites (req, res) {
 
         if (user._id.toHexString() === req.session.userId) return res.redirect('/favorites');
 
-        const friendship = await Request.findOne({
+        const friendship = await FriendRequest.findOne({
             $or: [
                 { from: user._id, to: req.session.userId },
                 { from: req.session.userId, to: user._id }
@@ -251,25 +258,26 @@ async function viewOtherFavorites (req, res) {
 }
 
 // sees if the movement within the favorite exists in reference to user, creates the movement if not
-async function createOrRetrieveMovement (exercise, createdBy) {
-    // search for movement
-    let movement = await Movement.findOne({
-        name: exercise.movement.name,
-        createdBy: { $in: [createdBy, null] }
-    });
+async function createOrRetrieveMovement (exercise : ExerciseDocument, createdBy : string) {
 
-    // if the movement doesn't exist...
-    if (!movement) {
-        // create the movement
-        movement = await Movement.create({
+    if (typeof exercise.movement === 'object' && 'name' in exercise.movement) {
+        // search for movement
+        let movement = await Movement.findOne({
             name: exercise.movement.name,
-            musclesWorked: exercise.movement.musclesWorked,
-            type: exercise.movement.type,
-            createdBy // assigned createdBy to req.session.userId
+            createdBy: { $in: [createdBy, null] }
         });
+
+        // if the movement doesn't exist...
+        if (!movement) {
+            // create the movement
+            movement = await Movement.create({
+                name: exercise.movement.name,
+                musclesWorked: exercise.movement.musclesWorked,
+                type: exercise.movement.type,
+                createdBy // assigned createdBy to req.session.userId
+            });
+        }
+
+        return movement;
     }
-    return movement;
 }
-
-
-module.exports = { getFavorites, deleteFavorite, shareFavorites, copyFavorite, toggleIsPublic, createFavorite, showFavorite, viewOtherFavorites }

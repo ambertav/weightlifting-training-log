@@ -108,7 +108,7 @@ workoutSchema.virtual('formattedDay').get(function () {
 
 
 export interface ExerciseDocument extends mongoose.Document {
-    movement : mongoose.Types.ObjectId | MovementDocument;
+    movement : mongoose.Types.ObjectId | MovementDocument | Partial<MovementDocument>;
     weight? : Number;
     reps? : Number;
     sets? : Number;

@@ -1,5 +1,5 @@
-const express = require('express');
-const favoritesController = require('../controllers/favorites');
+import express from 'express';
+import * as favoritesController from '../controllers/favorites';
 
 const router = express.Router();
 
@@ -13,5 +13,5 @@ router.get('/favorites/:id', favoritesController.showFavorite);
 router.get('/users/:username/favorites', favoritesController.viewOtherFavorites);
 
 
-module.exports = router;
+export default router;
 
