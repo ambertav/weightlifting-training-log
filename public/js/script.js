@@ -35,7 +35,6 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 $(function () {
-    console.log('THIS IS BEING READ');
     // const URL = 'https://weightlifting-log.herokuapp.com/';
     var URL = 'http://localhost:3000/';
     // password and confirmation field inputs

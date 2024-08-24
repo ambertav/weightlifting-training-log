@@ -1,13 +1,36 @@
-const { muscleGroups } = require('./constants');
+import { MovementDocument } from '../models/movement';
+import { ExerciseDocument } from '../models/workout';
+import { muscleGroups } from './constants';
+
+// TEMPORARY TYPES
+interface ExerciseData {
+    movement : string[];
+    weight : string[];
+    sets : string[];
+    reps : string[];
+    distance : string[];
+    minutes : string[];
+    caloriesBurned : string[];
+    [key: string] : string[];
+}
+
+interface MovementData {
+    name : string;
+    description : string;
+    musclesWorked : {
+        string : 'on'
+    };
+    type : 'cardio' | 'weighted';
+}
 
 // formatting the exercise array for create and update routes
-function formatWorkoutExercise(exercise) {
+export function formatWorkoutExercise (exercise : ExerciseData) {
     const exerciseObjects = [];
     const properties = ['movement', 'weight', 'sets', 'reps', 'distance', 'minutes', 'caloriesBurned']; // all possible properties
 
     // iterating through indices of 'movement' array to get access to indices of values in each key
     for (let i = 0; i < exercise.movement.length; i++) {
-        const exerciseObject = {};
+        const exerciseObject : any = {};
         // iterating through properties to process values
         for (const prop of properties) {
             const value = exercise[prop][i];
@@ -19,8 +42,8 @@ function formatWorkoutExercise(exercise) {
 }
 
 // format the movement data from req.body
-function formatMovementData(movementData, userId) {
-    let selectedMuscles = [];
+export function formatMovementData (movementData : MovementData, userId : string) {
+    let selectedMuscles : string[] = [];
 
     if (movementData.type === 'weighted') 
         selectedMuscles = Object.keys(movementData.musclesWorked).filter(function (key) {
@@ -40,8 +63,8 @@ function formatMovementData(movementData, userId) {
     };
 }
 
-function formatFavoriteExercise(exercise, movement) {
-    const exerciseObj = {
+export function formatFavoriteExercise (exercise : ExerciseDocument, movement : MovementDocument) {
+    const exerciseObj : any = {
         movement: movement._id
     }
 
@@ -54,14 +77,14 @@ function formatFavoriteExercise(exercise, movement) {
     const keys = keysByType[movement.type]
 
     for (const key of keys) {
-        if (exercise[key] !== undefined) exerciseObj[key] = exercise[key];
+        if (exercise[key as keyof ExerciseDocument] !== undefined) exerciseObj[key] = exercise[key as keyof ExerciseDocument];
     }
 
     return exerciseObj;
 }
 
-function formatExerciseStats (volumePerMovement) {
-    const musclePercent = {};
+export function formatExerciseStats (volumePerMovement : any) {
+    const musclePercent : any = {};
 
     let totalVolume = 0;
     let totalMinutes = 0;
@@ -94,9 +117,4 @@ function formatExerciseStats (volumePerMovement) {
         musclePercent,
         cardioStats
     };
-}
-
-
-module.exports = { 
-    formatWorkoutExercise, formatMovementData, formatFavoriteExercise, formatExerciseStats,
 }
