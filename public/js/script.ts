@@ -90,7 +90,7 @@ $(function () {
 
     // adds a new set of exercise inputs
     function addExercise (evt : JQuery.ClickEvent<HTMLElement>) {
-        if (evt.target instanceof HTMLElement && evt.target.tagName === 'P') return;
+        if (evt.target instanceof HTMLElement && evt.target.tagName !== 'P') return;
         let $clone = $($inputChild.eq($inputChild.length - 1).clone());
         $clone.find('.weightedSection, .cardioSection').show();
         $clone.find('.form-control').val('');
@@ -101,7 +101,7 @@ $(function () {
 
     // deletes a specific set of exercise inputs
     function deleteExercise(evt : JQuery.ClickEvent<HTMLElement>) {
-        if (evt.target instanceof HTMLElement && evt.target.tagName === 'P') return;
+        if (evt.target instanceof HTMLElement && evt.target.tagName !== 'P') return;
         $(evt.target!).closest($('.workoutInputChild')).remove();
     }
 

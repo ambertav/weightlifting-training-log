@@ -115,7 +115,7 @@ $(function () {
     }
     // adds a new set of exercise inputs
     function addExercise(evt) {
-        if (evt.target instanceof HTMLElement && evt.target.tagName === 'P')
+        if (evt.target instanceof HTMLElement && evt.target.tagName !== 'P')
             return;
         var $clone = $($inputChild.eq($inputChild.length - 1).clone());
         $clone.find('.weightedSection, .cardioSection').show();
@@ -126,7 +126,7 @@ $(function () {
     }
     // deletes a specific set of exercise inputs
     function deleteExercise(evt) {
-        if (evt.target instanceof HTMLElement && evt.target.tagName === 'P')
+        if (evt.target instanceof HTMLElement && evt.target.tagName !== 'P')
             return;
         $(evt.target).closest($('.workoutInputChild')).remove();
     }
