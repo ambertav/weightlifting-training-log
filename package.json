@@ -5,7 +5,9 @@
   "main": "server.ts",
   "scripts": {
     "test": "jest",
-    "start": "node server.ts"
+    "start": "node server.js",
+    "build": "tsc",
+    "postinstall": "npm run build"
   },
   "repository": {
     "type": "git",
@@ -31,8 +33,7 @@
     "jquery": "^3.7.1",
     "method-override": "^3.0.0",
     "mongodb": "^6.8.0",
-    "mongoose": "^8.0.1",
-    "supertest-session": "^5.0.1"
+    "mongoose": "^8.0.1"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
